@@ -1,0 +1,22 @@
+# Large raw data — re-download using each project's data/README.md
+**/data/raw/*
+!**/data/raw/.gitkeep
+*.zip
+
+# Python / Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Dashboard temp files
+*.twbr
+~$*

@@ -9,7 +9,7 @@ Which orders are likely to be delivered late, and which shipping modes, regions,
 See [`data/README.md`](data/README.md) for source, license, and file inventory.
 
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
-- **Plan:** _stakeholders, success metrics, scope, assumptions_
+- **Plan:** question, late-delivery definition, KPI formulas, and model rules are in [`reports/01-plan.md`](reports/01-plan.md). No rates computed yet.
 - **Analyze:** _data cleaning, EDA, key descriptive stats_
 - **Construct:** _models / queries / calculations built_
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_

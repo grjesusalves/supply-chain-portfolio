@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CA_3 FOODS — 28-day forecast dashboard</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif; background: #f7f4ee; color: #1c1915; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1 { font-size: 1.7rem; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.15rem; font-weight: 600; margin: 28px 0 8px; }
+  p, li { line-height: 1.45; }
+  .lede { font-size: 1.05rem; max-width: 68ch; }
+  .meta { color: #5c584f; font-family: "Segoe UI", sans-serif; font-size: 0.92rem; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0; }
+  .card { background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px 14px; }
+  .card .k { font-family: "Segoe UI", sans-serif; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: #5c584f; }
+  .card .v { font-size: 1.55rem; margin-top: 4px; }
+  .card .s { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: #3d3a34; }
+  .win { color: #0f6b4c; }
+  .high { color: #8a4b08; }
+  figure { margin: 12px 0; background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px; }
+  figcaption { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: #5c584f; margin-top: 6px; }
+  .legend { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 8px; }
+  .swatch { display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-family: "Segoe UI", sans-serif; font-size: 0.88rem; }
+  th, td { border-bottom: 1px solid #eee8de; padding: 6px 8px; text-align: left; }
+  th { background: #1f4e79; color: #fff; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .note { font-family: "Segoe UI", sans-serif; font-size: 0.9rem; background: #fff8e8; border-left: 4px solid #c47b2b; padding: 10px 12px; }
+  img.chart { max-width: 100%; height: auto; display: block; }
+  footer { margin-top: 28px; font-family: "Segoe UI", sans-serif; font-size: 0.82rem; color: #5c584f; }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta">PACE Execute · Walmart M5 · FOODS at store CA_3 · no model was refit for this page</p>
+  <h1>CA_3 food demand, 28-day holdout</h1>
+  <p class="lede">Question: how many food units will CA_3 sell over the next 28 days, and does LightGBM beat a same-weekday-four-weeks-ago copy? Answer: LightGBM has the lower volume-weighted error. Both forecasts are high, so the miss points to extra inventory, not stockouts.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="k">WAPE · quote this</div>
+      <div class="v win">64.9%</div>
+      <div class="s">LightGBM. Lag-28 is 77.7%.</div>
+    </div>
+    <div class="card">
+      <div class="k">MAPE · actual &gt; 0 only</div>
+      <div class="v">56.3%</div>
+      <div class="s">LightGBM. Lag-28 is 87.8%. 25,302 of 40,236 days.</div>
+    </div>
+    <div class="card">
+      <div class="k">Bias · both high</div>
+      <div class="v high">+2.6%</div>
+      <div class="s">LightGBM. Lag-28 is +1.1%. High forecast = extra inventory.</div>
+    </div>
+    <div class="card">
+      <div class="k">Holdout units</div>
+      <div class="v">109,870</div>
+      <div class="s">1,437 series · 2016-04-25 to 2016-05-22</div>
+    </div>
+  </div>
+
+  <h2>Daily total: actual vs both forecasts</h2>
+  <div class="legend">
+    <span><i class="swatch" style="background:#1f4e79"></i>Actual</span>
+    <span><i class="swatch" style="background:#c47b2b"></i>Lag-28 baseline</span>
+    <span><i class="swatch" style="background:#0f6b4c"></i>LightGBM</span>
+    <span><i class="swatch" style="background:#f3e2b8; height:10px"></i>SNAP days (May 1–10)</span>
+  </div>
+  <figure>
+    <svg viewBox="0 0 980 440" width="100%" role="img" aria-label="Daily CA_3 FOODS units, actual versus lag-28 and LightGBM, 28 holdout days">
+      <rect x="0" y="0" width="980" height="440" fill="#ffffff"/>
+      <rect x="242.15" y="24" width="334.81" height="368" fill="#f3e2b8" opacity="0.85"/>
+      <line x1="58" y1="392.00" x2="962" y2="392.00" stroke="#e6e2da" stroke-width="1"/><text x="50" y="396.00" text-anchor="end" font-size="11" fill="#5c584f">0</text><line x1="58" y1="300.00" x2="962" y2="300.00" stroke="#e6e2da" stroke-width="1"/><text x="50" y="304.00" text-anchor="end" font-size="11" fill="#5c584f">1,400</text><line x1="58" y1="208.00" x2="962" y2="208.00" stroke="#e6e2da" stroke-width="1"/><text x="50" y="212.00" text-anchor="end" font-size="11" fill="#5c584f">2,800</text><line x1="58" y1="116.00" x2="962" y2="116.00" stroke="#e6e2da" stroke-width="1"/><text x="50" y="120.00" text-anchor="end" font-size="11" fill="#5c584f">4,200</text><line x1="58" y1="24.00" x2="962" y2="24.00" stroke="#e6e2da" stroke-width="1"/><text x="50" y="28.00" text-anchor="end" font-size="11" fill="#5c584f">5,600</text>
+      <path d="M58.00,172.84 L91.48,162.46 L124.96,175.21 L158.44,166.47 L191.93,130.65 L225.41,98.52 L258.89,52.19 L292.37,116.33 L325.85,120.47 L359.33,140.38 L392.81,151.03 L426.30,133.28 L459.78,69.34 L493.26,33.66 L526.74,115.87 L560.22,149.38 L593.70,168.37 L627.19,172.25 L660.67,163.91 L694.15,108.97 L727.63,55.08 L761.11,140.51 L794.59,164.10 L828.07,176.06 L861.56,191.18 L895.04,167.98 L928.52,98.98 L962.00,83.27" fill="none" stroke="#c47b2b" stroke-width="2" stroke-dasharray="5 3"/>
+      <path d="M58.00,132.23 L91.48,150.57 L124.96,155.25 L158.44,154.43 L191.93,143.54 L225.41,94.84 L258.89,85.01 L292.37,117.50 L325.85,129.75 L359.33,132.72 L392.81,134.06 L426.30,126.06 L459.78,83.32 L493.26,74.76 L526.74,109.89 L560.22,127.33 L593.70,150.56 L627.19,151.54 L660.67,148.32 L694.15,101.79 L727.63,93.62 L761.11,133.78 L794.59,154.72 L828.07,157.72 L861.56,159.90 L895.04,155.51 L928.52,108.72 L962.00,102.90" fill="none" stroke="#0f6b4c" stroke-width="2.2"/>
+      <path d="M58.00,122.18 L91.48,182.90 L124.96,179.48 L158.44,187.30 L191.93,161.80 L225.41,108.44 L258.89,71.45 L292.37,118.76 L325.85,136.83 L359.33,121.72 L392.81,153.92 L426.30,152.60 L459.78,95.69 L493.26,107.65 L526.74,90.83 L560.22,137.36 L593.70,154.44 L627.19,187.30 L660.67,138.08 L694.15,108.71 L727.63,64.74 L761.11,149.84 L794.59,162.59 L828.07,166.93 L861.56,164.89 L895.04,162.20 L928.52,108.44 L962.00,58.89" fill="none" stroke="#1f4e79" stroke-width="2.4"/>
+      <circle cx="58.00" cy="122.18" r="2.4" fill="#1f4e79"/><circle cx="91.48" cy="182.90" r="2.4" fill="#1f4e79"/><circle cx="124.96" cy="179.48" r="2.4" fill="#1f4e79"/><circle cx="158.44" cy="187.30" r="2.4" fill="#1f4e79"/><circle cx="191.93" cy="161.80" r="2.4" fill="#1f4e79"/><circle cx="225.41" cy="108.44" r="2.4" fill="#1f4e79"/><circle cx="258.89" cy="71.45" r="2.4" fill="#1f4e79"/><circle cx="292.37" cy="118.76" r="2.4" fill="#1f4e79"/><circle cx="325.85" cy="136.83" r="2.4" fill="#1f4e79"/><circle cx="359.33" cy="121.72" r="2.4" fill="#1f4e79"/><circle cx="392.81" cy="153.92" r="2.4" fill="#1f4e79"/><circle cx="426.30" cy="152.60" r="2.4" fill="#1f4e79"/><circle cx="459.78" cy="95.69" r="2.4" fill="#1f4e79"/><circle cx="493.26" cy="107.65" r="2.4" fill="#1f4e79"/><circle cx="526.74" cy="90.83" r="2.4" fill="#1f4e79"/><circle cx="560.22" cy="137.36" r="2.4" fill="#1f4e79"/><circle cx="593.70" cy="154.44" r="2.4" fill="#1f4e79"/><circle cx="627.19" cy="187.30" r="2.4" fill="#1f4e79"/><circle cx="660.67" cy="138.08" r="2.4" fill="#1f4e79"/><circle cx="694.15" cy="108.71" r="2.4" fill="#1f4e79"/><circle cx="727.63" cy="64.74" r="2.4" fill="#1f4e79"/><circle cx="761.11" cy="149.84" r="2.4" fill="#1f4e79"/><circle cx="794.59" cy="162.59" r="2.4" fill="#1f4e79"/><circle cx="828.07" cy="166.93" r="2.4" fill="#1f4e79"/><circle cx="861.56" cy="164.89" r="2.4" fill="#1f4e79"/><circle cx="895.04" cy="162.20" r="2.4" fill="#1f4e79"/><circle cx="928.52" cy="108.44" r="2.4" fill="#1f4e79"/><circle cx="962.00" cy="58.89" r="2.4" fill="#1f4e79"/>
+      <text x="58.00" y="408" text-anchor="middle" font-size="10" fill="#5c584f">04-25</text><text x="124.96" y="408" text-anchor="middle" font-size="10" fill="#5c584f">04-27</text><text x="191.93" y="408" text-anchor="middle" font-size="10" fill="#5c584f">04-29</text><text x="258.89" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-01</text><text x="325.85" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-03</text><text x="392.81" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-05</text><text x="459.78" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-07</text><text x="526.74" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-09</text><text x="593.70" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-11</text><text x="660.67" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-13</text><text x="727.63" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-15</text><text x="794.59" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-17</text><text x="861.56" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-19</text><text x="928.52" y="408" text-anchor="middle" font-size="10" fill="#5c584f">05-21</text>
+      <text x="58" y="16" font-size="12" fill="#5c584f">Units (sum of 1,437 items)</text>
+    </svg>
+    <figcaption>Lines are daily sums from <code>data/processed/ca3_foods_holdout_predictions.csv</code>, not a new model. The shaded band is California SNAP (2016-05-01 through 2016-05-10). Weekend peaks stay visible in both forecasts.</figcaption>
+  </figure>
+
+  <h2>Same chart as a saved image</h2>
+  <figure>
+    <img class="chart" src="../images/ca3_foods_forecast_vs_actual.png" alt="CA_3 FOODS daily actual versus lag-28 and LightGBM">
+    <figcaption>Linked file: <code>images/ca3_foods_forecast_vs_actual.png</code>. The SVG above is drawn from the same daily totals so this page still shows the series if the image path does not resolve.</figcaption>
+  </figure>
+
+  <h2>Scorecard</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th class="num">WAPE</th>
+        <th class="num">MAPE</th>
+        <th class="num">Bias</th>
+        <th class="num">Sum of absolute error</th>
+        <th class="num">Sum of (forecast − actual)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Seasonal naive (lag-28)</td>
+        <td class="num">77.7%</td>
+        <td class="num">87.8%</td>
+        <td class="num">+1.1%</td>
+        <td class="num">85,369.0</td>
+        <td class="num">1,175.0</td>
+      </tr>
+      <tr>
+        <td>LightGBM</td>
+        <td class="num">64.9%</td>
+        <td class="num">56.3%</td>
+        <td class="num">+2.6%</td>
+        <td class="num">71,314.04487632272</td>
+        <td class="num">2,824.600902230468</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="meta">Ratios before rounding: lag-28 MAPE 0.8781250159967809, WAPE 0.777000091016656, bias 0.010694457085646673. LightGBM MAPE 0.5633893484087068, WAPE 0.6490765893903951, bias 0.02570857287913414. Percents are those ratios × 100, one decimal.</p>
+
+  <h2>What to do with this</h2>
+  <ul>
+    <li>Use LightGBM for CA_3 food replenishment planning.</li>
+    <li>Keep the lag-28 forecast as the benchmark.</li>
+    <li>Do not claim dollar savings. None were calculated.</li>
+    <li>FOODS_3_090 is the exception: baseline WAPE 0.1975 beats LightGBM 0.2130 (training units 250,502; holdout units 3,357).</li>
+    <li>Out of scope: other stores, other categories, inventory policy (project 02).</li>
+  </ul>
+  <p class="note">A high forecast is extra inventory, not protection against stockouts. LightGBM is more high than the baseline (+2.6% vs +1.1%) even though its absolute error is smaller. About 66% of California item-days are zeros, which is why WAPE is the headline and MAPE is not.</p>
+
+  <h2>Daily totals</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Weekday</th>
+        <th class="num">Actual</th>
+        <th class="num">Lag-28</th>
+        <th class="num">LightGBM</th>
+        <th class="num">Lag-28 − actual</th>
+        <th class="num">LightGBM − actual</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>2016-04-25</td><td>Monday</td><td class='num'>4,106</td><td class='num'>3,335</td><td class='num'>3,953.1</td><td class='num'>-771</td><td class='num'>-152.9</td></tr><tr><td>2016-04-26</td><td>Tuesday</td><td class='num'>3,182</td><td class='num'>3,493</td><td class='num'>3,673.9</td><td class='num'>311</td><td class='num'>491.9</td></tr><tr><td>2016-04-27</td><td>Wednesday</td><td class='num'>3,234</td><td class='num'>3,299</td><td class='num'>3,602.7</td><td class='num'>65</td><td class='num'>368.7</td></tr><tr><td>2016-04-28</td><td>Thursday</td><td class='num'>3,115</td><td class='num'>3,432</td><td class='num'>3,615.1</td><td class='num'>317</td><td class='num'>500.1</td></tr><tr><td>2016-04-29</td><td>Friday</td><td class='num'>3,503</td><td class='num'>3,977</td><td class='num'>3,781.0</td><td class='num'>474</td><td class='num'>278.0</td></tr><tr><td>2016-04-30</td><td>Saturday</td><td class='num'>4,315</td><td class='num'>4,466</td><td class='num'>4,522.0</td><td class='num'>151</td><td class='num'>207.0</td></tr><tr><td>2016-05-01</td><td>Sunday</td><td class='num'>4,878</td><td class='num'>5,171</td><td class='num'>4,671.5</td><td class='num'>293</td><td class='num'>-206.5</td></tr><tr><td>2016-05-02</td><td>Monday</td><td class='num'>4,158</td><td class='num'>4,195</td><td class='num'>4,177.2</td><td class='num'>37</td><td class='num'>19.2</td></tr><tr><td>2016-05-03</td><td>Tuesday</td><td class='num'>3,883</td><td class='num'>4,132</td><td class='num'>3,990.7</td><td class='num'>249</td><td class='num'>107.7</td></tr><tr><td>2016-05-04</td><td>Wednesday</td><td class='num'>4,113</td><td class='num'>3,829</td><td class='num'>3,945.6</td><td class='num'>-284</td><td class='num'>-167.4</td></tr><tr><td>2016-05-05</td><td>Thursday</td><td class='num'>3,623</td><td class='num'>3,667</td><td class='num'>3,925.2</td><td class='num'>44</td><td class='num'>302.2</td></tr><tr><td>2016-05-06</td><td>Friday</td><td class='num'>3,643</td><td class='num'>3,937</td><td class='num'>4,046.9</td><td class='num'>294</td><td class='num'>403.9</td></tr><tr><td>2016-05-07</td><td>Saturday</td><td class='num'>4,509</td><td class='num'>4,910</td><td class='num'>4,697.2</td><td class='num'>401</td><td class='num'>188.2</td></tr><tr><td>2016-05-08</td><td>Sunday</td><td class='num'>4,327</td><td class='num'>5,453</td><td class='num'>4,827.5</td><td class='num'>1,126</td><td class='num'>500.5</td></tr><tr><td>2016-05-09</td><td>Monday</td><td class='num'>4,583</td><td class='num'>4,202</td><td class='num'>4,293.0</td><td class='num'>-381</td><td class='num'>-290.0</td></tr><tr><td>2016-05-10</td><td>Tuesday</td><td class='num'>3,875</td><td class='num'>3,692</td><td class='num'>4,027.6</td><td class='num'>-183</td><td class='num'>152.6</td></tr><tr><td>2016-05-11</td><td>Wednesday</td><td class='num'>3,615</td><td class='num'>3,403</td><td class='num'>3,674.2</td><td class='num'>-212</td><td class='num'>59.2</td></tr><tr><td>2016-05-12</td><td>Thursday</td><td class='num'>3,115</td><td class='num'>3,344</td><td class='num'>3,659.2</td><td class='num'>229</td><td class='num'>544.2</td></tr><tr><td>2016-05-13</td><td>Friday</td><td class='num'>3,864</td><td class='num'>3,471</td><td class='num'>3,708.1</td><td class='num'>-393</td><td class='num'>-155.9</td></tr><tr><td>2016-05-14</td><td>Saturday</td><td class='num'>4,311</td><td class='num'>4,307</td><td class='num'>4,416.2</td><td class='num'>-4</td><td class='num'>105.2</td></tr><tr><td>2016-05-15</td><td>Sunday</td><td class='num'>4,980</td><td class='num'>5,127</td><td class='num'>4,540.6</td><td class='num'>147</td><td class='num'>-439.4</td></tr><tr><td>2016-05-16</td><td>Monday</td><td class='num'>3,685</td><td class='num'>3,827</td><td class='num'>3,929.4</td><td class='num'>142</td><td class='num'>244.4</td></tr><tr><td>2016-05-17</td><td>Tuesday</td><td class='num'>3,491</td><td class='num'>3,468</td><td class='num'>3,610.8</td><td class='num'>-23</td><td class='num'>119.8</td></tr><tr><td>2016-05-18</td><td>Wednesday</td><td class='num'>3,425</td><td class='num'>3,286</td><td class='num'>3,565.1</td><td class='num'>-139</td><td class='num'>140.1</td></tr><tr><td>2016-05-19</td><td>Thursday</td><td class='num'>3,456</td><td class='num'>3,056</td><td class='num'>3,531.9</td><td class='num'>-400</td><td class='num'>75.9</td></tr><tr><td>2016-05-20</td><td>Friday</td><td class='num'>3,497</td><td class='num'>3,409</td><td class='num'>3,598.8</td><td class='num'>-88</td><td class='num'>101.8</td></tr><tr><td>2016-05-21</td><td>Saturday</td><td class='num'>4,315</td><td class='num'>4,459</td><td class='num'>4,310.8</td><td class='num'>144</td><td class='num'>-4.2</td></tr><tr><td>2016-05-22</td><td>Sunday</td><td class='num'>5,069</td><td class='num'>4,698</td><td class='num'>4,399.3</td><td class='num'>-371</td><td class='num'>-669.7</td></tr>
+      <tr>
+        <td colspan="2"><strong>Total</strong></td>
+        <td class="num"><strong>109,870</strong></td>
+        <td class="num"><strong>111,045</strong></td>
+        <td class="num"><strong>112,694.6</strong></td>
+        <td class="num"><strong>1,175</strong></td>
+        <td class="num"><strong>2,824.6</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="meta">LightGBM’s official sum of (forecast − actual) is 2,824.600902230468. The total row rounds the daily LightGBM sums for display. Actual and lag-28 daily values are integers.</p>
+
+  <footer>
+    <p>Tableau Public is not connected here. Publishing is a manual step: import <code>data/processed/ca3_foods_holdout_predictions.csv</code> into Tableau Public. This file does not log in anywhere.</p>
+    <p>Embedded daily series (date, actual, baseline, lightgbm), aggregated from the predictions file:</p>
+    <pre id="series">2016-04-25,4106.000000,3335.000000,3953.061808
+2016-04-26,3182.000000,3493.000000,3673.875654
+2016-04-27,3234.000000,3299.000000,3602.655764
+2016-04-28,3115.000000,3432.000000,3615.120256
+2016-04-29,3503.000000,3977.000000,3780.963008
+2016-04-30,4315.000000,4466.000000,4522.006969
+2016-05-01,4878.000000,5171.000000,4671.527366
+2016-05-02,4158.000000,4195.000000,4177.152925
+2016-05-03,3883.000000,4132.000000,3990.705338
+2016-05-04,4113.000000,3829.000000,3945.629166
+2016-05-05,3623.000000,3667.000000,3925.221875
+2016-05-06,3643.000000,3937.000000,4046.880442
+2016-05-07,4509.000000,4910.000000,4697.246674
+2016-05-08,4327.000000,5453.000000,4827.530914
+2016-05-09,4583.000000,4202.000000,4293.000083
+2016-05-10,3875.000000,3692.000000,4027.575420
+2016-05-11,3615.000000,3403.000000,3674.160207
+2016-05-12,3115.000000,3344.000000,3659.229732
+2016-05-13,3864.000000,3471.000000,3708.118659
+2016-05-14,4311.000000,4307.000000,4416.169006
+2016-05-15,4980.000000,5127.000000,4540.628797
+2016-05-16,3685.000000,3827.000000,3929.379955
+2016-05-17,3491.000000,3468.000000,3610.763173
+2016-05-18,3425.000000,3286.000000,3565.078900
+2016-05-19,3456.000000,3056.000000,3531.936169
+2016-05-20,3497.000000,3409.000000,3598.834471
+2016-05-21,4315.000000,4459.000000,4310.824804
+2016-05-22,5069.000000,4698.000000,4399.323369</pre>
+  </footer>
+</main>
+<script>
+  // Confirms the embedded series has 28 days and the actual total is 109870.
+  const lines = document.getElementById("series").textContent.trim().split(/\n/);
+  let actual = 0;
+  for (const line of lines) {
+    const parts = line.split(",");
+    actual += Number(parts[1]);
+  }
+  if (lines.length !== 28 || Math.round(actual) !== 109870) {
+    document.body.insertAdjacentHTML("afterbegin", "<p style='background:#f8d0d0;padding:8px'>Embedded series failed a total check.</p>");
+  }
+</script>
+</body>
+</html>

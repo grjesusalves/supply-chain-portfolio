@@ -1,9 +1,31 @@
 # Demand Forecasting — Walmart M5
 
-> Executive summary — fill in as the project progresses.
+## Executive summary
 
-## Business Question
-How accurately can we forecast the next 28 days of daily unit sales for Walmart items in California stores CA_1, CA_2, CA_3, and CA_4, and which items and stores drive the error?
+**Business question.** How many food units will Walmart store CA_3 sell, item by item, over the next 28 days, and does LightGBM beat a same-weekday-four-weeks-ago copy?
+
+**Result.** On the holdout 2016-04-25 through 2016-05-22 (1,437 FOODS series, 40,236 item-days, 109,870 actual units), LightGBM’s WAPE is **64.9%** and the lag-28 seasonal naive’s WAPE is **77.7%**. MAPE, only on days with actual sales, is 56.3% versus 87.8%. Both forecasts are high (LightGBM +2.6%, lag-28 +1.1%). A high forecast means extra inventory, not stockouts. LightGBM wins WAPE and MAPE and loses on bias.
+
+**Recommendation.** Use LightGBM for CA_3 food replenishment planning. Keep the lag-28 forecast as the benchmark. Do not claim dollar savings. No dollar figure was calculated.
+
+**Not in this result.** Other stores, HOUSEHOLD, HOBBIES, and inventory policy (project 02). On item FOODS_3_090 the baseline WAPE 0.1975 beats LightGBM 0.2130 (250,502 training units, 3,357 holdout units).
+
+## Reports, chart, and code
+
+| | |
+|---|---|
+| Plan | [reports/01-plan.md](reports/01-plan.md) |
+| Analyze | [reports/02-analyze.md](reports/02-analyze.md) |
+| Construct | [reports/03-construct.md](reports/03-construct.md) |
+| Execute | [reports/04-execute.md](reports/04-execute.md) |
+| Business report | [reports/business-report.md](reports/business-report.md) |
+| Chart | [images/ca3_foods_forecast_vs_actual.png](images/ca3_foods_forecast_vs_actual.png) |
+| Dashboard | [dashboards/ca3_foods_dashboard.html](dashboards/ca3_foods_dashboard.html) (open the file; GitHub will show the source) |
+| Code | [src/analyze_ca.py](src/analyze_ca.py), [src/construct_forecast.py](src/construct_forecast.py) |
+
+![CA_3 FOODS daily actual vs both forecasts](images/ca3_foods_forecast_vs_actual.png)
+
+The dashboard is a static HTML page. Publishing to Tableau Public is a manual step: import `data/processed/ca3_foods_holdout_predictions.csv`. This repo was not signed into Tableau.
 
 ## Data
 See [`data/README.md`](data/README.md) for source, license, and file inventory.
@@ -31,21 +53,22 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
   - Seasonal naive: MAPE 0.8781250159967809, WAPE 0.777000091016656, bias 0.010694457085646673 (sum of absolute error 85369.0, sum of forecast−actual 1175.0, sum of actual 109870.0).
   - LightGBM: MAPE 0.5633893484087068, WAPE 0.6490765893903951, bias 0.02570857287913414 (sum of absolute error 71314.04487632272, sum of forecast−actual 2824.600902230468).
   - LightGBM beat the baseline on WAPE and MAPE, including WAPE on every weekday. It did not win on bias: both forecasts are high, and LightGBM is higher. On the highest-volume training item, FOODS_3_090 (250,502 units on `d_1`–`d_1913`), the baseline WAPE is lower (0.1974977658623771 vs LightGBM 0.2129970073026922). Workbook: `reports/ca3_foods_one_item_forecast.xlsx`. Chart: `images/ca3_foods_forecast_vs_actual.png`. No dollar figure.
-- **Execute:** _how results are delivered (dashboard, report, recommendation)_
+- **Execute:** [reports/04-execute.md](reports/04-execute.md) and [reports/business-report.md](reports/business-report.md). No refit. Recommendation: use LightGBM for CA_3 food replenishment planning, keep lag-28 as the benchmark, do not claim dollar savings. WAPE 64.9% (LightGBM) vs 77.7% (lag-28). Both forecasts are high (+2.6% vs +1.1%), which means extra inventory, not stockouts. Dashboard: [dashboards/ca3_foods_dashboard.html](dashboards/ca3_foods_dashboard.html). Tableau Public was not published; import the predictions CSV by hand if you want that.
 
 ## Key Findings
-- _Finding 1 (quantified)_
-- _Finding 2_
-- _Finding 3_
+- LightGBM WAPE **64.9%** vs lag-28 WAPE **77.7%** on FOODS at CA_3, holdout 2016-04-25 through 2016-05-22. MAPE (actual > 0) is 56.3% vs 87.8%. Absolute error is 71,314.04487632272 units vs 85,369 units, on 109,870 actual units.
+- Both forecasts are high. Bias is +2.6% (LightGBM) and +1.1% (lag-28). High means extra inventory, not a stockout bias. LightGBM is more high.
+- About 66% of California item-days are zeros, so MAPE is not the headline. WAPE is.
+- Exception: FOODS_3_090, baseline WAPE 0.1975 beats LightGBM 0.2130.
 
 ## Recommendation
-_What should the business do, and why?_
+Use LightGBM for CA_3 food replenishment planning. Keep the lag-28 forecast as the benchmark. Do not claim the model wins on every item, and do not claim dollar savings.
 
 ## Impact
-_Estimated $ / % / service-level impact._
+No dollar savings and no service-level change are claimed. The unit result is a smaller absolute error and a larger positive bias. Turning that into safety stock is project 02.
 
 ## Tools
-Python (pandas, statsmodels/LightGBM), SQL, Tableau/Power BI
+Python (pandas, LightGBM). Static HTML dashboard in `dashboards/`. Tableau Public was not used.
 
 ## How to Reproduce
 1. Download raw data into `data/raw/` (see `data/README.md`).

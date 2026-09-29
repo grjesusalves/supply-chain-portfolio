@@ -21,7 +21,12 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
   - **Why accuracy matters:** error becomes units of safety stock. Biased high inflates inventory; biased low causes stockouts. Direction only — no dollar figures.
   - **Out of scope:** inventory optimization (project 02), causal promo experiments, all 10 stores.
   - **Excel:** one category, one store, seasonal naive versus a simple Excel forecast, for interviewers who open a spreadsheet.
-- **Analyze:** _data cleaning, EDA, key descriptive stats_
+- **Analyze:** [reports/02-analyze.md](reports/02-analyze.md). Descriptive checks for CA_1–CA_4 only, from `src/analyze_ca.py`. No model is fit.
+  - **Shape:** 12,196 item–store series (3,049 items in each store), `d_1` 2011-01-29 through `d_1941` 2016-05-22. Missing cells: 0. Zero-sale cells: 15,621,951 of 23,672,436 (share 0.6599215644727058). Validation matches evaluation on `d_1`–`d_1913` (0 mismatched cells).
+  - **Weekday:** Sunday averages 18,507.230215827338 CA units per day; Wednesday averages 12,947.335740072202. Correlation of the statewide daily total is 0.8408696097678586 at lag 7 and 0.84399231729513 at lag 28, so the lag-28 baseline keeps the weekly pattern.
+  - **SNAP:** `snap_CA` is on for the 1st–10th of each month (640 days). Statewide average daily units are 15,823.4234375 on SNAP days vs 14,657.74481168332 otherwise (lift 0.07952646473197889). FOODS lift is 0.1024460777606011; HOUSEHOLD 0.03620140269117922; HOBBIES 0.02992724013488668.
+  - **Volume and intermittency:** CA_3 is 11,363,540 units (share 0.3892060877940489); FOODS is 19,535,863 (share 0.6691116333387758). 9,145 of 12,196 series sell on fewer than half of days, which is why MAPE needs the zero-day rule from the plan.
+  - **Price and first cut:** 2,660,038 of 3,390,488 CA item–store–weeks have a price (0.7845590369291973). The other 730,450 weeks are all before the first price and contain 0 units; there are 0 interior price holes. Construct should prove the pipeline on FOODS at CA_3 (7,625,660 units) before all 12,196 series.
 - **Construct:** _models / queries / calculations built_
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_
 

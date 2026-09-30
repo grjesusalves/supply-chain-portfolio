@@ -1,0 +1,10 @@
+file,rows,columns,expected_rows,expected_columns,match
+olist_customers_dataset.csv,99441,5,99441,5,True
+olist_geolocation_dataset.csv,1000163,5,1000163,5,True
+olist_order_items_dataset.csv,112650,7,112650,7,True
+olist_order_payments_dataset.csv,103886,5,103886,5,True
+olist_order_reviews_dataset.csv,99224,7,99224,7,True
+olist_orders_dataset.csv,99441,8,99441,8,True
+olist_products_dataset.csv,32951,9,32951,9,True
+olist_sellers_dataset.csv,3095,4,3095,4,True
+product_category_name_translation.csv,71,2,71,2,True

@@ -10,14 +10,14 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
 
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
 - **Plan:** question, grain, distance, and KPI definitions. See [`reports/01-plan.md`](reports/01-plan.md).
-- **Analyze:** _data cleaning, EDA, key descriptive stats_
+- **Analyze:** grain, distance, delivery time, and freight. See [`reports/02-analyze.md`](reports/02-analyze.md).
 - **Construct:** _models / queries / calculations built_
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_
 
 ## Key Findings
-- _Finding 1 (quantified)_
-- _Finding 2_
-- _Finding 3_
+- 63.8% of delivered items cross a state line (70,328 / 110,189). São Paulo has 59.7% of sellers (1,849 / 3,095) and 41.9% of customer people (40,302 / 96,096). Rio de Janeiro has 12.9% of the people and 5.5% of the sellers.
+- Median purchase-to-door time on 96,470 delivered orders is 10.2 days. Median transit rises from 2.0 days under 50 km to 13.2 days at 1,000 km or more. Median seller handling stays between 1.7 and 1.9 days, so the extra wait is not a handling time.
+- Median freight per item rises from R$9.06 under 50 km to R$25.38 at 1,000 km or more. Median freight per kilogram is R$22.22 and is not higher in every longer band. On time, by calendar date, is 93.2% (89,936 / 96,470), including 89.6% in the longest band where the median wait is 16.4 days.
 
 ## Recommendation
 _What should the business do, and why?_

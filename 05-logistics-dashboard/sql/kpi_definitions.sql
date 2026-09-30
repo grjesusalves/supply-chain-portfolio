@@ -11,6 +11,14 @@
 -- Earth radius used here: 6371 km.
 -- A prefix missing from geolocation does not get a state-average fill.
 -- Those items stay in volume counts and drop out of distance metrics.
+--
+-- Join rule added in Analyze, because the extract proved an unpadded join wrong.
+-- Customer and seller prefixes are stored without leading zeros (length 4 or 5).
+-- Geolocation prefixes are 5 characters. Pad with
+-- printf('%05d', CAST(prefix AS INTEGER)) before the join.
+-- That restores the prefix. It does not impute a location that is still missing.
+-- Without the pad, 24,265 of 99,441 customer rows miss a centroid.
+-- With the pad, 279 do. See reports/02-analyze.md.
 
 -- Grain
 -- Freight and distance: one row per order item (order_id, order_item_id).
@@ -36,7 +44,11 @@
 -- Weekly page shows purchase-to-door and transit. Distance should show up in transit.
 
 -- On time
--- delivered on or before order_estimated_delivery_date
+-- Delivered on or before the estimated delivery DATE, not the raw timestamp.
+-- Analyze found every order_estimated_delivery_date stored at 00:00:00
+-- (99,441 / 99,441). A timestamp compare would mark a delivery later on the
+-- promised calendar day as late (1,292 delivered orders in this extract).
+-- date(order_delivered_customer_date) <= date(order_estimated_delivery_date)
 -- Null estimate: drop from this rate only, and count the drops.
 -- Do not report on-time rate without median days. The promise may already be looser for far states.
 

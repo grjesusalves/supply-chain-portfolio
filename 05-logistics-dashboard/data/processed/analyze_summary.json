@@ -1,0 +1,1331 @@
+{
+  "inventory": [
+    {
+      "file": "olist_customers_dataset.csv",
+      "rows": 99441,
+      "columns": 5,
+      "expected_rows": 99441,
+      "expected_columns": 5,
+      "match": true
+    },
+    {
+      "file": "olist_geolocation_dataset.csv",
+      "rows": 1000163,
+      "columns": 5,
+      "expected_rows": 1000163,
+      "expected_columns": 5,
+      "match": true
+    },
+    {
+      "file": "olist_order_items_dataset.csv",
+      "rows": 112650,
+      "columns": 7,
+      "expected_rows": 112650,
+      "expected_columns": 7,
+      "match": true
+    },
+    {
+      "file": "olist_order_payments_dataset.csv",
+      "rows": 103886,
+      "columns": 5,
+      "expected_rows": 103886,
+      "expected_columns": 5,
+      "match": true
+    },
+    {
+      "file": "olist_order_reviews_dataset.csv",
+      "rows": 99224,
+      "columns": 7,
+      "expected_rows": 99224,
+      "expected_columns": 7,
+      "match": true
+    },
+    {
+      "file": "olist_orders_dataset.csv",
+      "rows": 99441,
+      "columns": 8,
+      "expected_rows": 99441,
+      "expected_columns": 8,
+      "match": true
+    },
+    {
+      "file": "olist_products_dataset.csv",
+      "rows": 32951,
+      "columns": 9,
+      "expected_rows": 32951,
+      "expected_columns": 9,
+      "match": true
+    },
+    {
+      "file": "olist_sellers_dataset.csv",
+      "rows": 3095,
+      "columns": 4,
+      "expected_rows": 3095,
+      "expected_columns": 4,
+      "match": true
+    },
+    {
+      "file": "product_category_name_translation.csv",
+      "rows": 71,
+      "columns": 2,
+      "expected_rows": 71,
+      "expected_columns": 2,
+      "match": true
+    }
+  ],
+  "loaded": {
+    "orders": 99441,
+    "customers": 99441,
+    "sellers": 3095,
+    "items": 112650,
+    "products": 32951,
+    "geo": 1000163
+  },
+  "fanout": {
+    "items_before": 112650,
+    "items_after": 112650,
+    "items_missing_order": 0,
+    "items_missing_customer": 0,
+    "items_missing_seller": 0,
+    "items_missing_product": 0,
+    "centroid_rows": 19015,
+    "centroid_prefixes": 19015,
+    "max_points_one_prefix": 1146,
+    "rows_if_customer_geo_not_collapsed": 17195778,
+    "rows_if_seller_geo_not_collapsed": 16252304
+  },
+  "haversine_one_degree_lat_km": 111.19492664455873,
+  "band_sensitivity": {
+    "orders_with_both_distances": 95992,
+    "orders_band_would_change_if_nearest": 558,
+    "multi_seller_orders_with_both_distances": 1269,
+    "multi_seller_band_would_change": 558
+  },
+  "snapshot": {
+    "res_order_status": [
+      {
+        "order_status": "delivered",
+        "n": 96478
+      },
+      {
+        "order_status": "shipped",
+        "n": 1107
+      },
+      {
+        "order_status": "canceled",
+        "n": 625
+      },
+      {
+        "order_status": "unavailable",
+        "n": 609
+      },
+      {
+        "order_status": "invoiced",
+        "n": 314
+      },
+      {
+        "order_status": "processing",
+        "n": 301
+      },
+      {
+        "order_status": "created",
+        "n": 5
+      },
+      {
+        "order_status": "approved",
+        "n": 2
+      }
+    ],
+    "res_door_by_status": [
+      {
+        "order_status": "delivered",
+        "null_door": 8,
+        "has_door": 96470,
+        "n": 96478
+      },
+      {
+        "order_status": "shipped",
+        "null_door": 1107,
+        "has_door": 0,
+        "n": 1107
+      },
+      {
+        "order_status": "canceled",
+        "null_door": 619,
+        "has_door": 6,
+        "n": 625
+      },
+      {
+        "order_status": "unavailable",
+        "null_door": 609,
+        "has_door": 0,
+        "n": 609
+      },
+      {
+        "order_status": "invoiced",
+        "null_door": 314,
+        "has_door": 0,
+        "n": 314
+      },
+      {
+        "order_status": "processing",
+        "null_door": 301,
+        "has_door": 0,
+        "n": 301
+      },
+      {
+        "order_status": "created",
+        "null_door": 5,
+        "has_door": 0,
+        "n": 5
+      },
+      {
+        "order_status": "approved",
+        "null_door": 2,
+        "has_door": 0,
+        "n": 2
+      }
+    ],
+    "res_orders_without_items": [
+      {
+        "order_status": "unavailable",
+        "n": 603
+      },
+      {
+        "order_status": "canceled",
+        "n": 164
+      },
+      {
+        "order_status": "created",
+        "n": 5
+      },
+      {
+        "order_status": "invoiced",
+        "n": 2
+      },
+      {
+        "order_status": "shipped",
+        "n": 1
+      }
+    ],
+    "res_dates": [
+      {
+        "min_purchase_all": "2016-09-04 21:15:19",
+        "max_purchase_all": "2018-10-17 17:30:18",
+        "min_purchase_population": "2016-09-15 12:16:38",
+        "max_purchase_population": "2018-08-29 15:00:37",
+        "null_purchase": 0,
+        "null_estimate_all": 0,
+        "estimate_not_midnight": 0
+      }
+    ],
+    "res_zip_match": [
+      {
+        "customers": 99441,
+        "customers_missing_padded": 279,
+        "customers_missing_unpadded": 24265,
+        "distinct_customer_prefix_missing_padded": 158,
+        "distinct_customer_prefixes": 14995,
+        "sellers": 3095,
+        "sellers_missing_padded": 8,
+        "sellers_missing_unpadded": 1033,
+        "distinct_seller_prefix_missing_padded": 8,
+        "distinct_seller_prefixes": 2246
+      }
+    ],
+    "res_brazil": [
+      {
+        "geo_rows": 1000163,
+        "raw_null_coord": 0,
+        "raw_points_outside": 31,
+        "centroids": 19015,
+        "centroids_outside": 10,
+        "centroids_null": 0,
+        "prefixes_with_outside_point": 20,
+        "outside_point_centroid_inside": 10,
+        "wide_prefixes": 313,
+        "points_in_wide_prefixes": 15937,
+        "min_lat": -33.68994828174511,
+        "max_lat": 42.18400274298598,
+        "min_lng": -72.91606928086937,
+        "max_lng": 121.10539381057764
+      }
+    ],
+    "res_grain": [
+      {
+        "orders": 99441,
+        "distinct_order_id": 99441,
+        "customer_rows": 99441,
+        "distinct_customer_id": 99441,
+        "distinct_people": 96096,
+        "people_with_more_than_one_order": 2997,
+        "max_orders_per_person": 17,
+        "people_with_more_than_one_state": 39,
+        "people_with_two_states": 38,
+        "people_with_three_or_more_states": 1,
+        "max_states_per_person": 3,
+        "sellers": 3095,
+        "distinct_seller_id": 3095,
+        "seller_states": 23,
+        "customer_states": 27,
+        "items": 112650,
+        "duplicate_order_item_pairs": 0,
+        "orders_with_items": 98666,
+        "multi_seller_orders": 1278,
+        "orders_without_items": 775,
+        "items_without_order": 0,
+        "sellers_not_in_items": 0,
+        "item_rows_seller_not_in_table": 0
+      }
+    ],
+    "res_population": [
+      {
+        "delivered_orders": 96470,
+        "delivered_null_door": 8,
+        "non_delivered_with_door": 6,
+        "door_on_or_before_purchase": 0,
+        "delivered_door_on_or_before_purchase": 0,
+        "population_null_estimate": 0,
+        "delivered_items": 110189,
+        "delivered_items_with_distance": 109651,
+        "delivered_items_missing_distance": 538,
+        "delivered_items_missing_customer_centroid": 289,
+        "delivered_items_missing_seller_centroid": 250,
+        "delivered_items_missing_both": 1,
+        "distinct_missing_customer_prefix_on_delivered_items": 153,
+        "distinct_missing_seller_prefix_on_delivered_items": 8,
+        "delivered_orders_with_distance": 95992,
+        "delivered_orders_missing_distance": 478,
+        "delivered_orders_partial_distance": 4,
+        "delivered_multi_seller": 1275,
+        "delivered_orders_without_items": 0,
+        "delivered_items_outside_centroid": 8,
+        "delivered_items_wide_prefix": 2544,
+        "sellers_with_delivered_item": 2970,
+        "orders_after_last_delivered_purchase": 26
+      }
+    ],
+    "res_distance_tail": [
+      {
+        "ge_2000": 6234,
+        "ge_2500": 953,
+        "ge_3000": 152,
+        "ge_3500": 7,
+        "ge_4000": 4,
+        "ge_5000": 3,
+        "ge_6000": 1,
+        "min_km": 0.0,
+        "max_km": 8677.911621858062,
+        "mean_km": 596.2653949516739,
+        "exact_zero": 26,
+        "under_1km": 57,
+        "under_10km": 2721
+      }
+    ],
+    "res_legs": [
+      {
+        "n_orders": 96470,
+        "approval_null": 14,
+        "approval_neg": 0,
+        "handling_null": 15,
+        "handling_neg": 1350,
+        "transit_null": 1,
+        "transit_neg": 23,
+        "min_handling_including_neg": -171.2190046296455,
+        "min_transit_including_neg": -16.096168981399387,
+        "mean_p2d": 12.558217098051923,
+        "mean_approval": 0.4282332547188534,
+        "mean_handling_nonneg": 2.853391242646291,
+        "mean_handling_including_neg": 2.799048592871179,
+        "mean_transit_nonneg": 9.333301671978004,
+        "mean_transit_including_neg": 9.330297057983499
+      }
+    ],
+    "res_ontime": [
+      {
+        "n_orders": 96470,
+        "null_estimate": 0,
+        "on_time_date_n": 89936,
+        "on_time_timestamp_n": 88644,
+        "same_calendar_day_n": 1292,
+        "same_day_late_by_timestamp_n": 1292
+      }
+    ],
+    "res_money": [
+      {
+        "freight_null_all_items": 0,
+        "freight_zero_all_items": 383,
+        "freight_neg_all_items": 0,
+        "price_null_all_items": 0,
+        "price_zero_all_items": 0,
+        "price_neg_all_items": 0,
+        "weight_null_products": 2,
+        "weight_zero_products": 4,
+        "weight_neg_products": 0,
+        "weight_null_all_joined_items": 18,
+        "weight_nonpositive_all_joined_items": 8,
+        "freight_null_delivered": 0,
+        "freight_zero_delivered": 381,
+        "freight_neg_delivered": 0,
+        "price_null_delivered": 0,
+        "price_nonpositive_delivered": 0,
+        "weight_null_delivered_items": 18,
+        "weight_nonpositive_delivered_items": 8,
+        "delivered_items_with_fpk": 110163,
+        "delivered_freight_cents": 220283580,
+        "delivered_price_cents": 1322024893,
+        "delivered_freight_cents_positive_weight": 220238364,
+        "delivered_weight_g_positive": 230222996,
+        "mean_freight": 19.99143108658759,
+        "mean_fpk": 39.33086612196559,
+        "mean_freight_over_price": 0.32121492817158503
+      }
+    ],
+    "res_cross_state": [
+      {
+        "delivered_items": 110189,
+        "missing_state": 0,
+        "cross_state_n": 70328,
+        "same_state_n": 39861
+      }
+    ],
+    "res_order_overall": [
+      {
+        "n": 96470,
+        "mean_p2d": 12.558217098051923,
+        "mean_max_km": 602.1339422896714,
+        "on_time_n": 89936,
+        "transit_nonneg_n": 96446,
+        "mean_transit_nonneg": 9.333301671978004,
+        "handling_nonneg_n": 95105,
+        "mean_handling_nonneg": 2.853391242646291,
+        "approval_n": 96456,
+        "mean_approval": 0.4282332547188534
+      }
+    ],
+    "res_item_overall": [
+      {
+        "n": 110189,
+        "mean_km": 596.2653949516739,
+        "mean_freight": 19.99143108658759,
+        "freight_cents": 220283580,
+        "n_fpk": 110163,
+        "mean_fpk": 39.33086612196559,
+        "cross_n": 70328,
+        "mean_weight_g_positive": 2089.8395650082152
+      }
+    ],
+    "res_orders_after_population": [
+      {
+        "order_status": "canceled",
+        "n": 25
+      },
+      {
+        "order_status": "shipped",
+        "n": 1
+      }
+    ]
+  },
+  "medians": {
+    "res_med_p2d": [
+      {
+        "median_x": 10.217476851539686,
+        "low_central": 10.217453703284264,
+        "high_central": 10.217499999795109,
+        "n": 96470
+      }
+    ],
+    "res_med_approval": [
+      {
+        "median_x": 0.014305555261671543,
+        "low_central": 0.014305555261671543,
+        "high_central": 0.014305555261671543,
+        "n": 96456
+      }
+    ],
+    "res_med_handling_nonneg": [
+      {
+        "median_x": 1.8490509260445833,
+        "low_central": 1.8490509260445833,
+        "high_central": 1.8490509260445833,
+        "n": 95105
+      }
+    ],
+    "res_med_handling_all": [
+      {
+        "median_x": 1.8158101853914559,
+        "low_central": 1.8158101853914559,
+        "high_central": 1.8158101853914559,
+        "n": 96455
+      }
+    ],
+    "res_med_transit_nonneg": [
+      {
+        "median_x": 7.10031250026077,
+        "low_central": 7.100289352238178,
+        "high_central": 7.100335648283362,
+        "n": 96446
+      }
+    ],
+    "res_med_transit_all": [
+      {
+        "median_x": 7.099768518470228,
+        "low_central": 7.099768518470228,
+        "high_central": 7.099768518470228,
+        "n": 96469
+      }
+    ],
+    "res_med_freight": [
+      {
+        "median_x": 16.26,
+        "low_central": 16.26,
+        "high_central": 16.26,
+        "n": 110189
+      }
+    ],
+    "res_med_fpk": [
+      {
+        "median_x": 22.215384615384615,
+        "low_central": 22.215384615384615,
+        "high_central": 22.215384615384615,
+        "n": 110163
+      }
+    ],
+    "res_med_item_km": [
+      {
+        "median_x": 431.9400124263011,
+        "low_central": 431.9400124263011,
+        "high_central": 431.9400124263011,
+        "n": 109651
+      }
+    ],
+    "res_med_order_km": [
+      {
+        "median_x": 435.64258961653843,
+        "low_central": 435.6331003230282,
+        "high_central": 435.6520789100486,
+        "n": 95992
+      }
+    ],
+    "res_med_weight": [
+      {
+        "median_x": 700.0,
+        "low_central": 700.0,
+        "high_central": 700.0,
+        "n": 110163
+      }
+    ],
+    "res_med_freight_over_price": [
+      {
+        "median_x": 0.23201035375323553,
+        "low_central": 0.23201035375323553,
+        "high_central": 0.23201035375323553,
+        "n": 110189
+      }
+    ],
+    "res_med_price": [
+      {
+        "median_x": 74.9,
+        "low_central": 74.9,
+        "high_central": 74.9,
+        "n": 110189
+      }
+    ]
+  },
+  "band_medians": {
+    "res_med_p2d_band": [
+      {
+        "band": "0-50",
+        "median_x": 4.901296296156943,
+        "low_central": 4.90069444430992,
+        "high_central": 4.901898148003966,
+        "n": 11672
+      },
+      {
+        "band": "1000+",
+        "median_x": 16.365196759346873,
+        "low_central": 16.365196759346873,
+        "high_central": 16.365196759346873,
+        "n": 15401
+      },
+      {
+        "band": "200-500",
+        "median_x": 9.972876157378778,
+        "low_central": 9.972754629794508,
+        "high_central": 9.972997684963048,
+        "n": 30258
+      },
+      {
+        "band": "50-200",
+        "median_x": 6.466655092546716,
+        "low_central": 6.466585647780448,
+        "high_central": 6.4667245373129845,
+        "n": 12832
+      },
+      {
+        "band": "500-1000",
+        "median_x": 12.127638888545334,
+        "low_central": 12.127638888545334,
+        "high_central": 12.127638888545334,
+        "n": 25829
+      }
+    ],
+    "res_med_approval_band": [
+      {
+        "band": "0-50",
+        "median_x": 0.014328703749924898,
+        "low_central": 0.014328703749924898,
+        "high_central": 0.014328703749924898,
+        "n": 11671
+      },
+      {
+        "band": "1000+",
+        "median_x": 0.015231481287628412,
+        "low_central": 0.015231481287628412,
+        "high_central": 0.015231481287628412,
+        "n": 15399
+      },
+      {
+        "band": "200-500",
+        "median_x": 0.013935185503214598,
+        "low_central": 0.013935185503214598,
+        "high_central": 0.013935185503214598,
+        "n": 30251
+      },
+      {
+        "band": "50-200",
+        "median_x": 0.014247685205191374,
+        "low_central": 0.014247685205191374,
+        "high_central": 0.014247685205191374,
+        "n": 12831
+      },
+      {
+        "band": "500-1000",
+        "median_x": 0.014398148283362389,
+        "low_central": 0.014398148283362389,
+        "high_central": 0.014398148283362389,
+        "n": 25826
+      }
+    ],
+    "res_med_handling_band": [
+      {
+        "band": "0-50",
+        "median_x": 1.7075115740299225,
+        "low_central": 1.7075115740299225,
+        "high_central": 1.7075115740299225,
+        "n": 11509
+      },
+      {
+        "band": "1000+",
+        "median_x": 1.9176967591047287,
+        "low_central": 1.9176967591047287,
+        "high_central": 1.9176967591047287,
+        "n": 15181
+      },
+      {
+        "band": "200-500",
+        "median_x": 1.832563657546416,
+        "low_central": 1.832557870540768,
+        "high_central": 1.832569444552064,
+        "n": 29834
+      },
+      {
+        "band": "50-200",
+        "median_x": 1.8241550927050412,
+        "low_central": 1.8241550927050412,
+        "high_central": 1.8241550927050412,
+        "n": 12644
+      },
+      {
+        "band": "500-1000",
+        "median_x": 1.8947685186285526,
+        "low_central": 1.8947106483392417,
+        "high_central": 1.8948263889178634,
+        "n": 25466
+      }
+    ],
+    "res_med_transit_band": [
+      {
+        "band": "0-50",
+        "median_x": 1.9568981481716037,
+        "low_central": 1.9568981481716037,
+        "high_central": 1.9568981481716037,
+        "n": 11667
+      },
+      {
+        "band": "1000+",
+        "median_x": 13.198749999981374,
+        "low_central": 13.198749999981374,
+        "high_central": 13.198749999981374,
+        "n": 15401
+      },
+      {
+        "band": "200-500",
+        "median_x": 6.957164351828396,
+        "low_central": 6.957164351828396,
+        "high_central": 6.957164351828396,
+        "n": 30251
+      },
+      {
+        "band": "50-200",
+        "median_x": 3.3847916671074927,
+        "low_central": 3.3847916671074927,
+        "high_central": 3.3847916671074927,
+        "n": 12829
+      },
+      {
+        "band": "500-1000",
+        "median_x": 8.759131944505498,
+        "low_central": 8.758599536959082,
+        "high_central": 8.759664352051914,
+        "n": 25820
+      }
+    ],
+    "res_med_order_km_band": [
+      {
+        "band": "0-50",
+        "median_x": 19.36406037060462,
+        "low_central": 19.36260099787846,
+        "high_central": 19.365519743330776,
+        "n": 11672
+      },
+      {
+        "band": "1000+",
+        "median_x": 1674.276433976553,
+        "low_central": 1674.276433976553,
+        "high_central": 1674.276433976553,
+        "n": 15401
+      },
+      {
+        "band": "200-500",
+        "median_x": 354.6492900945096,
+        "low_central": 354.6492900945096,
+        "high_central": 354.6492900945096,
+        "n": 30258
+      },
+      {
+        "band": "50-200",
+        "median_x": 102.99454119287736,
+        "low_central": 102.99350838452266,
+        "high_central": 102.99557400123209,
+        "n": 12832
+      },
+      {
+        "band": "500-1000",
+        "median_x": 707.0594264040171,
+        "low_central": 707.0594264040171,
+        "high_central": 707.0594264040171,
+        "n": 25829
+      }
+    ],
+    "res_med_freight_band": [
+      {
+        "band": "0-50",
+        "median_x": 9.06,
+        "low_central": 9.06,
+        "high_central": 9.06,
+        "n": 13449
+      },
+      {
+        "band": "1000+",
+        "median_x": 25.38,
+        "low_central": 25.38,
+        "high_central": 25.38,
+        "n": 17251
+      },
+      {
+        "band": "200-500",
+        "median_x": 15.7,
+        "low_central": 15.7,
+        "high_central": 15.7,
+        "n": 34748
+      },
+      {
+        "band": "50-200",
+        "median_x": 11.92,
+        "low_central": 11.92,
+        "high_central": 11.92,
+        "n": 14708
+      },
+      {
+        "band": "500-1000",
+        "median_x": 17.75,
+        "low_central": 17.75,
+        "high_central": 17.75,
+        "n": 29495
+      }
+    ],
+    "res_med_fpk_band": [
+      {
+        "band": "0-50",
+        "median_x": 18.333333333333332,
+        "low_central": 18.333333333333332,
+        "high_central": 18.333333333333332,
+        "n": 13449
+      },
+      {
+        "band": "1000+",
+        "median_x": 36.922916666666666,
+        "low_central": 36.9125,
+        "high_central": 36.93333333333334,
+        "n": 17246
+      },
+      {
+        "band": "200-500",
+        "median_x": 20.12885375494071,
+        "low_central": 20.127272727272725,
+        "high_central": 20.130434782608695,
+        "n": 34742
+      },
+      {
+        "band": "50-200",
+        "median_x": 17.271428571428572,
+        "low_central": 17.271428571428572,
+        "high_central": 17.271428571428572,
+        "n": 14705
+      },
+      {
+        "band": "500-1000",
+        "median_x": 23.88235294117647,
+        "low_central": 23.88235294117647,
+        "high_central": 23.88235294117647,
+        "n": 29483
+      }
+    ],
+    "res_med_item_km_band": [
+      {
+        "band": "0-50",
+        "median_x": 19.248670807446718,
+        "low_central": 19.248670807446718,
+        "high_central": 19.248670807446718,
+        "n": 13449
+      },
+      {
+        "band": "1000+",
+        "median_x": 1664.19946119134,
+        "low_central": 1664.19946119134,
+        "high_central": 1664.19946119134,
+        "n": 17251
+      },
+      {
+        "band": "200-500",
+        "median_x": 354.48496661414026,
+        "low_central": 354.4807490202911,
+        "high_central": 354.48918420798947,
+        "n": 34748
+      },
+      {
+        "band": "50-200",
+        "median_x": 102.96112613571796,
+        "low_central": 102.94708600787122,
+        "high_central": 102.97516626356472,
+        "n": 14708
+      },
+      {
+        "band": "500-1000",
+        "median_x": 705.2608148569652,
+        "low_central": 705.2608148569652,
+        "high_central": 705.2608148569652,
+        "n": 29495
+      }
+    ],
+    "res_med_weight_band": [
+      {
+        "band": "0-50",
+        "median_x": 500.0,
+        "low_central": 500.0,
+        "high_central": 500.0,
+        "n": 13449
+      },
+      {
+        "band": "1000+",
+        "median_x": 650.0,
+        "low_central": 650.0,
+        "high_central": 650.0,
+        "n": 17246
+      },
+      {
+        "band": "200-500",
+        "median_x": 800.0,
+        "low_central": 800.0,
+        "high_central": 800.0,
+        "n": 34742
+      },
+      {
+        "band": "50-200",
+        "median_x": 610.0,
+        "low_central": 610.0,
+        "high_central": 610.0,
+        "n": 14705
+      },
+      {
+        "band": "500-1000",
+        "median_x": 710.0,
+        "low_central": 710.0,
+        "high_central": 710.0,
+        "n": 29483
+      }
+    ],
+    "res_med_km_by_cross": [
+      {
+        "band": 0,
+        "median_x": 96.70936123407986,
+        "low_central": 96.700516583265,
+        "high_central": 96.71820588489474,
+        "n": 39792
+      },
+      {
+        "band": 1,
+        "median_x": 653.8669002047758,
+        "low_central": 653.8669002047758,
+        "high_central": 653.8669002047758,
+        "n": 69859
+      }
+    ]
+  },
+  "band_table": [
+    {
+      "band": "0-50",
+      "orders": 11672,
+      "order_median_km": 19.36406037060462,
+      "order_mean_km": 21.547876086010856,
+      "median_purchase_to_door": 4.901296296156943,
+      "p2d_low_central": 4.90069444430992,
+      "p2d_high_central": 4.901898148003966,
+      "p2d_n": 11672,
+      "mean_purchase_to_door": 6.162978179221338,
+      "median_transit_nonneg": 1.9568981481716037,
+      "transit_n": 11667,
+      "mean_transit_nonneg": 3.0778544531680763,
+      "transit_neg_n": 5,
+      "median_handling_nonneg": 1.7075115740299225,
+      "handling_n": 11509,
+      "mean_handling_nonneg": 2.7412248827826233,
+      "handling_neg_n": 162,
+      "median_approval": 0.014328703749924898,
+      "approval_n": 11671,
+      "mean_approval": 0.396898363342927,
+      "on_time_n": 11153,
+      "on_time_rate": 0.9555346127484579,
+      "items": 13449,
+      "item_median_km": 19.248670807446718,
+      "item_mean_km": 21.425512200352326,
+      "median_freight": 9.06,
+      "mean_freight": 11.528326269611123,
+      "freight_cents": 15504446,
+      "fpk_n": 13449,
+      "median_fpk": 18.333333333333332,
+      "mean_fpk": 27.046978716474527,
+      "median_weight_g": 500.0,
+      "mean_weight_g": 1906.9338240761394,
+      "cross_n": 41,
+      "cross_share": 0.0030485537958212508
+    },
+    {
+      "band": "50-200",
+      "orders": 12832,
+      "order_median_km": 102.99454119287736,
+      "order_mean_km": 111.04753552943275,
+      "median_purchase_to_door": 6.466655092546716,
+      "p2d_low_central": 6.466585647780448,
+      "p2d_high_central": 6.4667245373129845,
+      "p2d_n": 12832,
+      "mean_purchase_to_door": 8.015406575428324,
+      "median_transit_nonneg": 3.3847916671074927,
+      "transit_n": 12829,
+      "mean_transit_nonneg": 4.797754080199547,
+      "transit_neg_n": 3,
+      "median_handling_nonneg": 1.8241550927050412,
+      "handling_n": 12644,
+      "mean_handling_nonneg": 2.8580259933339405,
+      "handling_neg_n": 187,
+      "median_approval": 0.014247685205191374,
+      "approval_n": 12831,
+      "mean_approval": 0.4171208798432495,
+      "on_time_n": 12234,
+      "on_time_rate": 0.9533977556109726,
+      "items": 14708,
+      "item_median_km": 102.96112613571796,
+      "item_mean_km": 110.96113771282792,
+      "median_freight": 11.92,
+      "mean_freight": 13.817415012238238,
+      "freight_cents": 20322654,
+      "fpk_n": 14705,
+      "median_fpk": 17.271428571428572,
+      "mean_fpk": 27.0122661424101,
+      "median_weight_g": 610.0,
+      "mean_weight_g": 2214.67772866372,
+      "cross_n": 1294,
+      "cross_share": 0.0879793309763394
+    },
+    {
+      "band": "200-500",
+      "orders": 30258,
+      "order_median_km": 354.6492900945096,
+      "order_mean_km": 362.7189509682195,
+      "median_purchase_to_door": 9.972876157378778,
+      "p2d_low_central": 9.972754629794508,
+      "p2d_high_central": 9.972997684963048,
+      "p2d_n": 30258,
+      "mean_purchase_to_door": 12.106791090831907,
+      "median_transit_nonneg": 6.957164351828396,
+      "transit_n": 30251,
+      "mean_transit_nonneg": 8.924485678924736,
+      "transit_neg_n": 7,
+      "median_handling_nonneg": 1.832563657546416,
+      "handling_n": 29834,
+      "mean_handling_nonneg": 2.8351305708712884,
+      "handling_neg_n": 417,
+      "median_approval": 0.013935185503214598,
+      "approval_n": 30251,
+      "mean_approval": 0.40643287159524427,
+      "on_time_n": 28323,
+      "on_time_rate": 0.9360499702558002,
+      "items": 34748,
+      "item_median_km": 354.48496661414026,
+      "item_mean_km": 362.51935618575135,
+      "median_freight": 15.7,
+      "mean_freight": 19.086625992862896,
+      "freight_cents": 66322208,
+      "fpk_n": 34742,
+      "median_fpk": 20.12885375494071,
+      "mean_fpk": 35.952114946518634,
+      "median_weight_g": 800.0,
+      "mean_weight_g": 2205.1203154683094,
+      "cross_n": 22772,
+      "cross_share": 0.6553470703349833
+    },
+    {
+      "band": "500-1000",
+      "orders": 25829,
+      "order_median_km": 707.0594264040171,
+      "order_mean_km": 711.967082863212,
+      "median_purchase_to_door": 12.127638888545334,
+      "p2d_low_central": 12.127638888545334,
+      "p2d_high_central": 12.127638888545334,
+      "p2d_n": 25829,
+      "mean_purchase_to_door": 14.287257320852794,
+      "median_transit_nonneg": 8.759131944505498,
+      "transit_n": 25820,
+      "mean_transit_nonneg": 11.031446326689418,
+      "transit_neg_n": 8,
+      "median_handling_nonneg": 1.8947685186285526,
+      "handling_n": 25466,
+      "mean_handling_nonneg": 2.8683981310573934,
+      "handling_neg_n": 359,
+      "median_approval": 0.014398148283362389,
+      "approval_n": 25826,
+      "mean_approval": 0.44235361122408595,
+      "on_time_n": 24000,
+      "on_time_rate": 0.9291881218785086,
+      "items": 29495,
+      "item_median_km": 705.2608148569652,
+      "item_mean_km": 711.1529316340053,
+      "median_freight": 17.75,
+      "mean_freight": 21.11815934904221,
+      "freight_cents": 62288011,
+      "fpk_n": 29483,
+      "median_fpk": 23.88235294117647,
+      "mean_fpk": 42.29288308547374,
+      "median_weight_g": 710.0,
+      "mean_weight_g": 1978.0467048807789,
+      "cross_n": 28501,
+      "cross_share": 0.9662993727750466
+    },
+    {
+      "band": "1000+",
+      "orders": 15401,
+      "order_median_km": 1674.276433976553,
+      "order_mean_km": 1737.4861892740892,
+      "median_purchase_to_door": 16.365196759346873,
+      "p2d_low_central": 16.365196759346873,
+      "p2d_high_central": 16.365196759346873,
+      "p2d_n": 15401,
+      "mean_purchase_to_door": 19.12024429405062,
+      "median_transit_nonneg": 13.198749999981374,
+      "transit_n": 15401,
+      "mean_transit_nonneg": 15.739039157210392,
+      "transit_neg_n": 0,
+      "median_handling_nonneg": 1.9176967591047287,
+      "handling_n": 15181,
+      "mean_handling_nonneg": 2.9554395510215836,
+      "handling_neg_n": 218,
+      "median_approval": 0.015231481287628412,
+      "approval_n": 15399,
+      "mean_approval": 0.4809067831176937,
+      "on_time_n": 13792,
+      "on_time_rate": 0.8955262645282774,
+      "items": 17251,
+      "item_median_km": 1664.19946119134,
+      "item_mean_km": 1732.574945655076,
+      "median_freight": 25.38,
+      "mean_freight": 31.699805808358935,
+      "freight_cents": 54685335,
+      "fpk_n": 17246,
+      "median_fpk": 36.922916666666666,
+      "mean_fpk": 61.18458150105213,
+      "median_weight_g": 650.0,
+      "mean_weight_g": 2074.777803548649,
+      "cross_n": 17251,
+      "cross_share": 1.0
+    }
+  ],
+  "percentiles": [
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0,
+      "rank_quantile_km": 0.0,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.01,
+      "rank_quantile_km": 5.694292784455241,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.05,
+      "rank_quantile_km": 16.35055600434352,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.1,
+      "rank_quantile_km": 34.148469535882,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.25,
+      "rank_quantile_km": 185.22933496298916,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.5,
+      "rank_quantile_km": 431.9400124263011,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.75,
+      "rank_quantile_km": 791.6442716768596,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.9,
+      "rank_quantile_km": 1446.2773069446068,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.95,
+      "rank_quantile_km": 2085.9890019044415,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 0.99,
+      "rank_quantile_km": 2479.1694887309777,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_item_distance",
+      "p": 1,
+      "rank_quantile_km": 8677.911621858062,
+      "n": 109651
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0,
+      "rank_quantile_km": 0.0,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.01,
+      "rank_quantile_km": 5.7549263354690305,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.05,
+      "rank_quantile_km": 16.55893824912687,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.1,
+      "rank_quantile_km": 34.885892038237166,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.25,
+      "rank_quantile_km": 189.31844888520928,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.5,
+      "rank_quantile_km": 435.6331003230282,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.75,
+      "rank_quantile_km": 800.2948677161073,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.9,
+      "rank_quantile_km": 1457.5317124692428,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.95,
+      "rank_quantile_km": 2096.422091244644,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 0.99,
+      "rank_quantile_km": 2483.903281808728,
+      "n": 95992
+    },
+    {
+      "distribution": "delivered_order_max_distance",
+      "p": 1,
+      "rank_quantile_km": 8677.911621858062,
+      "n": 95992
+    }
+  ],
+  "histogram_100km": [
+    {
+      "lo_km": 0,
+      "hi_km_exclusive": 100,
+      "items": 20478
+    },
+    {
+      "lo_km": 100,
+      "hi_km_exclusive": 200,
+      "items": 7679
+    },
+    {
+      "lo_km": 200,
+      "hi_km_exclusive": 300,
+      "items": 7599
+    },
+    {
+      "lo_km": 300,
+      "hi_km_exclusive": 400,
+      "items": 15609
+    },
+    {
+      "lo_km": 400,
+      "hi_km_exclusive": 500,
+      "items": 11540
+    },
+    {
+      "lo_km": 500,
+      "hi_km_exclusive": 600,
+      "items": 9017
+    },
+    {
+      "lo_km": 600,
+      "hi_km_exclusive": 700,
+      "items": 5452
+    },
+    {
+      "lo_km": 700,
+      "hi_km_exclusive": 800,
+      "items": 5265
+    },
+    {
+      "lo_km": 800,
+      "hi_km_exclusive": 900,
+      "items": 6711
+    },
+    {
+      "lo_km": 900,
+      "hi_km_exclusive": 1000,
+      "items": 3050
+    },
+    {
+      "lo_km": 1000,
+      "hi_km_exclusive": 1100,
+      "items": 1977
+    },
+    {
+      "lo_km": 1100,
+      "hi_km_exclusive": 1200,
+      "items": 1588
+    },
+    {
+      "lo_km": 1200,
+      "hi_km_exclusive": 1300,
+      "items": 1278
+    },
+    {
+      "lo_km": 1300,
+      "hi_km_exclusive": 1400,
+      "items": 986
+    },
+    {
+      "lo_km": 1400,
+      "hi_km_exclusive": 1500,
+      "items": 1640
+    },
+    {
+      "lo_km": 1500,
+      "hi_km_exclusive": 1600,
+      "items": 738
+    },
+    {
+      "lo_km": 1600,
+      "hi_km_exclusive": 1700,
+      "items": 640
+    },
+    {
+      "lo_km": 1700,
+      "hi_km_exclusive": 1800,
+      "items": 642
+    },
+    {
+      "lo_km": 1800,
+      "hi_km_exclusive": 1900,
+      "items": 693
+    },
+    {
+      "lo_km": 1900,
+      "hi_km_exclusive": 2000,
+      "items": 835
+    },
+    {
+      "lo_km": 2000,
+      "hi_km_exclusive": null,
+      "items": 6234
+    }
+  ],
+  "state_chart_note": "People shares use 96,096 customer people as the denominator. State counts sum to 96,136 because 39 people appear in more than one state. Seller shares use all 3,095 sellers. 4 states have customers and no sellers: AL, TO, AP, RR.",
+  "freight_chart_title": "Median freight per item rises in every longer band. Freight per kilogram dips in the 50\u2013200 km band, then rises.",
+  "state_mix_gap": {
+    "max_abs_share_gap": 0.001223392094450243,
+    "state_at_max_gap": "RJ"
+  },
+  "failures": [],
+  "brazil_box": {
+    "lat": [
+      -34.0,
+      6.0
+    ],
+    "lng": [
+      -74.0,
+      -32.0
+    ]
+  }
+}

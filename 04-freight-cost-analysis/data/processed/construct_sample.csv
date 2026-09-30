@@ -1,0 +1,41 @@
+item,value
+rule,yes_line
+outcome,freight_per_kg
+outcome_population,weighed set: Yes-line freight is a plain decimal and Yes-line weight is a plain decimal > 0
+weighed_n,6174
+blank_mode_decision,dropped from the model; blank is not a mode and is not imputed
+blank_weighed_n_dropped,211
+model_n,5963
+model_definition,weighed set minus blank shipment mode
+holdout_split,"none; this is an explanation of the observed shipments, not a predictor"
+manufacturing_site,out; mixed on 880 notes in Analyze and not copied by the rollup
+insurance,out; not read
+raw_freight_as_regressor,out
+p95_population,"weighed set, including blank mode"
+p95_freight_per_kg,67.64871004566209
+model_n_above_p95,305
+model_n_at_or_below_p95,5658
+blank_weighed_n_above_p95,4
+weighed_median_freight_per_kg,7.263901636359817
+weighed_mean_freight_per_kg,38.93012311964861
+weighed_max_freight_per_kg,31087.705
+model_median_freight_per_kg,7.451886597938145
+model_mean_freight_per_kg,38.33171534012823
+model_max_freight_per_kg,31087.705
+max_rate_asn,DN-1683
+max_rate_mode,Air Charter
+max_rate_vendor,SCMS from RDC
+max_rate_weight_kg,4.0
+max_rate_freight_usd,124350.82
+orgenics_vendor,"Orgenics, Ltd"
+orgenics_n_model,600
+mode_reference,Air
+inco_reference,N/A - From RDC
+country_reference_check_only,Nigeria
+min_level_n,50
+delivered_to_client_min,2006-05-02
+delivered_to_client_max,2015-09-14
+zero_weight_asn_excluded,ASN-22365
+included_in_price_excluded,593
+invoiced_separately_excluded,239
+weight_not_numeric_excluded,23

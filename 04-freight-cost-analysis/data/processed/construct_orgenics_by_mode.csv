@@ -1,0 +1,5 @@
+vendor,shipment_mode,n,orgenics_n,other_n,orgenics_median_freight_per_kg,other_median_freight_per_kg
+"Orgenics, Ltd",Air,4096,599,3497,17.334166666666665,8.772086217124778
+"Orgenics, Ltd",Ocean,282,1,281,4.020758583976577,1.680848101265823
+"Orgenics, Ltd",Air Charter,423,0,423,,4.317785194174758
+"Orgenics, Ltd",Truck,1162,0,1162,,2.5032950842130273

@@ -1,0 +1,5 @@
+model,factor,reference_level,rule,n_at_reference
+full_log_rate,mode,Air,"most common shipment mode among model rows (weighed, named mode)",4096
+full_log_rate,inco_grouped,N/A - From RDC,most common grouped INCO term among model rows; terms with fewer than 50 model rows are Other,2983
+full_log_rate,orgenics,0 (not Orgenics),"indicator for vendor Orgenics, Ltd versus every other vendor",5363
+full_log_rate_plus_country,country_grouped,Nigeria,not in the headline model; most common country with at least 50 model rows; smaller countries are Other,748

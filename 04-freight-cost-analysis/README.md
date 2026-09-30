@@ -11,7 +11,7 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
 - **Plan:** question, shipment grain, and the freight metrics we will trust. See [`reports/01-plan.md`](reports/01-plan.md).
 - **Analyze:** the raw-string gate failed, and the accepted rule (2026-09-29) is the Yes line of each ASN/DN. Median freight per kg on the weighed set, with the mean beside it, is in [`reports/02-analyze.md`](reports/02-analyze.md). No regression is fit in this stage.
-- **Construct:** _models / queries / calculations built_
+- **Construct:** OLS of log freight per kilogram on the weighed shipments that have a named mode. See [`reports/03-construct.md`](reports/03-construct.md). No savings scenario in this stage.
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_
 
 ## Key Findings

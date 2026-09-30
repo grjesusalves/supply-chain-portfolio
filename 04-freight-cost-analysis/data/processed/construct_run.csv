@@ -1,0 +1,2 @@
+statsmodels,pandas,numpy,cov_type,estimator,wls,headline_formula,mode_only_formula,country_check_formula
+0.14.4+dfsg,3.0.6,2.2.4,HC1,OLS,not used; log outcome instead of weighting by kilograms,"log_rate ~ C(mode, Treatment(reference='Air')) + log_weight + C(inco_grouped, Treatment(reference='N/A - From RDC')) + orgenics","log_rate ~ C(mode, Treatment(reference='Air'))","log_rate ~ C(mode, Treatment(reference='Air')) + log_weight + C(inco_grouped, Treatment(reference='N/A - From RDC')) + orgenics + C(country_grouped, Treatment(reference='Nigeria'))"

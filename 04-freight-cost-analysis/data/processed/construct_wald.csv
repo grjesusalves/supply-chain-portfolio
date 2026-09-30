@@ -1,0 +1,3 @@
+comparison,question,cov_type,r_squared_restricted,r_squared_full,delta_r_squared,terms,statistic,pvalue,df_constraint
+full versus mode-only,"Do log weight, grouped INCO, and Orgenics add fit beyond mode?",HC1,0.17142161894896146,0.6660299231602032,0.4946083042112417,7,5027.8536886704305,0.0,7
+country check versus full,Does grouped country add fit beyond the headline model?,HC1,0.6660299231602032,0.6883078381217647,0.022277914961561507,20,413.8245469809,2.758477276632809e-75,20

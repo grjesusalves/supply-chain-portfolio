@@ -9,7 +9,7 @@ What drives freight cost per kg / per shipment (mode, country, vendor, INCO term
 See [`data/README.md`](data/README.md) for source, license, and file inventory.
 
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
-- **Plan:** _stakeholders, success metrics, scope, assumptions_
+- **Plan:** question, shipment grain, and the freight metrics we will trust. See [`reports/01-plan.md`](reports/01-plan.md).
 - **Analyze:** _data cleaning, EDA, key descriptive stats_
 - **Construct:** _models / queries / calculations built_
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_

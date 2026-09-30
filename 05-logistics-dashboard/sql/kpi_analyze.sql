@@ -30,9 +30,9 @@
 -- Those orders stay in the status counts and out of the medians.
 --
 -- Distance is haversine kilometers, earth radius 6371. Great-circle, not road.
--- Bands below are a proposal from the distance distribution. Construct freezes
--- them. Cuts are right-open: 50 km belongs to 50-200, not to 0-50.
--- 1000+ includes the extreme tail. Nothing in that tail is dropped here.
+-- Bands below are frozen in Construct. Same cuts. Right-open: 50 km belongs
+-- to 50-200, not to 0-50. 1000+ includes the extreme tail. Nothing in that
+-- tail is dropped here. See sql/kpi_definitions.sql and sql/kpi_construct.sql.
 
 -- One degree of latitude is about 111 km. If this is not, the haversine is wrong
 -- and the script stops.

@@ -11,7 +11,7 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
 - **Plan:** question, grain, distance, and KPI definitions. See [`reports/01-plan.md`](reports/01-plan.md).
 - **Analyze:** grain, distance, delivery time, and freight. See [`reports/02-analyze.md`](reports/02-analyze.md).
-- **Construct:** _models / queries / calculations built_
+- **Construct:** weekly page, frozen distance bands, and the extracts that page reads. See [`reports/03-construct.md`](reports/03-construct.md).
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_
 
 ## Key Findings

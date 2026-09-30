@@ -63,6 +63,14 @@
 -- customer_state <> seller_state, among delivered items with both states present.
 
 -- Weekly page grain
--- One row per week of order_purchase_timestamp, plus the distance-band cut
--- and the state cut. Bands are chosen in Analyze from the distance distribution
--- and then frozen. They are not chosen to make the chart smoother.
+-- One row per week of order_purchase_timestamp (the Monday of that week),
+-- plus the distance-band cut and the state cut.
+--
+-- Bands frozen in Construct. Right-open. The last band includes the tail.
+-- 50 km belongs to 50-200, not to 0-50.
+--   0-50 km
+--   50-200 km
+--   200-500 km
+--   500-1,000 km
+--   1,000 km or more
+-- Not moved to make a chart smoother. See sql/kpi_construct.sql.

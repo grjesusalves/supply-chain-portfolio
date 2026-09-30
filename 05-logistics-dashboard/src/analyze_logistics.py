@@ -120,8 +120,9 @@ LOAD = {
     ),
 }
 
-# Proposed bands. Right-open except the last, which holds the tail.
-# 50 km is in 50-200. These are not frozen. See the report.
+# Frozen in Construct. Right-open except the last, which holds the tail.
+# 50 km is in 50-200. Do not edit these cuts to make a chart smoother.
+# sql/kpi_definitions.sql and sql/kpi_construct.sql record the same cuts.
 BANDS = ["0-50", "50-200", "200-500", "500-1000", "1000+"]
 BAND_LABELS = ["0–50", "50–200", "200–500", "500–1,000", "1,000+"]
 

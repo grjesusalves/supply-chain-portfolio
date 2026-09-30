@@ -1,0 +1,6 @@
+shipment_mode,population,shipments,priced_n,weighed_n,median_freight_per_kg,mean_freight_per_kg,freight_to_value_n,median_freight_to_value,mean_freight_to_value,total_numeric_freight,excluded_included_in_price,excluded_invoiced_separately,excluded_see_another_note,excluded_weight_not_numeric,excluded_weight_not_positive,value_sum_not_positive,value_sum_not_positive_among_priced,rank_eligible
+Air,weighed_inside_weight_band,1971,1971,1971,7.091310572687225,8.421810441765968,1962,0.08767795563155065,0.71466515051515,27472858.0,0,0,0,0,0,9,9,1
+Air Charter,weighed_inside_weight_band,172,172,172,6.426378331512651,9.011044615811002,172,0.09901692495571396,0.16337184585438616,2615439.17,0,0,0,0,0,0,0,1
+(blank),weighed_inside_weight_band,102,102,102,3.668980078310588,3.9802590607205914,102,0.03151557776646082,0.06247863912226352,688679.75,0,0,0,0,0,0,0,1
+Truck,weighed_inside_weight_band,506,506,506,3.280690194237653,3.7922701382694255,506,0.04683705909763558,0.10031260736006609,3317057.0,0,0,0,0,0,0,0,1
+Ocean,weighed_inside_weight_band,105,105,105,2.2482072238333775,3.775041113059553,105,0.04656962831542667,0.12200187781327243,976953.93,0,0,0,0,0,0,0,1

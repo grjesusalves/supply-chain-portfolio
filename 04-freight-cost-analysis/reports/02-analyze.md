@@ -1,22 +1,24 @@
 # Analyze — Freight cost (USAID SCMS)
 
-PACE stage: **Analyze**. This page checks the grain, classifies the freight and weight text, and stops before a rate. It does not publish median freight per kilogram, a mean, a freight-to-value share, a regression, a savings scenario, or a dashboard. The rate tables belong to a later commit, after the grain rule below is either confirmed or rewritten. The regression belongs to Construct. The savings number belongs to Execute.
+PACE stage: **Analyze**. This page checks the grain, classifies the freight and weight text, records that the raw-string gate failed, and then computes the scorecard under the Yes-line rule accepted on 2026-09-29. It publishes median freight per kilogram on the weighed set, the mean beside it, and freight divided by the sum of line-item value. It does not fit a regression, price a savings scenario, or build a dashboard. The regression belongs to Construct. The savings number belongs to Execute.
 
-The checks below are what [the plan](01-plan.md) said Analyze would confirm. Every figure comes from `src/analyze_freight.py` run on the local raw file (not re-downloaded). Aggregate tables are in `data/processed/`. The same line-level classes and the same constancy counts are defined in `sql/kpi_freight.sql`. Charts are in `images/`. The raw CSV stays git-ignored.
+The checks below are what [the plan](01-plan.md) said Analyze would confirm. Every figure comes from one run of `src/analyze_freight.py` on the local raw file (not re-downloaded). Aggregate tables are in `data/processed/`. The line-level classes, the constancy counts, and the Yes-line rates that SQLite can express are in `sql/kpi_freight.sql`. Charts are in `images/`. The raw CSV stays git-ignored.
 
 ## How I would say this in an interview
 
-The business question is what freight cost, per kilogram and against the value of the goods, and whether mode, country, or vendor is where the expensive shipments sit. That scorecard is not on this page. The field the scorecard needs is not a number on every line, and it is not the same string on every line of a delivery note.
+The business question is what freight cost, per kilogram and against the value of the goods, and whether mode, country, or vendor is where the expensive shipments sit. The raw field is not a number on every line, and it is not the same string on every line of a delivery note. The scorecard uses one accepted rule for that, and it says what that rule left out.
 
-There are **10,324 lines** and **7,030 distinct `ASN/DN #`**. Freight money was supposed to be one figure per delivery note, but only if the freight string is constant inside the note and the weight string is constant inside the note. Freight is not constant on **1,299 / 7,030** shipments. Weight is not constant on **1,322 / 7,030**. The plan said to stop there and not average the conflicting strings. I stopped. There is no median freight per kilogram in this stage, and no mean beside it, because there is no weighed set yet.
+There are **10,324 lines** and **7,030 distinct `ASN/DN #`**. Freight is not the same string on **1,299 / 7,030** shipments. Weight is not the same string on **1,322 / 7,030**. That raw-string gate failed, and the failure is still recorded. The disagreement is not two bills. **0** shipments carry two different numeric freight strings. **0** carry two different numeric weights. All **2,445** See pointers name their own `ASN/DN #` and cite the one line marked `First Line Designation` = Yes. Every shipment has exactly one Yes line. On **2026-09-29** that Yes line was accepted as the shipment's freight string and weight string. I do not average a number with a pointer, and I do not turn text into zero.
 
-The disagreement is not two different dollar amounts. **0** shipments carry two different numeric freight strings. **0** carry two different numeric weights. The lines that disagree say `See ASN-… (ID#:…)` or `See DN-… (ID#:…)`. All **2,445** of those freight pointers name their own `ASN/DN #`, and all **2,445** cite the `ID` of the one line on that note marked `First Line Designation` = Yes. Every one of the 7,030 shipments has exactly one Yes line. That is a structure a later rule could use. It is not a rule I applied. Applying it would be inventing the rollup the gate told me not to invent.
+The priced set is the **6,198** shipments whose Yes-line freight is a plain decimal. **593** say freight is included in the commodity cost, **239** say invoiced separately, and **0** Yes lines are See pointers. Those 832 stay out and stay counted. The weighed set is priced, with a Yes-line weight that parses and is greater than zero: **6,174**. The other **24** priced shipments are **23** whose weight says captured separately, and **ASN-22365** / `ID` **23750**, weight **0**, freight **1002.35**. That zero is not a denominator.
 
-What I can say without a rate: non-numeric freight was not turned into zero. `Freight Included in Commodity Cost` is **1,442 / 10,324** lines. `Invoiced Separately` is **239 / 10,324** lines. Those shipments are not free. Insurance was not added to anything. Mode, vendor, country, and INCO term do not vary inside an `ASN/DN #`. Manufacturing site does, on **880 / 7,030** shipments, so a site comparison would need its own rule even after freight is settled. The delivery dates in the file run from 2006 through 2015. Any dollar figure from this extract is historical. I would say that before I quoted a rate, and I am not quoting one yet.
+On those 6,174, median freight per kilogram is **7.263901636359817** USD. The mean beside it is **38.93012311964861**. The mean is the tail, not the typical shipment. The 95th percentile is **67.64871004566209**, the maximum is **31087.705** (`DN-1683`, air charter, 4 kg, freight 124350.82), and the mean of the **5,865** shipments at or below that percentile is **10.192922033058075**. Freight divided by the sum of line-item value, where freight is numeric and the sum is positive, uses **6,186** shipments. Median **0.08758549492765344**, mean **23.80493291423158**. The line-value diagnostic is still **15 / 7,030** shipments with a sum that is not positive. **12** of those are priced, so they are the drop from the ratio. The mean of the ratio is a value of **0.01** on `ASN-29746` (freight 1344.94, ratio 134494), not a typical share of cargo value. **429 / 6,186** ratios are above 1.
+
+Air is the most common mode (**4,541** shipments, **4,096** weighed) and the high median, **10.02401980861159**, against ocean **1.6810197953137624** and truck **2.5032950842130273**. Air charter's median is **4.317785194174758**, which is above ocean and truck, and its mean is **162.32892875891395** because of that 4 kg charter. Inside a stated band of **500 kg to 5,000 kg** inclusive, air is still the high median (**7.091310572687225**, n=**1,971**) against air charter **6.426378331512651**, truck **3.280690194237653**, and ocean **2.2482072238333775**. I do not call Botswana, Sudan, South Sudan, Orasure, Roche, Bio-Rad, or Aspen expensive. Their uncontrolled medians lead the ranking, and their weighed count inside air and that weight band is under 20. Sudan's is 0. Orgenics is the vendor whose high median survives both controls: **390** weighed air shipments in the band, median **15.1159699363971**, against the reference median **7.091310572687225**. Manufacturing site is still not on the scorecard (**880 / 7,030** notes mix sites). Insurance is not in the rate. There is no regression and no savings number. Delivered-to-client dates run from **2006-05-02** to **2015-09-14**. The dollars are historical.
 
 ## What was checked
 
-The plan's nine checks. The rate cuts the plan listed after those checks were not computed, because check 3 failed.
+The plan's nine checks. Check 3 failed on the raw strings. That failure is the gate section, and it is not deleted. The rate cuts were computed after it, under the Yes-line rule accepted on 2026-09-29. They are not a regression.
 
 1. Row and column count, and a Latin-1 read.
 2. Distinct `ASN/DN #` versus rows.
@@ -26,7 +28,7 @@ The plan's nine checks. The rate cuts the plan listed after those checks were no
 6. Distinct `Shipment Mode` and `Vendor INCO Term` with line counts. Shipment counts for those fields were not added. The gate did not pass, so a shipment count would have required picking a line to speak for the note.
 7. Cardinality of `Vendor`, `Country`, and `Manufacturing Site`.
 8. Min and max of the delivery dates. Context for the extract, not a trend.
-9. Whether line-item value is a positive number on the shipments we keep. No shipments were kept.
+9. Whether line-item value is a positive number on the shipments we keep. Under the Yes-line rule, 6,186 shipments are kept for freight-to-value. 15 shipments have a value sum that is not positive, and 12 of those have numeric freight, so those 12 are the drop from the ratio.
 
 No regression.
 
@@ -118,11 +120,15 @@ Mode, vendor, country, and INCO term do not need a tie-break. They are one value
 | shipments, weight not constant | 1,322 |
 | shipments with two distinct numeric freight strings | **0** |
 | shipments with two distinct numeric weight strings | **0** |
-| median freight per kg | not computed |
-| mean freight per kg | not computed |
-| weighed shipments | not computed |
+| median freight per kg | blank on this row |
+| mean freight per kg | blank on this row |
+| weighed shipments | blank on this row |
+| accepted_rule | yes_line |
+| accepted_rule_date | 2026-09-29 |
 
-Reason stored on that row: not computed; freight or weight is not constant inside `ASN/DN #`, and no rollup rule was invented.
+Reason stored on that row: raw-string gate failed; freight or weight is not the same string on every line of the ASN/DN. Rates are not on this row. The accepted Yes-line rule is applied after this gate and written to the kpi files.
+
+The blank rate cells are deliberate. This file is the gate. Putting the Yes-line median here would make a failed gate look like it had produced the rate.
 
 ### What the disagreement looks like
 
@@ -220,7 +226,7 @@ The See check, `see_pointer_check.csv`:
 | Cited `ID` is the Yes line on that same `ASN/DN #` | 2,445 |
 | See lines that are themselves the Yes line | **0** |
 
-The class of the text on that Yes line, one shipment per row because there is one Yes line. This is a description of where the text lives. **It is not a priced set, not a weighed set, and not the headline rate.** No kilogram was divided.
+The class of the text on that Yes line, one shipment per row because there is one Yes line. This table is a description of where the text lives. It is not itself the priced set or the weighed set. The scorecard later on this page is where a kilogram is divided. This count does not divide one.
 
 | Yes-line freight text | Yes-line weight text | Shipments |
 |---|---|---:|
@@ -231,13 +237,13 @@ The class of the text on that Yes line, one shipment per row because there is on
 | numeric | captured_separately | 23 |
 | invoiced_separately | numeric | 1 |
 
-6,175 + 397 + 238 + 196 + 23 + 1 = 7,030. `yes_line_text_class.csv`.
+6,175 + 397 + 238 + 196 + 23 + 1 = 7,030. `yes_line_text_class.csv`. The 6,175 numeric-and-numeric shipments include `ASN-22365`, weight 0. The weighed set is 6,175 − 1 = 6,174. That drop is counted in the scorecard, not taken inside this class table.
 
 That table reconciles to the line classes. Numeric freight lines in the whole file are 6,198, and numeric Yes lines are 6,175 + 23 = 6,198, so every numeric freight string sits on a Yes line. Included Yes lines are 397 + 196 = 593, which is the 593 constant-included shipments, and those shipments hold all 1,442 included lines. Invoiced Yes lines are 238 + 1 = 239, which is every invoiced line in the file (181 constant single-line shipments + 58 mixed with a See pointer).
 
 On the mixed freight shipments the arithmetic is the same fact. Mixed numeric-and-see is 1,241 shipments and 3,581 lines. Numeric freight lines beyond the 4,957 constant-numeric shipments are 6,198 − 4,957 = 1,241, one per mixed shipment. The other 3,581 − 1,241 = 2,340 lines are the See pointers. Mixed invoiced-and-see is 58 shipments and 163 lines. Invoiced lines beyond the 181 constant-invoiced shipments are 239 − 181 = 58. The other 163 − 58 = 105 lines are See pointers. 2,340 + 105 = 2,445, which is every See line.
 
-The candidate rule, not adopted: take the freight string and the weight string from the Yes line, because the other lines either repeat a non-numeric phrase or point at that Yes line's `ID` on the same note, and because no note contains two different numeric freight strings or two different numeric weights. Do not average. Do not coerce the phrase to zero. This stage does not do that. Section "Before Construct" says what would still be open if someone did.
+That is the rule the user accepted on 2026-09-29, and it is the rule the scorecard below uses. Take the freight string and the weight string from the Yes line, because the other lines either repeat a non-numeric phrase or point at that Yes line's `ID` on the same note, and because no note contains two different numeric freight strings or two different numeric weights. Do not average. Do not coerce the phrase to zero. The gate section above is the record that the raw strings failed. Accepting the Yes line does not change `gate_passed` from 0.
 
 ## 4. Freight and weight classes, line grain
 
@@ -363,7 +369,7 @@ Shipment counts are not in these tables. `grain` is `line` on every row. Denomin
 
 5,404 + 2,778 + 1,443 + 397 + 275 + 15 + 9 + 3 = 10,324. Eight terms. `inco_line_counts.csv`.
 
-No ranking by cost. Air having the most lines does not make air the expensive mode. That comparison was not computed.
+No ranking by cost in this line-count table. Air having the most lines does not, by itself, make air the expensive mode. The shipment-level comparison is in the scorecard section, on the weighed set, after the Yes-line rule.
 
 ## 7. Cardinality
 
@@ -427,7 +433,7 @@ The three delivery columns are all `dd-Mon-yy` (`2-Jun-06`). The script parses t
 
 `date_window.csv`. Delivered-to-client dates in this file run from 2 May 2006 through 14 September 2015. Scheduled delivery dates run through 31 December 2015. That is the window of the extract. It is not a trend, and it is not a lead-time result. The plan already says line-item lead-time conclusions from this file will not be accurate. None are drawn here.
 
-The extract is historical. A rate from these years is not a current market rate. This stage does not publish a rate anyway.
+The extract is historical. A rate from these years is not a current market rate. The scorecard later on this page is that historical figure, not a quote for a lane today.
 
 `PQ First Sent to Client Date` and `PO Sent to Vendor Date` are not the window. They mix slash dates with sentinel labels. The slash dates were counted and not parsed into a min or a max. The sentinels were not dropped.
 
@@ -449,8 +455,6 @@ The extract is historical. A rate from these years is not a current market rate.
 
 ## 9. Line-item value
 
-No shipment was kept, so the plan's check — value sums to a positive number on the shipments we keep — has an empty population. The answer is not "passed." The answer is that the population was not formed.
-
 At line grain, every `Line Item Value` is a plain decimal. `line_item_value_check.csv`:
 
 | Check | Result |
@@ -460,53 +464,246 @@ At line grain, every `Line Item Value` is a plain decimal. `line_item_value_chec
 | Positive | 10,307 |
 | Zero (the string `0`) | **17** |
 | Negative | **0** |
-| Shipments kept for freight-to-value | **0** |
+| Shipments kept for freight-to-value | **6,186** |
+| Rule those 6,186 were kept under | yes_line |
 
-10,307 + 17 = 10,324.
+10,307 + 17 = 10,324. The kept count is not "the gate passed." It is the Yes-line rule: numeric freight on the Yes line, and a positive sum of line-item value. `reason_none_kept` is blank on that file because a population was kept.
 
-A diagnostic sum, labeled as a diagnostic and not as a KPI, adds the line values inside each `ASN/DN #` the way a later rollup would. It does not touch freight. Of 7,030 shipments, **15** would have a value sum ≤ 0 and **7,015** would have a value sum > 0. 15 + 7,015 = 7,030. A freight-to-value share needs a positive denominator. Those 15 would be out of that share even after a freight rule exists, and they would have to be counted as a drop rather than divided. They are not a drop from a rate this stage computed, because no rate was computed.
+The sum is every line on the note. Freight is not summed to build it. Of 7,030 shipments, **15** have a value sum ≤ 0 and **7,015** have a value sum > 0. 15 + 7,015 = 7,030. That 15 is the same diagnostic as the pre-rule check, recomputed after the rule, and it did not move, because the sum does not depend on which line carries the freight text.
 
-## What was not computed
+Of the 15, **12** are priced. Those 12 are the drop from freight-to-value: 6,198 − 12 = **6,186**. All 12 are also in the weighed set (`value_sum_not_positive_among_weighed` = 12), so the other 3 of the 15 were already out because the Yes-line freight is not a number. A non-positive sum is counted. It is not used as a denominator.
 
-The plan's headline is median freight per kilogram on the weighed set (numeric freight and numeric weight, shipment grain), with the mean beside it, plus freight divided by the sum of line-item value where freight is numeric and the value sum is positive. Insurance is not in either one.
+## Accepted rule, 2026-09-29
 
-None of those were computed. The weighed set was not formed. The priced set was not formed. There is no overall KPI row with a median in it, and there is no `kpi_by_mode.csv`, `kpi_by_country.csv`, `kpi_by_vendor.csv`, or `kpi_by_inco.csv`. The script raises if a `kpi_*.csv` file is already in `data/processed/`, so a stale rate cannot sit next to this writeup. It also raises if a future file passes the gate, because the rate section has not been written and a passing gate must not fall through as if the rates were zero.
+The user accepted the Yes-line rule on 2026-09-29. The gate story above stands. `gate_passed` is still 0. The rates in this section are not the gate changing its mind. They are the rule applied after the gate, and the script writes both.
 
-Cuts by mode, country, vendor, INCO term, and manufacturing site were not built. The mode-controlled and weight-band comparisons were not built. No vendor and no country is called expensive. No small-n threshold was used, because there is no cut to suppress. Top and bottom quantiles of freight per kilogram were not computed. There is no distribution to explain a gap between a mean and a median.
+One shipment per `ASN/DN #`. The freight string and the weight string are the single `First Line Designation` = Yes line. Mode, vendor, country, and INCO term are copied because each is already constant on all 7,030 notes. Manufacturing site is not copied. It is not constant on 880 / 7,030, and the rule does not pick a site. There is no site column on `shipment_rollup.csv` and no `kpi_by_site` file.
 
-How many shipments a priced set or a weighed set would drop is not a number yet. The exclusion reasons are known, and they were not applied to a kept set: non-numeric freight, non-numeric weight, a zero weight (1 numeric line, `ASN-22365`), and a non-positive value sum (15 shipments in the diagnostic only).
+Line-item value is summed across the lines of the note. Freight is not summed. A See line is not a second freight bill and not a zero. `Freight Included in Commodity Cost` and `Invoiced Separately` are not zeros. Insurance is not read.
+
+`src/analyze_freight.py` keeps the raw-string gate, writes it to `shipment_rollup_status.csv`, and then builds the rollup. It does not skip the rate because the gate failed, and it does not treat a `kpi_*.csv` file as something to refuse. If a shipment ever has two different numeric freight strings, two different numeric weights, or not exactly one Yes line, the script stops. Those are the facts the rule was accepted on. A rate computed after they stopped being true would be a silent change of rule.
+
+## Shipment rollup
+
+`shipment_rollup.csv` is one row per `ASN/DN #`. 7,030 rows, 7,030 distinct ids. The exclusion reason is why the shipment is outside the weighed set. `kept` means it is in the weighed set.
+
+| exclusion_reason | Shipments | What it means |
+|---|---:|---|
+| kept | 6,174 | Yes-line freight parses, Yes-line weight parses, weight > 0 |
+| included_in_price | 593 | Yes line says `Freight Included in Commodity Cost`. Not zero. |
+| invoiced_separately | 239 | Yes line says `Invoiced Separately`. The bill is not in this extract. Not zero. |
+| see_another_note | **0** | No Yes line is a See pointer. Counted so the bucket is not a silent skip. |
+| weight_not_numeric | 23 | Freight parses. Weight says `Weight Captured Separately`. |
+| weight_not_positive | 1 | `ASN-22365`, `ID` 23750, Air, weight 0, freight 1002.35 |
+
+6,174 + 593 + 239 + 0 + 23 + 1 = 7,030.
+
+Priced set: freight parses. 6,174 + 23 + 1 = **6,198**. The text exclusions are 593 + 239 + 0 = **832**. 6,198 + 832 = 7,030.
+
+The 23 weight-text shipments and the one zero-weight shipment are in the priced dollar total and out of freight per kilogram. Their freight sums to 130089.14 + 1002.35 = **131091.49**. The priced total minus the weighed total is 68817849.41 − 68686757.92 = **131091.49**. Same dollars, not a second population.
+
+## Headline rates
+
+Two denominators. They are not the same set, and neither one is 7,030.
+
+**Freight per kilogram** is Yes-line freight divided by Yes-line weight, weighed set only. n = **6,174**.
+
+| | Value |
+|---|---:|
+| Median | **7.263901636359817** |
+| Mean | **38.93012311964861** |
+| p95 | 67.64871004566209 |
+| Maximum | 31087.705 |
+| Shipments at or below p95 | 5,865 |
+| Mean of those 5,865 | 10.192922033058075 |
+
+5,865 + 309 = 6,174. The 309 above p95 are why the mean is 38.93 and the median is 7.26. The maximum is `DN-1683`, air charter, vendor `SCMS from RDC`, weight 4 kg, freight 124350.82, rate 31087.705. One light charter is not the typical shipment. The median is the headline. The mean is beside it so the tail is visible. `kpi_overall.csv`.
+
+**Freight / sum of line-item value** needs numeric Yes-line freight and a positive value sum. It does not need a weight. n = **6,186**.
+
+| | Value |
+|---|---:|
+| Median | **0.08758549492765344** |
+| Mean | **23.80493291423158** |
+| p95 | 1.3832606333295914 |
+| Maximum | 134494.0 |
+| Shipments at or below p95 | 5,876 |
+| Mean of those 5,876 | 0.1595093840115462 |
+
+The median says freight is about 0.088 of the goods on the typical priced shipment with a positive value sum. The mean does not say that. `ASN-29746` is Air, freight 1344.94, value sum 0.01, weight 60, ratio 134494. The value sum parsed. It was not dropped, because the rule drops a non-positive sum and 0.01 is positive. **429 / 6,186** ratios are greater than 1, counted from `shipment_rollup.csv`. The mean of freight-to-value is that thin denominator, the same way the mean of freight per kilogram is the 4 kg charter. I would quote the median.
+
+The drop into that 6,186: 15 shipments have a value sum ≤ 0. 12 of them are priced. 6,198 − 12 = 6,186. The other 3 were already outside the priced set.
+
+Total numeric freight, priced set, Yes line once per shipment: **68817849.41** USD. Weighed-set subset of that total: **68686757.92**. A large total is not a high rate. The cuts below put the count next to the median for that reason.
+
+## By mode
+
+Population: all 7,030 shipments. The rate is the weighed subset. Blank mode is a null, labeled `(blank)`, not a fifth mode someone chose. It stays in the table because 211 weighed shipments would otherwise vanish. `kpi_by_mode.csv`. Sorted with rank-eligible rows first, by median freight per kilogram. Every mode here has weighed n ≥ 20, so nothing in this cut is suppressed.
+
+| Shipment mode | Shipments | Weighed n | Median freight per kg | Mean freight per kg | Median freight-to-value | Total numeric freight | Included | Invoiced | Weight not numeric | Weight not positive |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Air | 4,541 | 4,096 | 10.02401980861159 | 33.52045768694116 | 0.11202338697225243 | 43038623.5 | 236 | 190 | 18 | 1 |
+| (blank) | 226 | 211 | 4.654915254237289 | 55.8415240167103 | 0.046903703703703704 | 1396700.4100000001 | 15 | 0 | 0 | 0 |
+| Air Charter | 494 | 423 | 4.317785194174758 | 162.32892875891395 | 0.059178201471780156 | 8926108.48 | 68 | 2 | 1 | 0 |
+| Truck | 1,442 | 1,162 | 2.5032950842130273 | 14.44080492244196 | 0.040487201046337816 | 11865688.23 | 244 | 32 | 4 | 0 |
+| Ocean | 327 | 282 | 1.6810197953137624 | 20.662665611969857 | 0.03137888691366382 | 3590728.7899999996 | 30 | 15 | 0 | 0 |
+
+4,541 + 226 + 494 + 1,442 + 327 = 7,030. Weighed: 4,096 + 211 + 423 + 1,162 + 282 = 6,174. Included: 236 + 15 + 68 + 244 + 30 = 593. Invoiced: 190 + 0 + 2 + 32 + 15 = 239. Weight not numeric: 18 + 1 + 4 = 23. Weight not positive: 1, and it is Air, which is `ASN-22365`.
+
+Air's median is the high one. Air charter's median is above truck and ocean and far below its own mean. Ocean is the low median. Blank sits between air and air charter on the median and is not interpreted as a mode.
+
+Chart: `images/freight_per_kg_by_mode.png`. Median freight per kilogram by shipment mode, weighed set only, title says weighed set and Yes-line rule. The labels on the bars are the medians rounded for the axis and the weighed counts. The table above is the unrounded source. Blank is on the chart so the weighed set is complete.
+
+Freight-to-value n is not the weighed n. Air's freight-to-value n is 4,104: the 4,096 weighed, minus 11 weighed air shipments with a non-positive value sum, plus the 18 weight-text shipments and the 1 zero-weight shipment, all of which have numeric freight and a positive value sum. 4,096 − 11 + 18 + 1 = 4,104. The mode file's `value_sum_not_positive_among_priced` for Air is 11, and the twelfth non-positive priced shipment is Truck (`value_sum_not_positive_among_priced` = 1). 11 + 1 = 12.
+
+## Quantiles
+
+`kpi_freight_per_kg_quantiles.csv`. Freight per kilogram on the weighed set. p50 is the median. The script checks that it matches.
+
+| Slice | n | Mean | p10 | p25 | p50 | p75 | p90 | p95 | Max |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Weighed set | 6,174 | 38.93012311964861 | 1.2140816936857448 | 3.0485389448979117 | 7.263901636359817 | 14.920496171902421 | 31.50277289446681 | 67.64871004566209 | 31087.705 |
+| Air | 4,096 | 33.52045768694116 | 2.5139122440866624 | 5.38730562168386 | 10.02401980861159 | 17.881496428571428 | 38.428952533829715 | 75.14475 | 19480.97 |
+| (blank) | 211 | 55.8415240167103 | 2.8759275749480557 | 3.5430295518324693 | 4.654915254237289 | 7.700668402967166 | 15.874111111111112 | 32.11046875 | 9789.07 |
+| Air Charter | 423 | 162.32892875891395 | 1.2674147187215465 | 2.063229790630289 | 4.317785194174758 | 14.752771728757697 | 75.64953921072603 | 199.2245773182297 | 31087.705 |
+| Ocean | 282 | 20.662665611969857 | 0.8209284989671952 | 1.1374906188456888 | 1.6810197953137624 | 2.873973255984417 | 8.620029784597792 | 16.359695270599705 | 1951.898 |
+| Truck | 1,162 | 14.44080492244196 | 0.656930475190986 | 1.0756608068684734 | 2.5032950842130273 | 5.670985919287563 | 11.627465531115881 | 20.75551286821706 | 5220.79 |
+| Weight 500–5,000 kg | 2,856 | 7.307612915150316 | 1.5312094520296893 | 3.089839089542757 | 5.709063842196066 | 9.842006471755566 | 15.19765386639196 | 18.545200663879914 | 86.11554016620498 |
+
+Air charter is the mean-versus-median lesson in one mode. Half of those 423 shipments sit at or below 4.32 USD per kg. The 95th percentile is 199.22 and the max is the 4 kg charter. The overall mean of 38.93 is that kind of tail, spread across the weighed set. Inside 500–5,000 kg the mean (7.31) and the median (5.71) are close, and the max is 86.1 rather than 31,088. The gap is the light tail and a few extreme bills, not a second typical rate.
+
+Freight-to-value, priced and value sum positive, n = 6,186. p10 0.016211745002713926, p25 0.03600269136373899, p50 0.08758549492765344, p75 0.20140867136685853, p90 0.6625170321855831, p95 1.3832606333295914, max 134494.0. Same shape. The median is the figure. The mean is the right tail.
+
+## By country, vendor, and INCO term
+
+Same columns as the mode cut, on every shipment. Full files: `kpi_by_country.csv` (43 countries), `kpi_by_vendor.csv` (73 vendors), `kpi_by_inco.csv` (8 terms). A row is **rank-eligible** when weighed n ≥ **20**. Rows under that threshold stay in those files, marked `rank_eligible` = 0, and they are repeated in `kpi_small_n.csv` (172 rows) so a sort by median is not a ranking of a handful of shipments. The threshold is 20 weighed shipments. It is not a p-value.
+
+Of the rank-eligible uncontrolled cuts: **21** vendors and **24** countries. The other 52 vendors and 19 countries are in the small-n file. Three INCO terms are under the threshold: DDU (weighed n = 2), DAP (3), CIF (2). They are not ranked. Their medians are in the file and they are not a finding.
+
+INCO term, rank-eligible rows. The median is not "this term is cheap." A term that mostly says included-in-price has left the priced set.
+
+| INCO term | Shipments | Priced | Weighed | Median freight per kg | Mean | Median freight-to-value | Total numeric freight | Included | Invoiced | Weight not numeric |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| FCA | 380 | 352 | 352 | 11.620328027950311 | 24.59868648086931 | 0.2283534932938894 | 2039273.45 | 3 | 25 | 0 |
+| EXW | 2,320 | 2,167 | 2,163 | 11.377721893491124 | 32.01023300560841 | 0.10983607142857142 | 28248651.189999998 | 15 | 138 | 3 |
+| CIP | 252 | 163 | 163 | 5.5529636363636365 | 14.644208347676829 | 0.0633298392732355 | 1170620.66 | 89 | 0 | 0 |
+| N/A - From RDC | 3,440 | 3,205 | 3,193 | 5.0502 | 46.84473834608726 | 0.06940848044305989 | 34854520.36 | 159 | 76 | 12 |
+| DDP | 616 | 303 | 296 | 1.4414988381608416 | 35.165007543731974 | 0.028815118530054286 | 2499186.51 | 313 | 0 | 7 |
+
+380 + 2,320 + 252 + 3,440 + 616 + 12 + 7 + 3 = 7,030, counting the three small terms. DDP's weighed median is the lowest of the eligible terms, and **313 / 616** DDP shipments never entered the priced set because the Yes line says the freight is in the commodity cost. That low median is the DDP shipments whose freight was a number. It is not a finding that DDP is cheap. EXW is the other way around: 15 included and 138 invoiced separately, out of 2,320, and the weighed median on the 2,163 is 11.38. The plan's point holds at shipment grain now, not only at line grain. A term that hides freight is excluded, not coded as a low rate.
+
+`SCMS from RDC` is the bulk of the weighed set: 3,193 shipments, median 5.0502, which is below the overall median. The largest vendor is not the high rate. The vendor file is sorted so the eligible medians are the ranking and the small-n rows follow them.
+
+## Mode control and the weight band
+
+Most common mode by shipment count, not by line count and not by rate: **Air**, 4,541 shipments, 4,096 weighed. `kpi_controls.csv`.
+
+The size control is one stated band: **weight ≥ 500 kg and weight ≤ 5,000 kg**, inclusive, on the weighed set. The edges are fixed in the script, not re-estimated from a quantile on each run. Why these edges, measured on `shipment_rollup.csv`. The weighed-set weight median is **1054.5** kg, the 25th percentile is **210.25**, the 75th is **3335.75**, and the maximum is **857354**. Shipments at or under 100 kg are **1,026** of the weighed set, and their median freight per kilogram is **30.430045283018863**, against 7.26 overall. That left tail is a small denominator. 500 kg starts above it and still contains the median weight. 5,000 kg is above the 75th percentile and well below the long right tail. Inside the band, every named mode still has at least 20 weighed shipments, which is the condition the script checks before it will use the band as a control. Blank has 102 as well.
+
+| Mode inside 500–5,000 kg | Weighed n | Median freight per kg | Mean |
+|---|---:|---:|---:|
+| Air | 1,971 | 7.091310572687225 | 8.421810441765968 |
+| Air Charter | 172 | 6.426378331512651 | 9.011044615811002 |
+| (blank) | 102 | 3.668980078310588 | 3.9802590607205914 |
+| Truck | 506 | 3.280690194237653 | 3.7922701382694255 |
+| Ocean | 105 | 2.2482072238333775 | 3.775041113059553 |
+
+1,971 + 172 + 102 + 506 + 105 = **2,856**. `kpi_by_mode_weight_band.csv`. This file's population is already the weighed band, so the exclusion columns are 0 and the shipment count equals the weighed n. The exclusions happened before the band. Air's median is still above air charter, truck, and ocean. Holding weight inside this band does not turn the mode gap into "you only pay for kilograms." The air mean and the air median are close here (8.42 and 7.09). The wild air mean of 33.5 was the shipments outside this band.
+
+The reference median for a vendor or a country is the air median inside the band: **7.091310572687225**, n = **1,971**.
+
+Country and vendor medians inside all Air shipments: `kpi_by_country_within_top_mode.csv`, `kpi_by_vendor_within_top_mode.csv`. The same medians inside Air and the weight band: `kpi_by_country_within_top_mode_weight_band.csv`, `kpi_by_vendor_within_top_mode_weight_band.csv`. `kpi_control_survival.csv` puts the three medians on one row for every vendor and country that has at least 20 weighed shipments on the whole file.
+
+A high uncontrolled median **does not survive** unless the weighed n inside Air and the band is at least 20. I do not call the shipment expensive when that count fails. Above the reference, after that count is met, means the controlled median is higher than the typical air shipment of a similar weight. It is still not a savings number.
+
+### Looks expensive only from mix
+
+These lead the uncontrolled ranking (weighed n ≥ 20 on the whole file) and do not have 20 weighed shipments inside Air and the 500–5,000 kg band. The mode control does not rescue them: they are already air. The weight control is what they fail. They are not called expensive.
+
+| | Uncontrolled weighed n | Uncontrolled median | Air weighed n | Air median | Air and band n |
+|---|---:|---:|---:|---:|---:|
+| Botswana | 62 | 38.938094117647054 | 58 | 47.96321428571429 | **7** |
+| Sudan | 42 | 37.069165120593695 | 42 | 37.069165120593695 | **0** |
+| Orasure Technologies Inc. | 44 | 31.133506944444445 | 44 | 31.133506944444445 | **1** |
+| South Sudan | 59 | 20.859532710280373 | 58 | 21.35849118735495 | **10** |
+| Hoffmann-La Roche ltd Basel | 21 | 18.276129032258062 | 21 | 18.276129032258062 | **1** |
+| BIO-RAD LABORATORIES (FRANCE) | 25 | 17.249906542056074 | 25 | 17.249906542056074 | **11** |
+| Namibia | 80 | 13.911916971916972 | 76 | 15.907426229508197 | **18** |
+| ASPEN PHARMACARE | 29 | 10.988888888888889 | 29 | 10.988888888888889 | **1** |
+
+Sudan has no weighed air shipment in the band at all, so there is no controlled median to quote. The blank cell is in the survival file. Namibia at 18 is under the threshold on purpose. A median on 18 shipments is not a ranking.
+
+### What stays above the reference
+
+Vendors with weighed n ≥ 20 inside Air and the band, and a median above 7.091310572687225. Six vendors. `above_reference_median` = 1 on the survival file.
+
+| Vendor | Uncontrolled n | Uncontrolled median | Air + band n | Air + band median |
+|---|---:|---:|---:|---:|
+| Orgenics, Ltd | 600 | 17.2308784215912 | 390 | **15.1159699363971** |
+| Trinity Biotech, Plc | 267 | 15.04304347826087 | 87 | 10.51028 |
+| SHANGHAI KEHUA BIOENGINEERING CO.,LTD.  (KHB) | 70 | 12.109739751336452 | 39 | 10.048692449355432 |
+| Standard Diagnostics, Inc. | 93 | 10.584032634032635 | 56 | 8.343782485555783 |
+| CHEMBIO DIAGNOSTIC SYSTEMS, INC. | 103 | 9.375661861074706 | 50 | 7.662294440146512 |
+| ABBVIE LOGISTICS (FORMERLY ABBOTT LOGISTICS BV) | 307 | 11.528687258687258 | 102 | 7.277169131510279 |
+
+Orgenics is the vendor whose high median survives both controls. 390 shipments, median 15.12 against a reference of 7.09, and the uncontrolled median was 17.23, so the level was not an artifact of a few light shipments. That is the one vendor I would call high on this scorecard. Trinity Biotech and Shanghai Kehua stay above the reference with n of 87 and 39, so they are not "only mix," and the controlled gap is smaller than the uncontrolled ranking. I report those medians. I do not hang the same word on them. Standard Diagnostics, Chembio, and Abbvie clear the reference by less. Abbvie's controlled median is 7.28 against 7.09. That is above the reference and it is not an expensive vendor.
+
+Twelve vendors clear the n threshold inside the control and sit **at or below** the reference, including `SCMS from RDC` (612 shipments, median 5.655085537731795). Surviving the control is not the same thing as being high.
+
+Countries with weighed n ≥ 20 inside Air and the band and a median above the reference. Ten countries. None of them is the uncontrolled leader. Botswana, Sudan, and South Sudan are the uncontrolled leaders, and they are in the mix table above.
+
+| Country | Uncontrolled n | Uncontrolled median | Air + band n | Air + band median |
+|---|---:|---:|---:|---:|
+| Nigeria | 763 | 7.822093189964158 | 221 | 11.5811377245509 |
+| Zimbabwe | 319 | 4.820584795321638 | 70 | 10.612830660007575 |
+| Guyana | 155 | 16.5646 | 22 | 10.267478869134363 |
+| Congo, DRC | 104 | 15.964528005701299 | 28 | 9.970426731415694 |
+| Kenya | 91 | 9.86310533515732 | 62 | 9.946519009203865 |
+| Zambia | 516 | 3.998223575135112 | 131 | 9.60243131351148 |
+| Haiti | 395 | 11.488933333333334 | 115 | 9.557405032067095 |
+| Rwanda | 349 | 9.95034965034965 | 145 | 9.036693191865606 |
+| Cameroon | 55 | 10.990923535253229 | 31 | 8.79720088161209 |
+| Burundi | 56 | 13.832056277056278 | 21 | 7.684322344322345 |
+
+Guyana and Congo, DRC are the two uncontrolled leaders that still clear n ≥ 20 and still sit above the reference. The controlled medians (10.27 and 9.97) are lower than the uncontrolled ones (16.56 and 15.96). Part of that lead was lighter freight. What remains is above the reference and the counts are 22 and 28, just over the threshold. I do not call either country expensive on that margin. Nigeria has the highest eligible median inside the control (11.58, n = 221) and its uncontrolled median was 7.82, next to the overall median. Mix hid a higher air mid-weight rate. It did not make Nigeria the expensive country on the uncontrolled list, and I do not relabel it as one. Zimbabwe and Zambia move the other way: uncontrolled medians 4.82 and 4.00, controlled medians 10.61 and 9.60. Mix made them look cheap. The scorecard says so. It does not turn the correction into a savings claim.
+
+No country is called expensive. The names that looked expensive on the uncontrolled median do not survive the weight band.
 
 ## Hypotheses from the plan
 
-These were descriptive claims the plan allowed this stage to support or reject. They are not causal.
+These were descriptive claims the plan allowed this stage to support or reject. They are not causal, and they are not a regression.
 
-- Air, and air charter, will show a higher median freight per kilogram than ocean or truck. **Not tested.** The median was not computed. Neither supported nor rejected.
-- Weight and cargo value move the dollar bill, and mode still matters after weight is held roughly constant. **Not tested.** No weight band was applied to a rate. Neither supported nor rejected.
-- `Vendor INCO Term` changes what freight is visible. A term that often says included in the commodity cost is not a cheap term. **Supported as a description of the text, at line grain only.** On DDP lines, 1,123 / 1,443 say `Freight Included in Commodity Cost`. On EXW lines, 16 / 2,778 say that, and 2,167 / 2,778 are a plain decimal. The phrase was not set to zero. This is not a shipment share (the phrase repeats across lines of a note) and not a rate.
-- A vendor, site, or country can look expensive only because of mix. **Not tested.** No one was called expensive. The constancy check does say mode, vendor, country, and INCO term are already one value per note, and manufacturing site is not (880 / 7,030).
-- A savings case on a mode shift. **Out of this stage.** Execute, and only after a weighed set exists.
+- Air, and air charter, will show a higher median freight per kilogram than ocean or truck. **Supported on the weighed set.** Air 10.02401980861159 (n = 4,096) and air charter 4.317785194174758 (n = 423) are both above truck 2.5032950842130273 (n = 1,162) and ocean 1.6810197953137624 (n = 282). Air charter is not above air. The same order holds inside 500–5,000 kg: air 7.091310572687225 (n = 1,971), air charter 6.426378331512651 (n = 172), truck 3.280690194237653 (n = 506), ocean 2.2482072238333775 (n = 105).
+- Weight and cargo value move the dollar bill, and mode still matters after weight is held roughly constant. **Supported as a description, inside one band.** The light tail (weight ≤ 100 kg, n = 1,026) has median freight per kg 30.430045283018863. Inside 500–5,000 kg the mean and the median move together and the mode order does not collapse. This is not the regression. Construct is where "held constant" is a model rather than one band.
+- `Vendor INCO Term` changes what freight is visible. A term that often says included in the commodity cost is not a cheap term. **Supported at shipment grain.** DDP: 313 / 616 shipments are included-in-price and out of the priced set. The weighed median of 1.4414988381608416 is the 296 DDP shipments with a numeric freight, not a cheap DDP rate. EXW: 15 / 2,320 included, weighed median 11.377721893491124 on 2,163. The phrase was not set to zero.
+- A vendor, site, or country can look expensive only because of mix. **Supported for the names in the mix table.** Botswana, Sudan, South Sudan, Namibia, Orasure, Hoffmann-La Roche, BIO-RAD, and Aspen. Site was not tested. Manufacturing site is not on the scorecard. Orgenics is the vendor that does not fit this hypothesis: the high median is still there inside air and the weight band.
+- A savings case on a mode shift. **Out of this stage.** Execute, and only after someone states which shipments could actually change mode. This page does not price that scenario.
 
 ## SQL
 
-`sql/kpi_freight.sql` is the line-level classification and the constancy gate, written for SQLite against a table named `delivery_lines`. The comments state the grain (one row per line), the reason there is no shipment rate (freight not constant on 1,299 notes, weight not constant on 1,322), and the exclusion a later rate has to keep (non-numeric text is not zero; do not `CAST` a See pointer, because SQLite turns it into 0). SQLite GLOB negates a character class with `^`. A `[!0-9]` class would treat `!` as a literal and accept every digit. The file says so.
+`sql/kpi_freight.sql` still starts with the line-level classification and the raw-string gate. Those queries are why a rate on the raw string is not in the file. The comments now say the accepted rule is the Yes line, and the second half of the file is that rollup.
 
-There is no median query in the file. SQLite has no `MEDIAN()` aggregate, and inventing one here would invent the rollup.
+SQLite has no `MEDIAN()` aggregate. The median in the file is the middle value, or the average of the two middle values, ordered by the rate. That is the same rule pandas uses. `CAST` is applied only after the plain-decimal test, and to `Line Item Value`, which is a plain decimal on every row. It is not applied to a See pointer.
 
-`src/analyze_freight.py` loads the lines into an in-memory database, executes that file, and requires the SQL counts to equal the Python counts. It writes `sql_check_match.csv` with `matched_python` = 1 on every returned row. A mismatch stops the script before the charts are treated as done. On this run they matched, including 10,324 rows, 7,030 shipments, the four freight classes, the three weight classes, the mode and INCO line counts, 1,299 and 1,322 non-constant shipments, 0 shipments with two numeric freight strings, 0 with two numeric weights, 17 zero line-item values, 0 See lines pointing at a different note, 360 blank modes, and cardinality 73 / 43 / 88.
+What the SQL computes, and what this run matched to the Python scorecard (`sql_check_match.csv`, `matched_python` = 1): Yes-line rows and distinct `ASN/DN #` (7,030 and 7,030), priced 6,198, weighed 6,174, freight-to-value 6,186, included 593, invoiced 239, see-on-the-Yes-line 0, weight not numeric 23, weight not positive 1, value sum ≤ 0 on 15 shipments, 12 of those priced, the priced freight total, the weighed median and mean of freight per kilogram, the freight-to-value median and mean, and the weighed n, median, and mean by shipment mode including `(blank)`. The class counts, the gate (1,299 and 1,322, and 0 shipments with two numeric strings), and the line-level mode and INCO counts still match as well.
 
-The delivery-date window is not in the SQL file. SQLite `date()` does not parse `2-Jun-06`. The window is the Python parse in check 8.
+What the SQL does not compute: the country and vendor rankings, the weight band, the quantiles other than the median, and the small-n file. Those are the Python scorecard. The delivery-date window is still not in the SQL file. SQLite `date()` does not parse `2-Jun-06`. The window remains the Python parse in check 8.
+
+## What this stage still does not do
+
+No regression. No savings scenario. No Tableau workbook. No executive summary. Key Findings, Recommendation, and Impact on the project README are still empty on purpose. They are Execute.
+
+Manufacturing site is still unresolved, on purpose. 880 / 7,030 shipments have more than one site. The scorecard does not pick one.
+
+Insurance is not in the headline. Blank shipment mode is not a mode. Non-numeric freight is not a zero. The weight band is one stated control, not every way to hold size constant.
 
 ## Before Construct
 
-The user has to decide the rollup before any model, any median, or any Tableau shipment table.
+The rollup rule is no longer the open question. The open questions are the ones Construct has to answer without quietly changing the denominator.
 
-The gate failed on the raw strings. The failure is a pointer pattern, not two bills:
-
-- Use the single `First Line Designation` = Yes line as the shipment's freight string and weight string. Every shipment has one. Every See line cites that line's `ID` on the same `ASN/DN #`. No shipment has two different numeric freight strings or two different numeric weights.
-- Do not average a number with a See pointer. Do not set `Freight Included in Commodity Cost`, `Invoiced Separately`, or `Weight Captured Separately` to zero. Those stay out of the priced set and the weighed set, and the drop gets counted.
-- Do not divide by the weight on `ASN-22365` (`ID` 23750). The weight is the number 0.
-- Manufacturing site is still not one value on 880 / 7,030 shipments. A site feature needs its own rule. Mode, vendor, country, and INCO term do not.
-- Freight-to-value still needs a positive sum of `Line Item Value`. The diagnostic, which is not a kept set, says 15 / 7,030 shipments would fail that test if the lines were summed.
-- The outcome of a later regression, if the rule above is accepted, stays freight per kilogram on the weighed set. It does not produce a savings number. Insurance stays out of the headline. The delivery dates say 2006–2015. The figure would be historical.
-
-Until that rule is accepted or replaced, this stage's result stands: no freight rate.
+- The outcome of a regression, if one is fit, is freight per kilogram on the weighed set of 6,174. Not the raw dollar bill, and not a mean that has been filled in with zeros for the 593 included and 239 invoiced shipments.
+- Those 832 shipments, the 23 captured-separately weights, and `ASN-22365` stay out of that outcome and stay counted. They are not a residual to impute.
+- Freight-to-value, if it is used as a second description, keeps the 6,186 and does not divide by the 12 non-positive priced sums. The mean of that ratio is not a target. The median is.
+- Manufacturing site needs its own rule before it is a feature. Mode, vendor, country, and INCO term do not. Cardinality is still 73 vendors, 43 countries, 88 sites. The ranking threshold of 20 weighed shipments is a scorecard rule. It is not yet a pooling rule for a model.
+- Orgenics is the vendor whose high median survived air and the 500–5,000 kg band. That is a description. A coefficient is not a saving. A mode-shift scenario is Execute, on a stated set of shipments, next to the shipments that were excluded and next to the fact that the extract delivered from 2006-05-02 through 2015-09-14.
+- The dollars are historical. Nothing on this page is a current lane rate.

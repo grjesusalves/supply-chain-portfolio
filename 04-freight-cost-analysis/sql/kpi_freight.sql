@@ -7,12 +7,21 @@
 -- those lines. The raw CSV stays git-ignored.
 --
 -- Grain: the row is a line item. The shipment id is "ASN/DN #".
--- Money was going to be one figure per ASN/DN. That rollup is not in this
--- file. Freight Cost (USD) is not the same string on every line of 1,299
--- shipments, and Weight (Kilograms) is not the same string on every line of
--- 1,322 shipments. The plan says not to average conflicting freight strings
--- and not to invent a replacement rule here. There is no median freight per
--- kilogram, no mean, and no GROUP BY mode / country / vendor rate.
+-- The raw-string gate is the first half of this file. Freight Cost (USD)
+-- is not the same string on every line of 1,299 shipments, and Weight
+-- (Kilograms) is not the same string on every line of 1,322 shipments.
+-- Those counts stay here. They are not averaged away.
+--
+-- The accepted rule, 2026-09-29, is the second half. One shipment per
+-- ASN/DN. The freight string and the weight string are the single line
+-- where First Line Designation = 'Yes'. That is not an average, and it
+-- is not a zero on the lines that say See. The See lines cite that Yes
+-- line. The queries below the gate compute the weighed-set median and
+-- mean of freight per kilogram, the freight-to-value median and mean,
+-- the exclusion counts, and the same rates by shipment mode. Country
+-- and vendor rankings stay in the Python scorecard; SQLite has no
+-- MEDIAN() aggregate, and the median below is the middle row or the
+-- average of the two middle rows, which is the same rule pandas uses.
 --
 -- Exclusion that a later rate query must keep, once a shipment figure exists:
 -- a freight or weight cell that is not a plain decimal is out of the priced
@@ -149,8 +158,9 @@ ORDER BY label;
 
 -- ---------------------------------------------------------------------------
 -- Constancy gate. A shipment is not constant when two lines carry different
--- freight strings. Pointers count as a different string. This is why the
--- rate queries are absent.
+-- freight strings. Pointers count as a different string. That is why this
+-- file does not rate the raw string. The Yes-line rates are a later
+-- section, and they do not flip this gate to passed.
 -- ---------------------------------------------------------------------------
 SELECT
     'freight_not_constant' AS check_name,
@@ -256,3 +266,233 @@ SELECT
     COUNT(DISTINCT "Country") AS country,
     COUNT(DISTINCT "Manufacturing Site") AS manufacturing_site
 FROM delivery_lines;
+
+-- ---------------------------------------------------------------------------
+-- Accepted Yes-line rule (2026-09-29).
+--
+-- One row per ASN/DN, taken from the line where First Line Designation
+-- is Yes. Freight and weight stay text until the plain-decimal test
+-- passes. CAST is applied only after that test, and to Line Item Value,
+-- which is a plain decimal on every row. CAST is not applied to a See
+-- pointer, to "Freight Included in Commodity Cost", to "Invoiced
+-- Separately", or to "Weight Captured Separately".
+--
+-- Priced: the Yes-line freight is a plain decimal.
+-- Weighed: priced, the Yes-line weight is a plain decimal, and that
+-- weight is greater than 0. A weight of 0 is a drop, not a rate.
+-- Freight-to-value: priced, and the sum of Line Item Value on the note
+-- is positive. The sum is every line on the note. Freight is not summed.
+-- Insurance is not selected.
+--
+-- Manufacturing site is not in this rollup. It is not constant inside
+-- the note, and this rule does not pick a site.
+-- ---------------------------------------------------------------------------
+DROP VIEW IF EXISTS shipment_value;
+CREATE VIEW shipment_value AS
+SELECT
+    "ASN/DN #" AS asn_dn,
+    COUNT(*) AS line_count,
+    SUM(CAST("Line Item Value" AS REAL)) AS line_item_value_sum
+FROM delivery_lines
+GROUP BY "ASN/DN #";
+
+DROP VIEW IF EXISTS yes_shipment;
+CREATE VIEW yes_shipment AS
+SELECT
+    y."ASN/DN #" AS asn_dn,
+    COALESCE(y."Shipment Mode", '(blank)') AS shipment_mode,
+    v.line_item_value_sum AS line_item_value_sum,
+    CASE
+        WHEN y."Freight Cost (USD)" NOT GLOB '*[^0-9.]*'
+         AND y."Freight Cost (USD)" GLOB '*[0-9]*'
+         AND y."Freight Cost (USD)" NOT GLOB '*.*.*'
+         AND y."Freight Cost (USD)" NOT GLOB '.*'
+         AND y."Freight Cost (USD)" NOT GLOB '*.'
+            THEN CAST(y."Freight Cost (USD)" AS REAL)
+    END AS freight_usd,
+    CASE
+        WHEN y."Weight (Kilograms)" NOT GLOB '*[^0-9.]*'
+         AND y."Weight (Kilograms)" GLOB '*[0-9]*'
+         AND y."Weight (Kilograms)" NOT GLOB '*.*.*'
+         AND y."Weight (Kilograms)" NOT GLOB '.*'
+         AND y."Weight (Kilograms)" NOT GLOB '*.'
+            THEN CAST(y."Weight (Kilograms)" AS REAL)
+    END AS weight_kg,
+    CASE
+        WHEN y."Freight Cost (USD)" = 'Freight Included in Commodity Cost'
+            THEN 'included_in_price'
+        WHEN y."Freight Cost (USD)" = 'Invoiced Separately'
+            THEN 'invoiced_separately'
+        WHEN y."Freight Cost (USD)" LIKE 'See ASN-%'
+          OR y."Freight Cost (USD)" LIKE 'See DN-%'
+            THEN 'see_another_note'
+        WHEN y."Freight Cost (USD)" NOT GLOB '*[^0-9.]*'
+         AND y."Freight Cost (USD)" GLOB '*[0-9]*'
+         AND y."Freight Cost (USD)" NOT GLOB '*.*.*'
+         AND y."Freight Cost (USD)" NOT GLOB '.*'
+         AND y."Freight Cost (USD)" NOT GLOB '*.'
+            THEN 'numeric'
+        ELSE 'other'
+    END AS yes_freight_class
+FROM delivery_lines AS y
+INNER JOIN shipment_value AS v
+    ON v.asn_dn = y."ASN/DN #"
+WHERE y."First Line Designation" = 'Yes';
+
+SELECT
+    'yes_line_rows' AS check_name,
+    COUNT(*) AS lines,
+    COUNT(DISTINCT asn_dn) AS shipments
+FROM yes_shipment;
+
+SELECT
+    'yes_freight_other' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'other';
+
+SELECT
+    'yes_priced' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric';
+
+SELECT
+    'yes_weighed' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric'
+  AND weight_kg IS NOT NULL
+  AND weight_kg > 0;
+
+SELECT
+    'yes_freight_to_value' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric'
+  AND line_item_value_sum > 0;
+
+SELECT
+    'yes_excluded_included' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'included_in_price';
+
+SELECT
+    'yes_excluded_invoiced' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'invoiced_separately';
+
+SELECT
+    'yes_excluded_see' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'see_another_note';
+
+SELECT
+    'yes_excluded_weight_text' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric'
+  AND weight_kg IS NULL;
+
+SELECT
+    'yes_excluded_weight_not_positive' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric'
+  AND weight_kg IS NOT NULL
+  AND weight_kg <= 0;
+
+SELECT
+    'yes_value_sum_le_0' AS check_name,
+    COUNT(*) AS shipments
+FROM shipment_value
+WHERE line_item_value_sum <= 0;
+
+SELECT
+    'yes_priced_value_sum_le_0' AS check_name,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric'
+  AND line_item_value_sum <= 0;
+
+SELECT
+    'yes_total_numeric_freight' AS check_name,
+    SUM(freight_usd) AS total_freight,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric';
+
+WITH ranked AS (
+    SELECT
+        freight_usd * 1.0 / weight_kg AS rate,
+        ROW_NUMBER() OVER (ORDER BY freight_usd * 1.0 / weight_kg) AS rn,
+        COUNT(*) OVER () AS n
+    FROM yes_shipment
+    WHERE yes_freight_class = 'numeric'
+      AND weight_kg IS NOT NULL
+      AND weight_kg > 0
+)
+SELECT
+    'yes_median_freight_per_kg' AS check_name,
+    AVG(CASE WHEN rn IN ((n + 1) / 2, (n + 2) / 2) THEN rate END) AS median_rate,
+    MAX(n) AS weighed_n
+FROM ranked;
+
+SELECT
+    'yes_mean_freight_per_kg' AS check_name,
+    AVG(freight_usd * 1.0 / weight_kg) AS mean_rate,
+    COUNT(*) AS weighed_n
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric'
+  AND weight_kg IS NOT NULL
+  AND weight_kg > 0;
+
+WITH ranked AS (
+    SELECT
+        freight_usd * 1.0 / line_item_value_sum AS rate,
+        ROW_NUMBER() OVER (ORDER BY freight_usd * 1.0 / line_item_value_sum) AS rn,
+        COUNT(*) OVER () AS n
+    FROM yes_shipment
+    WHERE yes_freight_class = 'numeric'
+      AND line_item_value_sum > 0
+)
+SELECT
+    'yes_median_freight_to_value' AS check_name,
+    AVG(CASE WHEN rn IN ((n + 1) / 2, (n + 2) / 2) THEN rate END) AS median_rate,
+    MAX(n) AS weighed_n
+FROM ranked;
+
+SELECT
+    'yes_mean_freight_to_value' AS check_name,
+    AVG(freight_usd * 1.0 / line_item_value_sum) AS mean_rate,
+    COUNT(*) AS shipments
+FROM yes_shipment
+WHERE yes_freight_class = 'numeric'
+  AND line_item_value_sum > 0;
+
+WITH ranked AS (
+    SELECT
+        shipment_mode,
+        freight_usd * 1.0 / weight_kg AS rate,
+        ROW_NUMBER() OVER (
+            PARTITION BY shipment_mode
+            ORDER BY freight_usd * 1.0 / weight_kg
+        ) AS rn,
+        COUNT(*) OVER (PARTITION BY shipment_mode) AS n
+    FROM yes_shipment
+    WHERE yes_freight_class = 'numeric'
+      AND weight_kg IS NOT NULL
+      AND weight_kg > 0
+)
+SELECT
+    'yes_mode_rate' AS check_name,
+    shipment_mode AS label,
+    MAX(n) AS weighed_n,
+    AVG(rate) AS mean_rate,
+    AVG(CASE WHEN rn IN ((n + 1) / 2, (n + 2) / 2) THEN rate END) AS median_rate
+FROM ranked
+GROUP BY shipment_mode
+ORDER BY shipment_mode;

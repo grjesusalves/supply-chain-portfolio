@@ -2,9 +2,16 @@
 """Analyze stage: freight-cost scorecard for the USAID SCMS delivery lines.
 
 This script checks the grain and classifies the freight and weight text.
-It does not roll a delivery note up to one freight figure unless freight
-and weight are each constant inside that note. It does not fit a regression,
-and it does not price a savings scenario. Those belong to Construct and Execute.
+The raw-string constancy gate is recorded even when it fails. On this
+extract it fails, because a See pointer is not the same string as the
+number it cites. The accepted rule, after that gate, is the Yes line:
+one shipment per ASN/DN, freight string and weight string taken from the
+single First Line Designation = Yes line. Text is not zeroed and lines
+are not averaged. The script then writes the scorecard the plan reserved
+for after the gate.
+
+It does not fit a regression, and it does not price a savings scenario.
+Those belong to Construct and Execute.
 
 Run from the repo root:
     python 04-freight-cost-analysis/src/analyze_freight.py
@@ -23,10 +30,13 @@ Outputs under 04-freight-cost-analysis/:
     data/processed/*.csv   small aggregate tables only
     images/freight_class_by_line.png
     images/freight_text_patterns_by_shipment.png
+    images/freight_per_kg_by_mode.png
 
-No output is the full line extract. A shipment-level cost table is written
-only when the constancy gate passes. This run does not average conflicting
-freight strings, and it does not treat a "See ASN/DN" pointer as zero.
+No output is the full line extract. The shipment table is one row per
+ASN/DN under the Yes-line rule, not a second copy of the line file.
+This run does not average conflicting freight strings, and it does not
+treat a "See ASN/DN" pointer, an included-in-price phrase, or
+"Invoiced Separately" as zero.
 """
 
 from __future__ import annotations
@@ -81,6 +91,28 @@ SEE_POINTER = re.compile(r"^See (ASN|DN)-([0-9]+) \(ID#:([0-9]+)\)$")
 FREIGHT_INCLUDED = "Freight Included in Commodity Cost"
 FREIGHT_INVOICED = "Invoiced Separately"
 WEIGHT_CAPTURED = "Weight Captured Separately"
+
+# Accepted on 2026-09-29, after the raw-string gate failed. The Yes line is
+# the shipment's freight string and weight string. See the comment on
+# yes_line_rollup for why that is a rule and not an average.
+ACCEPTED_RULE = "yes_line"
+ACCEPTED_RULE_DATE = "2026-09-29"
+
+# Cuts with fewer weighed shipments than this stay in the tables and in
+# kpi_small_n.csv, and they are kept out of the ranking. A median on
+# n = 3 is not a vendor comparison.
+RANK_MIN_WEIGHED = 20
+
+# Stated size control. Fixed edges, not a quantile recomputed each run,
+# so "roughly the same weight" is a sentence someone can repeat.
+# 500 kg to 5,000 kg inclusive sits around the weighed-set median weight
+# (about 1,055 kg) and above the light shipments whose per-kilogram rate
+# is mostly a small denominator. The upper edge drops the long tail
+# (weights run into the hundreds of thousands of kilograms) without
+# emptying ocean or truck. yes_line_rollup checks that every named mode
+# still has at least RANK_MIN_WEIGHED weighed shipments inside the band.
+WEIGHT_BAND_LO_KG = 500.0
+WEIGHT_BAND_HI_KG = 5000.0
 
 # Fields a shipment rollup would have to copy. Freight and weight are the
 # gate. The others are recorded so a later stage does not assume they are
@@ -689,13 +721,15 @@ def other_date_labels(df: pd.DataFrame) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
-def value_check(df: pd.DataFrame) -> pd.DataFrame:
-    """Line-item value is a number on every row. Shipment sums are not taken.
+def value_check(df: pd.DataFrame, shipments: pd.DataFrame) -> pd.DataFrame:
+    """Line-item value is a number on every row. The shipment sum is the lines.
 
-    The plan confirms the sum on shipments that are kept. None are kept,
-    because the grain gate failed. A zero line is still reported, because a
-    later freight-to-value ratio cannot divide by a non-positive sum, and
-    hiding the zeros would make that check look finished.
+    The raw-string gate did not keep a population. The accepted Yes-line
+    rule does. Freight-to-value keeps a shipment only when the Yes-line
+    freight is numeric and the sum of line-item value on the note is
+    positive. The diagnostic count is every shipment whose line sum is
+    not positive, whether or not freight parsed. Both counts are written.
+    A zero line is not dropped from the file.
     """
     if not df["Line Item Value"].map(is_plain_number).all():
         bad = int((~df["Line Item Value"].map(is_plain_number)).sum())
@@ -705,6 +739,10 @@ def value_check(df: pd.DataFrame) -> pd.DataFrame:
     negative_lines = int((values < 0).sum())
     # Diagnostic only: the sum a rollup would have used. Not a KPI.
     sums = df.assign(_v=values).groupby("ASN/DN #", dropna=False)["_v"].sum()
+    if int((sums <= 0).sum()) != int(shipments["value_sum_not_positive"].sum()):
+        raise SystemExit("line-value diagnostic does not match the Yes-line rollup")
+    if set(sums.index) != set(shipments["asn_dn"]):
+        raise SystemExit("line-value sums are not one per shipment in the rollup")
     return pd.DataFrame(
         [
             {
@@ -713,11 +751,15 @@ def value_check(df: pd.DataFrame) -> pd.DataFrame:
                 "lines_positive": int((values > 0).sum()),
                 "lines_zero": zero_lines,
                 "lines_negative": negative_lines,
-                "shipments_kept_for_freight_to_value": 0,
-                "reason_none_kept": "constancy gate failed; no shipment rollup",
+                "shipments_kept_for_freight_to_value": int(shipments["in_freight_to_value"].sum()),
+                "reason_none_kept": "",
+                "kept_rule": ACCEPTED_RULE,
                 "diagnostic_shipments_if_lines_were_summed": int(len(sums)),
                 "diagnostic_shipments_with_value_sum_le_0": int((sums <= 0).sum()),
                 "diagnostic_shipments_with_value_sum_gt_0": int((sums > 0).sum()),
+                "priced_shipments_with_value_sum_le_0": int(
+                    ((shipments["in_priced"] == 1) & (shipments["value_sum_not_positive"] == 1)).sum()
+                ),
             }
         ]
     )
@@ -789,11 +831,14 @@ def zero_weight_lines(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def rollup_status(constancy: pd.DataFrame, patterns: pd.DataFrame) -> pd.DataFrame:
-    """The gate. Rates are computed only when this row says the gate passed.
+    """The raw-string gate. This row does not hold the Yes-line rates.
 
-    Passing means every shipment has one freight string and one weight string.
-    A pointer that differs from the numeric line is not constant, even when
-    the pointer cites that same note.
+    Passing would mean every shipment has one freight string and one weight
+    string. A pointer that differs from the numeric line is not constant,
+    even when the pointer cites that same note. On this extract the gate
+    fails. The failure is recorded here. The accepted Yes-line rule is a
+    later step, written to the kpi files, and it does not flip this flag
+    to passed.
     """
     freight = constancy.loc[
         constancy["column_name"] == "Freight Cost (USD)", "shipments_not_constant"
@@ -817,21 +862,31 @@ def rollup_status(constancy: pd.DataFrame, patterns: pd.DataFrame) -> pd.DataFra
                 "mean_freight_per_kg": "",
                 "weighed_shipments": "",
                 "reason": (
-                    "computed"
+                    "raw strings are constant inside ASN/DN; rates are still the Yes-line kpi files, not this row"
                     if passed
-                    else "not computed; freight or weight is not constant inside ASN/DN, and no rollup rule was invented"
+                    else "raw-string gate failed; freight or weight is not the same string on every line of the ASN/DN. Rates are not on this row. The accepted Yes-line rule is applied after this gate and written to the kpi files."
                 ),
+                "accepted_rule": ACCEPTED_RULE,
+                "accepted_rule_date": ACCEPTED_RULE_DATE,
             }
         ]
     )
 
 
-def save_csv(df: pd.DataFrame, name: str) -> Path:
-    """Write a small aggregate. Refuse a line-level dump of the extract."""
-    if len(df) > 500:
+def save_csv(df: pd.DataFrame, name: str, max_rows: int = 500) -> Path:
+    """Write a table. Refuse a line-level dump of the extract.
+
+    Aggregates stay at or under 500 rows. The shipment rollup is the one
+    exception: one row per ASN/DN, which is 7,030 on this file and still
+    below the 10,324 line extract. A file that reaches the line count is
+    the extract under another name, and it is refused.
+    """
+    if len(df) >= EXPECTED_ROWS:
         raise SystemExit(f"{name} has {len(df)} rows; refusing a line-level extract")
+    if len(df) > max_rows:
+        raise SystemExit(f"{name} has {len(df)} rows; limit is {max_rows}")
     path = PROC / name
-    df.to_csv(path, index=False)
+    df.to_csv(path, index=False, na_rep="")
     return path
 
 
@@ -905,7 +960,7 @@ def _sqlite_numeric(expr: str) -> str:
     )
 
 
-def verify_sql(df: pd.DataFrame, patterns: pd.DataFrame) -> pd.DataFrame:
+def verify_sql(df: pd.DataFrame, patterns: pd.DataFrame, shipments: pd.DataFrame) -> pd.DataFrame:
     """Run sql/kpi_freight.sql on an in-memory copy and require the same counts.
 
     The SQL file is what a person would run in SQLite. This check exists so
@@ -1021,8 +1076,720 @@ def verify_sql(df: pd.DataFrame, patterns: pd.DataFrame) -> pd.DataFrame:
     if int(sql_numeric) != py_numeric:
         raise SystemExit(f"SQL numeric predicate {sql_numeric} != python {py_numeric}")
 
+    _check_yes_line_sql(result, shipments)
     result.insert(0, "matched_python", 1)
     return result
+
+
+def _sql_one(result: pd.DataFrame, check: str, column: str):
+    hit = result.loc[result["check_name"] == check, column]
+    if len(hit) != 1:
+        raise SystemExit(f"SQL check {check}.{column} returned {len(hit)} rows")
+    return hit.iloc[0]
+
+
+def _close(check: str, got, want, tol: float) -> None:
+    if abs(float(got) - float(want)) > tol:
+        raise SystemExit(f"SQL {check}={got} python={want}")
+
+
+def _check_yes_line_sql(result: pd.DataFrame, shipments: pd.DataFrame) -> None:
+    """The Yes-line rollup in sql/kpi_freight.sql matches this run.
+
+    Counts are exact. Rates are float, so the tolerance is there for a
+    different addition order, not for a different population. A miss
+    raises. The SQL file is not allowed to drift from the scorecard.
+    """
+    weighed = shipments.loc[shipments["in_weighed"] == 1]
+    ftv = shipments.loc[shipments["in_freight_to_value"] == 1]
+    comparisons = [
+        ("yes_freight_other", "shipments", 0),
+        ("yes_line_rows", "lines", len(shipments)),
+        ("yes_line_rows", "shipments", shipments["asn_dn"].nunique()),
+        ("yes_priced", "shipments", int(shipments["in_priced"].sum())),
+        ("yes_weighed", "shipments", int(shipments["in_weighed"].sum())),
+        ("yes_freight_to_value", "shipments", int(shipments["in_freight_to_value"].sum())),
+        ("yes_excluded_included", "shipments", int((shipments["exclusion_reason"] == "included_in_price").sum())),
+        ("yes_excluded_invoiced", "shipments", int((shipments["exclusion_reason"] == "invoiced_separately").sum())),
+        ("yes_excluded_see", "shipments", int((shipments["exclusion_reason"] == "see_another_note").sum())),
+        ("yes_excluded_weight_text", "shipments", int((shipments["exclusion_reason"] == "weight_not_numeric").sum())),
+        ("yes_excluded_weight_not_positive", "shipments", int((shipments["exclusion_reason"] == "weight_not_positive").sum())),
+        ("yes_value_sum_le_0", "shipments", int(shipments["value_sum_not_positive"].sum())),
+        ("yes_priced_value_sum_le_0", "shipments", int(((shipments["in_priced"] == 1) & (shipments["value_sum_not_positive"] == 1)).sum())),
+    ]
+    for check, column, want in comparisons:
+        got = int(_sql_one(result, check, column))
+        if got != int(want):
+            raise SystemExit(f"SQL {check}.{column}={got} python={want}")
+
+    _close(
+        "yes_total_numeric_freight",
+        _sql_one(result, "yes_total_numeric_freight", "total_freight"),
+        float(shipments.loc[shipments["in_priced"] == 1, "freight_usd"].sum()),
+        0.02,
+    )
+    _close(
+        "yes_median_freight_per_kg",
+        _sql_one(result, "yes_median_freight_per_kg", "median_rate"),
+        float(weighed["freight_per_kg"].median()),
+        1e-6,
+    )
+    _close(
+        "yes_mean_freight_per_kg",
+        _sql_one(result, "yes_mean_freight_per_kg", "mean_rate"),
+        float(weighed["freight_per_kg"].mean()),
+        1e-6,
+    )
+    _close(
+        "yes_median_freight_to_value",
+        _sql_one(result, "yes_median_freight_to_value", "median_rate"),
+        float(ftv["freight_to_value"].median()),
+        1e-6,
+    )
+    _close(
+        "yes_mean_freight_to_value",
+        _sql_one(result, "yes_mean_freight_to_value", "mean_rate"),
+        float(ftv["freight_to_value"].mean()),
+        1e-6,
+    )
+    sql_modes = result.loc[result["check_name"] == "yes_mode_rate", ["label", "weighed_n", "mean_rate", "median_rate"]]
+    if sql_modes.empty:
+        raise SystemExit("SQL yes_mode_rate returned no rows")
+    for rec in sql_modes.itertuples(index=False):
+        sub = weighed.loc[weighed["shipment_mode"] == rec.label, "freight_per_kg"]
+        if int(rec.weighed_n) != len(sub):
+            raise SystemExit(f"SQL mode {rec.label} n={rec.weighed_n} python={len(sub)}")
+        _close(f"yes_mode_rate mean {rec.label}", rec.mean_rate, float(sub.mean()), 1e-6)
+        _close(f"yes_mode_rate median {rec.label}", rec.median_rate, float(sub.median()), 1e-6)
+
+
+def _copy_constant(df: pd.DataFrame, column: str) -> pd.Series:
+    """One value per ASN/DN. Raise if the column is not constant.
+
+    Mode, vendor, country, and INCO term passed the constancy gate. The
+    Yes-line rule copies them. It does not pick a manufacturing site,
+    and this helper is not called for that column. A future file that
+    mixes mode inside a note has to stop, not silently take the Yes line's
+    mode while another line says something else.
+    """
+    nunique = df.groupby("ASN/DN #", dropna=False)[column].nunique(dropna=False)
+    mixed = int((nunique > 1).sum())
+    if mixed != 0:
+        raise SystemExit(
+            f"{column} is not constant on {mixed} shipments; "
+            "the Yes-line rule does not choose among them"
+        )
+    # The Yes line carries the only value. Null stays null here; the
+    # scorecard labels a null mode as (blank) at grouping time.
+    yes = df.loc[df["First Line Designation"] == "Yes", ["ASN/DN #", column]]
+    if yes["ASN/DN #"].duplicated().any():
+        raise SystemExit(f"more than one Yes line while copying {column}")
+    return yes.set_index("ASN/DN #")[column]
+
+
+def _exclusion_reason(freight_cls: str, weight_cls: str, weight_value: float | None) -> str:
+    """Why a shipment is outside the weighed set. Kept is not an exclusion.
+
+    The order is the order the sets are defined. A non-numeric freight
+    string never reaches the weight checks, so an included-in-price
+    shipment is not also counted as a missing weight. A numeric weight
+    of zero is its own reason: the string parsed, and it still cannot
+    be a denominator.
+    """
+    if freight_cls == "included_in_price":
+        return "included_in_price"
+    if freight_cls == "invoiced_separately":
+        return "invoiced_separately"
+    if freight_cls == "see_another_note":
+        return "see_another_note"
+    if freight_cls != "numeric":
+        raise SystemExit(f"yes-line freight class {freight_cls} has no exclusion rule")
+    if weight_cls != "numeric":
+        return "weight_not_numeric"
+    if weight_value is None or not (weight_value > 0):
+        return "weight_not_positive"
+    return "kept"
+
+
+def yes_line_rollup(df: pd.DataFrame, patterns: pd.DataFrame) -> pd.DataFrame:
+    """One row per ASN/DN under the accepted Yes-line rule.
+
+    Why this rule, and why it is not an average. The raw freight string
+    is not constant on 1,299 shipments and the raw weight string is not
+    constant on 1,322, so the constancy gate does not pass and this
+    function does not pretend it did. The strings that disagree are not
+    two bills. No shipment has two different numeric freight strings or
+    two different numeric weight strings (the pattern table is checked
+    again here). Every shipment has exactly one First Line Designation
+    = Yes line. Every See pointer cites that line's ID on the same
+    ASN/DN. The user accepted, on 2026-09-29, that the Yes line's freight
+    string and weight string are the shipment's strings.
+
+    What the rule refuses. Included-in-price, invoiced separately, and a
+    See pointer are not parsed and not replaced with zero. A numeric
+    weight that is not positive is not a per-kilogram denominator. Line
+    item value is summed across the lines of the note. Freight is not
+    summed. Insurance is not read. Manufacturing site is not copied,
+    because it is not constant and this rule does not pick a site.
+    """
+    if int((patterns["distinct_numeric_freight_strings"] > 1).sum()) != 0:
+        raise SystemExit(
+            "a shipment has two numeric freight strings; "
+            "the Yes-line rule was accepted because that count was zero"
+        )
+    if int((patterns["distinct_numeric_weight_strings"] > 1).sum()) != 0:
+        raise SystemExit(
+            "a shipment has two numeric weight strings; "
+            "the Yes-line rule was accepted because that count was zero"
+        )
+    yes_count = df.groupby("ASN/DN #", dropna=False)["First Line Designation"].apply(
+        lambda s: int((s == "Yes").sum())
+    )
+    if not (yes_count == 1).all():
+        raise SystemExit("Yes-line rule requires exactly one Yes line per ASN/DN")
+
+    yes = df.loc[df["First Line Designation"] == "Yes"].copy()
+    if len(yes) != df["ASN/DN #"].nunique():
+        raise SystemExit("Yes-line extract is not one row per shipment")
+    if yes["freight_class"].eq("other").any() or yes["weight_class"].eq("other").any():
+        raise SystemExit("unclassified text on a Yes line")
+
+    value = df["Line Item Value"].map(float)
+    value_sum = df.assign(_v=value).groupby("ASN/DN #", dropna=False)["_v"].sum()
+    line_count = df.groupby("ASN/DN #", dropna=False).size()
+
+    mode = _copy_constant(df, "Shipment Mode")
+    vendor = _copy_constant(df, "Vendor")
+    country = _copy_constant(df, "Country")
+    inco = _copy_constant(df, "Vendor INCO Term")
+
+    yes = yes.set_index("ASN/DN #", drop=False)
+    rows = []
+    for asn, rec in yes.iterrows():
+        freight_text = rec["Freight Cost (USD)"]
+        weight_text = rec["Weight (Kilograms)"]
+        freight_num = float(freight_text) if is_plain_number(freight_text) else None
+        weight_num = float(weight_text) if is_plain_number(weight_text) else None
+        reason = _exclusion_reason(rec["freight_class"], rec["weight_class"], weight_num)
+        in_priced = int(freight_num is not None)
+        in_weighed = int(reason == "kept")
+        vsum = float(value_sum.loc[asn])
+        in_ftv = int(in_priced == 1 and vsum > 0)
+        if in_weighed and (weight_num is None or weight_num <= 0):
+            raise SystemExit(f"{asn} marked weighed with a non-positive weight")
+        if in_priced != int(rec["freight_class"] == "numeric"):
+            raise SystemExit(f"{asn} priced flag does not match the freight class")
+        rows.append(
+            {
+                "asn_dn": asn,
+                "line_count": int(line_count.loc[asn]),
+                "shipment_mode": "(blank)" if pd.isna(mode.loc[asn]) else mode.loc[asn],
+                "vendor": vendor.loc[asn],
+                "country": country.loc[asn],
+                "vendor_inco_term": inco.loc[asn],
+                "yes_line_id": rec["ID"],
+                "yes_freight_text": freight_text,
+                "yes_weight_text": weight_text,
+                "yes_freight_class": rec["freight_class"],
+                "yes_weight_class": rec["weight_class"],
+                "freight_usd": freight_num,
+                "weight_kg": weight_num,
+                "line_item_value_sum": vsum,
+                "in_priced": in_priced,
+                "in_weighed": in_weighed,
+                "in_freight_to_value": in_ftv,
+                "freight_per_kg": (freight_num / weight_num) if in_weighed else None,
+                "freight_to_value": (freight_num / vsum) if in_ftv else None,
+                "exclusion_reason": reason,
+                "value_sum_not_positive": int(vsum <= 0),
+            }
+        )
+    out = pd.DataFrame(rows)
+    if len(out) != df["ASN/DN #"].nunique():
+        raise SystemExit("shipment rollup missed an ASN/DN")
+    if out["asn_dn"].duplicated().any():
+        raise SystemExit("shipment rollup has a duplicate ASN/DN")
+    if "Manufacturing Site" in out.columns:
+        raise SystemExit("manufacturing site leaked into the scorecard rollup")
+    # Freight was not summed across lines. A priced shipment carries the
+    # Yes line's number once. The exclusion reasons partition the file.
+    reasons = out["exclusion_reason"].value_counts()
+    if int(reasons.get("kept", 0)) != int(out["in_weighed"].sum()):
+        raise SystemExit("weighed flag does not match exclusion_reason kept")
+    if int(out["in_priced"].sum()) + int(out["exclusion_reason"].isin(
+        ["included_in_price", "invoiced_separately", "see_another_note"]
+    ).sum()) != len(out):
+        raise SystemExit("priced set and freight-text exclusions do not partition the file")
+    priced = out["in_priced"] == 1
+    if int(priced.sum()) != int(out["in_weighed"].sum()) + int(
+        out["exclusion_reason"].isin(["weight_not_numeric", "weight_not_positive"]).sum()
+    ):
+        raise SystemExit("weighed set and weight exclusions do not partition the priced set")
+    return out
+
+
+def _median(series: pd.Series) -> float | None:
+    """Pandas median. Even counts average the two middle values. Empty is blank."""
+    if len(series) == 0:
+        return None
+    return float(series.median())
+
+
+def _mean(series: pd.Series) -> float | None:
+    if len(series) == 0:
+        return None
+    return float(series.mean())
+
+
+def _rate_columns(sub: pd.DataFrame) -> dict:
+    """The rate fields every cut shares. Empty rates stay None, never zero."""
+    weighed = sub.loc[sub["in_weighed"] == 1, "freight_per_kg"]
+    ftv = sub.loc[sub["in_freight_to_value"] == 1, "freight_to_value"]
+    priced = sub.loc[sub["in_priced"] == 1, "freight_usd"]
+    return {
+        "shipments": int(len(sub)),
+        "priced_n": int(sub["in_priced"].sum()),
+        "weighed_n": int(sub["in_weighed"].sum()),
+        "median_freight_per_kg": _median(weighed),
+        "mean_freight_per_kg": _mean(weighed),
+        "freight_to_value_n": int(sub["in_freight_to_value"].sum()),
+        "median_freight_to_value": _median(ftv),
+        "mean_freight_to_value": _mean(ftv),
+        "total_numeric_freight": float(priced.sum()) if len(priced) else 0.0,
+        "excluded_included_in_price": int((sub["exclusion_reason"] == "included_in_price").sum()),
+        "excluded_invoiced_separately": int((sub["exclusion_reason"] == "invoiced_separately").sum()),
+        "excluded_see_another_note": int((sub["exclusion_reason"] == "see_another_note").sum()),
+        "excluded_weight_not_numeric": int((sub["exclusion_reason"] == "weight_not_numeric").sum()),
+        "excluded_weight_not_positive": int((sub["exclusion_reason"] == "weight_not_positive").sum()),
+        "value_sum_not_positive": int(sub["value_sum_not_positive"].sum()),
+        "value_sum_not_positive_among_priced": int(
+            ((sub["in_priced"] == 1) & (sub["value_sum_not_positive"] == 1)).sum()
+        ),
+    }
+
+
+def cut_kpis(shipments: pd.DataFrame, column: str) -> pd.DataFrame:
+    """One row per level of a scorecard cut.
+
+    rank_eligible is 0 when the weighed count is under RANK_MIN_WEIGHED.
+    Those rows stay in this file. kpi_small_n.csv repeats them so a
+    sort by median cannot be read as a ranking of tiny groups. Median
+    cells are blank, not zero, when the weighed count is zero.
+    """
+    rows = []
+    for label, sub in shipments.groupby(column, dropna=False):
+        rec = {column: label}
+        rec.update(_rate_columns(sub))
+        rec["rank_eligible"] = int(rec["weighed_n"] >= RANK_MIN_WEIGHED)
+        rows.append(rec)
+    out = pd.DataFrame(rows)
+    if int(out["shipments"].sum()) != len(shipments):
+        raise SystemExit(f"{column} cut does not cover the population it was given")
+    out = out.sort_values(
+        ["rank_eligible", "median_freight_per_kg", column],
+        ascending=[False, False, True],
+        na_position="last",
+    ).reset_index(drop=True)
+    return out
+
+
+def overall_kpis(shipments: pd.DataFrame) -> pd.DataFrame:
+    """Long scorecard: denominators, drops, and the two headline rates.
+
+    Freight per kilogram uses the weighed set. Freight-to-value uses
+    numeric Yes-line freight and a positive sum of line-item value.
+    Those populations are not the same, and both denominators are rows
+    in this file. A drop is a count of shipments, not a zero rate.
+    """
+    rates = _rate_columns(shipments)
+    weighed = shipments.loc[shipments["in_weighed"] == 1, "freight_per_kg"]
+    ftv = shipments.loc[shipments["in_freight_to_value"] == 1, "freight_to_value"]
+    if rates["shipments"] != (
+        rates["weighed_n"]
+        + rates["excluded_included_in_price"]
+        + rates["excluded_invoiced_separately"]
+        + rates["excluded_see_another_note"]
+        + rates["excluded_weight_not_numeric"]
+        + rates["excluded_weight_not_positive"]
+    ):
+        raise SystemExit("overall exclusions do not add up to every shipment")
+    # The mean sits next to the median because the tail pulls it. The
+    # mean of the weighed shipments at or below p95 is the comparison
+    # that shows the pull, and it is still computed, not a comment.
+    p95 = float(weighed.quantile(0.95))
+    at_or_below = weighed[weighed <= p95]
+    ftv_p95 = float(ftv.quantile(0.95)) if len(ftv) else None
+    ftv_body = ftv[ftv <= ftv_p95] if ftv_p95 is not None else ftv
+    metrics = {
+        "rule": ACCEPTED_RULE,
+        "rule_date": ACCEPTED_RULE_DATE,
+        "shipments": rates["shipments"],
+        "priced_n": rates["priced_n"],
+        "weighed_n": rates["weighed_n"],
+        "freight_to_value_n": rates["freight_to_value_n"],
+        "excluded_included_in_price": rates["excluded_included_in_price"],
+        "excluded_invoiced_separately": rates["excluded_invoiced_separately"],
+        "excluded_see_another_note": rates["excluded_see_another_note"],
+        "excluded_weight_not_numeric": rates["excluded_weight_not_numeric"],
+        "excluded_weight_not_positive": rates["excluded_weight_not_positive"],
+        "value_sum_not_positive": rates["value_sum_not_positive"],
+        "value_sum_not_positive_among_priced": rates["value_sum_not_positive_among_priced"],
+        "value_sum_not_positive_among_weighed": int(
+            ((shipments["in_weighed"] == 1) & (shipments["value_sum_not_positive"] == 1)).sum()
+        ),
+        "median_freight_per_kg": rates["median_freight_per_kg"],
+        "mean_freight_per_kg": rates["mean_freight_per_kg"],
+        "max_freight_per_kg": float(weighed.max()) if len(weighed) else None,
+        "p95_freight_per_kg": p95 if len(weighed) else None,
+        "weighed_n_at_or_below_p95": int(len(at_or_below)),
+        "mean_freight_per_kg_at_or_below_p95": _mean(at_or_below),
+        "median_freight_to_value": rates["median_freight_to_value"],
+        "mean_freight_to_value": rates["mean_freight_to_value"],
+        "max_freight_to_value": float(ftv.max()) if len(ftv) else None,
+        "p95_freight_to_value": ftv_p95,
+        "freight_to_value_n_at_or_below_p95": int(len(ftv_body)),
+        "mean_freight_to_value_at_or_below_p95": _mean(ftv_body),
+        "total_numeric_freight": rates["total_numeric_freight"],
+        "total_numeric_freight_weighed": float(
+            shipments.loc[shipments["in_weighed"] == 1, "freight_usd"].sum()
+        ),
+        "rank_min_weighed": RANK_MIN_WEIGHED,
+        "weight_band_lo_kg": WEIGHT_BAND_LO_KG,
+        "weight_band_hi_kg": WEIGHT_BAND_HI_KG,
+    }
+    rows = [{"metric": key, "value": value} for key, value in metrics.items()]
+    return pd.DataFrame(rows)
+
+
+def quantile_table(shipments: pd.DataFrame) -> pd.DataFrame:
+    """p10 through p95 of freight per kg, overall and by mode.
+
+    The mean is on the same row so the gap is a computed comparison.
+    Freight-to-value quantiles are the second metric. The populations
+    match the headline: weighed set, and priced with a positive value sum.
+    """
+    probs = [0.10, 0.25, 0.50, 0.75, 0.90, 0.95]
+    labels = ["p10", "p25", "p50", "p75", "p90", "p95"]
+
+    def one(metric: str, slice_name: str, series: pd.Series) -> dict:
+        rec = {
+            "metric": metric,
+            "slice": slice_name,
+            "n": int(len(series)),
+            "mean": _mean(series),
+            "max": float(series.max()) if len(series) else None,
+        }
+        if len(series) == 0:
+            for label in labels:
+                rec[label] = None
+            return rec
+        quant = series.quantile(probs)
+        for label, prob in zip(labels, probs):
+            rec[label] = float(quant.loc[prob])
+        return rec
+
+    rows = []
+    weighed = shipments.loc[shipments["in_weighed"] == 1]
+    rows.append(one("freight_per_kg", "weighed_set", weighed["freight_per_kg"]))
+    for mode, sub in weighed.groupby("shipment_mode", dropna=False):
+        rows.append(one("freight_per_kg", f"weighed_mode={mode}", sub["freight_per_kg"]))
+    band = weighed[
+        (weighed["weight_kg"] >= WEIGHT_BAND_LO_KG) & (weighed["weight_kg"] <= WEIGHT_BAND_HI_KG)
+    ]
+    rows.append(
+        one(
+            "freight_per_kg",
+            f"weighed_weight_{int(WEIGHT_BAND_LO_KG)}_to_{int(WEIGHT_BAND_HI_KG)}_kg",
+            band["freight_per_kg"],
+        )
+    )
+    ftv = shipments.loc[shipments["in_freight_to_value"] == 1, "freight_to_value"]
+    rows.append(one("freight_to_value", "priced_and_positive_value_sum", ftv))
+    out = pd.DataFrame(rows)
+    overall = out.loc[
+        (out["metric"] == "freight_per_kg") & (out["slice"] == "weighed_set")
+    ].iloc[0]
+    headline = _median(weighed["freight_per_kg"])
+    if headline is None or abs(float(overall["p50"]) - headline) > 1e-9:
+        raise SystemExit("p50 of freight per kg is not the headline median")
+    return out
+
+
+def _most_common_mode(shipments: pd.DataFrame) -> str:
+    """Mode with the most shipments, not the most lines and not the highest rate."""
+    counts = shipments["shipment_mode"].value_counts()
+    if counts.empty:
+        raise SystemExit("no modes to control on")
+    top = counts.index[0]
+    if top == "(blank)":
+        raise SystemExit("the most common mode is blank; refusing to control on a null")
+    return str(top)
+
+
+def weight_band_mask(shipments: pd.DataFrame) -> pd.Series:
+    """Weighed shipments inside the stated band, inclusive on both edges."""
+    return (
+        (shipments["in_weighed"] == 1)
+        & (shipments["weight_kg"] >= WEIGHT_BAND_LO_KG)
+        & (shipments["weight_kg"] <= WEIGHT_BAND_HI_KG)
+    )
+
+
+def assert_band_covers_modes(shipments: pd.DataFrame) -> None:
+    """The band is only a size control if each named mode still has a ranking n."""
+    band = shipments.loc[weight_band_mask(shipments)]
+    counts = band["shipment_mode"].value_counts()
+    named = [mode for mode in shipments["shipment_mode"].unique() if mode != "(blank)"]
+    short = [mode for mode in named if int(counts.get(mode, 0)) < RANK_MIN_WEIGHED]
+    if short:
+        raise SystemExit(
+            f"weight band {WEIGHT_BAND_LO_KG}-{WEIGHT_BAND_HI_KG} leaves {short} "
+            f"under {RANK_MIN_WEIGHED} weighed shipments; do not use it as the control"
+        )
+
+
+def control_frame(shipments: pd.DataFrame) -> pd.DataFrame:
+    """Which mode, which band, and the reference median the ranking is judged against.
+
+    The reference is the weighed Air (or whichever mode is most common)
+    shipments inside the weight band. A vendor median above that number
+    is above the typical shipment of the same mode and a similar weight.
+    It is not, by itself, the word expensive.
+    """
+    mode = _most_common_mode(shipments)
+    assert_band_covers_modes(shipments)
+    in_mode = shipments["shipment_mode"] == mode
+    in_band = weight_band_mask(shipments) & in_mode
+    reference = shipments.loc[in_band, "freight_per_kg"]
+    mode_shipments = int(in_mode.sum())
+    rows = [
+        {"metric": "most_common_mode", "value": mode},
+        {"metric": "most_common_mode_shipments", "value": mode_shipments},
+        {"metric": "most_common_mode_weighed_n", "value": int((in_mode & (shipments["in_weighed"] == 1)).sum())},
+        {"metric": "weight_band_lo_kg", "value": WEIGHT_BAND_LO_KG},
+        {"metric": "weight_band_hi_kg", "value": WEIGHT_BAND_HI_KG},
+        {"metric": "weight_band_edges", "value": "inclusive"},
+        {"metric": "rank_min_weighed", "value": RANK_MIN_WEIGHED},
+        {"metric": "reference_population", "value": f"{mode} and weight in band"},
+        {"metric": "reference_weighed_n", "value": int(in_band.sum())},
+        {"metric": "reference_median_freight_per_kg", "value": _median(reference)},
+        {"metric": "reference_mean_freight_per_kg", "value": _mean(reference)},
+    ]
+    return pd.DataFrame(rows)
+
+
+def survival_table(shipments: pd.DataFrame, column: str, reference_median: float) -> pd.DataFrame:
+    """Uncontrolled median next to the mode control and the mode-plus-band control.
+
+    A row is an uncontrolled ranking candidate only when the weighed count
+    on the whole file is at least RANK_MIN_WEIGHED. survives_weight_and_mode
+    means the same label still has that many weighed shipments inside the
+    most common mode and the stated weight band, and above_reference means
+    that controlled median is above the reference median. A high
+    uncontrolled median with a small controlled n does not survive.
+    """
+    mode = _most_common_mode(shipments)
+    in_mode = shipments["shipment_mode"] == mode
+    in_band = weight_band_mask(shipments) & in_mode
+    rows = []
+    for label, sub in shipments.groupby(column, dropna=False):
+        weighed = sub.loc[sub["in_weighed"] == 1, "freight_per_kg"]
+        if len(weighed) < RANK_MIN_WEIGHED:
+            continue
+        air = sub.loc[(sub["in_weighed"] == 1) & (sub["shipment_mode"] == mode), "freight_per_kg"]
+        band = sub.loc[
+            (sub["in_weighed"] == 1)
+            & (sub["shipment_mode"] == mode)
+            & (sub["weight_kg"] >= WEIGHT_BAND_LO_KG)
+            & (sub["weight_kg"] <= WEIGHT_BAND_HI_KG),
+            "freight_per_kg",
+        ]
+        med_band = _median(band)
+        survives_n = int(len(band) >= RANK_MIN_WEIGHED)
+        rows.append(
+            {
+                "cut": column,
+                "label": label,
+                "weighed_n": int(len(weighed)),
+                "median_freight_per_kg": _median(weighed),
+                "mean_freight_per_kg": _mean(weighed),
+                "weighed_n_top_mode": int(len(air)),
+                "median_freight_per_kg_top_mode": _median(air),
+                "weighed_n_top_mode_weight_band": int(len(band)),
+                "median_freight_per_kg_top_mode_weight_band": med_band,
+                "survives_mode_and_weight_n": survives_n,
+                "above_reference_median": int(
+                    survives_n == 1 and med_band is not None and med_band > reference_median
+                ),
+            }
+        )
+    out = pd.DataFrame(rows)
+    if out.empty:
+        raise SystemExit(f"no {column} group reached the ranking threshold")
+    # in_band is used to keep the reference definition next to this table.
+    if int(in_band.sum()) == 0:
+        raise SystemExit("reference band is empty")
+    return out.sort_values(
+        ["median_freight_per_kg", "label"], ascending=[False, True]
+    ).reset_index(drop=True)
+
+
+def small_n_table(parts: list[tuple[str, pd.DataFrame, str]]) -> pd.DataFrame:
+    """Every cut row under the ranking threshold, still listed, not ranked."""
+    frames = []
+    for source, frame, column in parts:
+        small = frame.loc[frame["rank_eligible"] == 0].copy()
+        if small.empty:
+            continue
+        small.insert(0, "source", source)
+        small.insert(1, "label", small[column].astype(str))
+        keep = [
+            "source",
+            "label",
+            "shipments",
+            "priced_n",
+            "weighed_n",
+            "median_freight_per_kg",
+            "mean_freight_per_kg",
+            "median_freight_to_value",
+            "total_numeric_freight",
+            "rank_eligible",
+        ]
+        frames.append(small[keep])
+    if not frames:
+        raise SystemExit("small-n file would be empty; the threshold would be invisible")
+    out = pd.concat(frames, ignore_index=True)
+    return out.sort_values(
+        ["source", "weighed_n", "label"], ascending=[True, True, True]
+    ).reset_index(drop=True)
+
+
+def save_mode_rate_chart(mode_kpi: pd.DataFrame) -> None:
+    """Median freight per kg by mode. Weighed set only. Not a line chart.
+
+    Blank mode is included and labeled, because those shipments are in
+    the weighed set and hiding them would shrink the denominator. The
+    title names the set and the rule so the chart cannot be read as a
+    line-level mean or as the raw-string gate.
+    """
+    plot = mode_kpi.loc[mode_kpi["weighed_n"] > 0].sort_values(
+        "median_freight_per_kg", ascending=True
+    )
+    if plot.empty:
+        raise SystemExit("no mode has a weighed shipment; refusing an empty rate chart")
+    fig, ax = plt.subplots(figsize=(8.6, 4.6))
+    y = list(range(len(plot)))
+    ax.barh(y, plot["median_freight_per_kg"], color="#4C78A8")
+    ax.set_yticks(y)
+    ax.set_yticklabels(plot["shipment_mode"])
+    for i, rec in enumerate(plot.itertuples(index=False)):
+        ax.text(
+            rec.median_freight_per_kg,
+            i,
+            f"  {rec.median_freight_per_kg:.2f}   n={int(rec.weighed_n):,}",
+            va="center",
+            fontsize=9,
+        )
+    ax.set_xlim(0, float(plot["median_freight_per_kg"].max()) * 1.45)
+    ax.set_xlabel("Median freight per kg (USD)")
+    ax.set_title("Median freight per kg by shipment mode, weighed set, Yes-line rule")
+    fig.tight_layout()
+    fig.savefig(IMG / "freight_per_kg_by_mode.png", dpi=120)
+    plt.close(fig)
+
+
+def _reference_median(controls: pd.DataFrame) -> float:
+    hit = controls.loc[controls["metric"] == "reference_median_freight_per_kg", "value"]
+    if len(hit) != 1:
+        raise SystemExit("control file has no reference median")
+    return float(hit.iloc[0])
+
+
+
+
+def write_scorecard(shipments: pd.DataFrame) -> list[Path]:
+    """Write the rate tables. Every rate in these files comes from the rollup.
+
+    The population of kpi_by_mode, kpi_by_country, kpi_by_vendor, and
+    kpi_by_inco is every shipment. The within-top-mode files are every
+    shipment of the most common mode. The weight-band files are the
+    weighed shipments inside the stated kilogram band (and, for country
+    and vendor, also inside that mode). A band file has no freight-text
+    exclusions left in it, because a non-numeric weight never entered
+    the band. Those exclusions are the columns on the full-population cuts.
+    """
+    if shipments["asn_dn"].nunique() != len(shipments):
+        raise SystemExit("scorecard rollup is not one row per ASN/DN")
+    overall = overall_kpis(shipments)
+    controls = control_frame(shipments)
+    reference = _reference_median(controls)
+    mode = str(controls.loc[controls["metric"] == "most_common_mode", "value"].iloc[0])
+
+    by_mode = cut_kpis(shipments, "shipment_mode")
+    by_country = cut_kpis(shipments, "country")
+    by_vendor = cut_kpis(shipments, "vendor")
+    by_inco = cut_kpis(shipments, "vendor_inco_term")
+
+    mode_pop = shipments.loc[shipments["shipment_mode"] == mode].copy()
+    by_country_mode = cut_kpis(mode_pop, "country")
+    by_vendor_mode = cut_kpis(mode_pop, "vendor")
+
+    band_all = shipments.loc[weight_band_mask(shipments)].copy()
+    by_mode_band = cut_kpis(band_all, "shipment_mode")
+    band_mode = shipments.loc[
+        weight_band_mask(shipments) & (shipments["shipment_mode"] == mode)
+    ].copy()
+    by_country_band = cut_kpis(band_mode, "country")
+    by_vendor_band = cut_kpis(band_mode, "vendor")
+
+    survival = pd.concat(
+        [
+            survival_table(shipments, "vendor", reference),
+            survival_table(shipments, "country", reference),
+        ],
+        ignore_index=True,
+    )
+    small = small_n_table(
+        [
+            ("kpi_by_country", by_country, "country"),
+            ("kpi_by_vendor", by_vendor, "vendor"),
+            ("kpi_by_inco", by_inco, "vendor_inco_term"),
+            ("kpi_by_country_within_top_mode", by_country_mode, "country"),
+            ("kpi_by_vendor_within_top_mode", by_vendor_mode, "vendor"),
+            ("kpi_by_country_within_top_mode_weight_band", by_country_band, "country"),
+            ("kpi_by_vendor_within_top_mode_weight_band", by_vendor_band, "vendor"),
+            ("kpi_by_mode", by_mode, "shipment_mode"),
+            ("kpi_by_mode_weight_band", by_mode_band, "shipment_mode"),
+        ]
+    )
+    quantiles = quantile_table(shipments)
+
+    # The band population is already weighed, so its shipment count is a
+    # weighed count. Say so on the file rather than letting a reader add
+    # the exclusion columns and think shipments were dropped twice.
+    for frame in (by_mode_band, by_country_band, by_vendor_band):
+        frame.insert(1, "population", "weighed_inside_weight_band")
+    by_country_mode.insert(1, "population", f"all_shipments_mode_{mode}")
+    by_vendor_mode.insert(1, "population", f"all_shipments_mode_{mode}")
+
+    return [
+        save_csv(shipments, "shipment_rollup.csv", max_rows=len(shipments)),
+        save_csv(overall, "kpi_overall.csv"),
+        save_csv(by_mode, "kpi_by_mode.csv"),
+        save_csv(by_country, "kpi_by_country.csv"),
+        save_csv(by_vendor, "kpi_by_vendor.csv"),
+        save_csv(by_inco, "kpi_by_inco.csv"),
+        save_csv(by_country_mode, "kpi_by_country_within_top_mode.csv"),
+        save_csv(by_vendor_mode, "kpi_by_vendor_within_top_mode.csv"),
+        save_csv(by_country_band, "kpi_by_country_within_top_mode_weight_band.csv"),
+        save_csv(by_vendor_band, "kpi_by_vendor_within_top_mode_weight_band.csv"),
+        save_csv(by_mode_band, "kpi_by_mode_weight_band.csv"),
+        save_csv(controls, "kpi_controls.csv"),
+        save_csv(survival, "kpi_control_survival.csv"),
+        save_csv(small, "kpi_small_n.csv", max_rows=800),
+        save_csv(quantiles, "kpi_freight_per_kg_quantiles.csv"),
+    ]
+
 
 
 def main() -> None:
@@ -1038,18 +1805,23 @@ def main() -> None:
     constancy = constancy_table(df)
     patterns = shipment_patterns(df)
     status = rollup_status(constancy, patterns)
-    if int(status["gate_passed"].iloc[0]) != 0:
+    # The raw-string gate is recorded above, including when it fails.
+    # Failing it does not skip the rate, and passing it would not either.
+    # The accepted rule is the Yes line. yes_line_rollup raises if the
+    # facts that justify that rule are gone (two numeric freight strings,
+    # two numeric weights, or not exactly one Yes line). That raise is
+    # the opposite of a silent skip. Manufacturing site is not a scorecard
+    # column. The script checks the constancy table rather than copying a site.
+    site_mixed = int(
+        constancy.loc[
+            constancy["column_name"] == "Manufacturing Site", "shipments_not_constant"
+        ].iloc[0]
+    )
+    if site_mixed == 0:
         raise SystemExit(
-            "gate passed; this script has no shipment-rate path yet. "
-            "Do not invent one in the same commit that expected a failure, "
-            "and do not leave a passing gate unmeasured."
+            "manufacturing site is constant on this file; the decision to leave "
+            "it out of the scorecard was about the 880 mixed shipments"
         )
-    # The failure path is the one this extract takes. A future file that
-    # passes the gate must grow an explicit rate section. Until then the
-    # absence of kpi_by_mode.csv is the result, not an oversight.
-    forbidden = list(PROC.glob("kpi_*.csv"))
-    if forbidden:
-        raise SystemExit(f"refusing to leave a rate file in place: {forbidden}")
 
     summary = pattern_summary(patterns)
     pointers = see_pointer_check(df)
@@ -1125,16 +1897,27 @@ def main() -> None:
         save_csv(label_counts(df, "Vendor INCO Term"), "inco_line_counts.csv"),
         save_csv(date_window(df), "date_window.csv"),
         save_csv(other_date_labels(df), "non_delivery_date_labels.csv"),
-        save_csv(value_check(df), "line_item_value_check.csv"),
         save_csv(numeric_range_notes(df), "numeric_range_notes.csv"),
         save_csv(zero_weight_lines(df), "zero_weight_lines.csv"),
         save_csv(manufacturing_site_mix(df), "manufacturing_site_mix.csv"),
     ]
 
-    sql_result = verify_sql(df, patterns)
-    written.append(save_csv(sql_result, "sql_check_match.csv"))
-    save_charts(freight_classes, patterns)
+    # Accepted rule. The gate row is already in `written`. Rates follow.
+    shipments = yes_line_rollup(df, patterns)
+    if len(shipments) != int(status["shipments"].iloc[0]):
+        raise SystemExit("rollup shipment count is not the gate's shipment count")
+    written.append(save_csv(value_check(df, shipments), "line_item_value_check.csv"))
+    written.extend(write_scorecard(shipments))
 
+    sql_result = verify_sql(df, patterns, shipments)
+    written.append(save_csv(sql_result, "sql_check_match.csv", max_rows=800))
+    save_charts(freight_classes, patterns)
+    save_mode_rate_chart(
+        pd.read_csv(PROC / "kpi_by_mode.csv")
+    )
+
+    overall = pd.read_csv(PROC / "kpi_overall.csv")
+    overall_map = dict(zip(overall["metric"], overall["value"]))
     print(
         "confirmation "
         f"rows={EXPECTED_ROWS} cols={EXPECTED_COLS} encoding=latin-1 "
@@ -1142,7 +1925,11 @@ def main() -> None:
         f"gate_passed={int(status['gate_passed'].iloc[0])} "
         f"freight_not_constant={int(status['shipments_freight_not_constant'].iloc[0])} "
         f"weight_not_constant={int(status['shipments_weight_not_constant'].iloc[0])} "
-        f"files={len(written)} charts=2"
+        f"priced_n={overall_map['priced_n']} "
+        f"weighed_n={overall_map['weighed_n']} "
+        f"median_freight_per_kg={overall_map['median_freight_per_kg']} "
+        f"mean_freight_per_kg={overall_map['mean_freight_per_kg']} "
+        f"files={len(written)} charts=3"
     )
     print(f"processed_dir={PROC}")
     print(f"images_dir={IMG}")

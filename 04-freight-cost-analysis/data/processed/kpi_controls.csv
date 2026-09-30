@@ -1,0 +1,12 @@
+metric,value
+most_common_mode,Air
+most_common_mode_shipments,4541
+most_common_mode_weighed_n,4096
+weight_band_lo_kg,500.0
+weight_band_hi_kg,5000.0
+weight_band_edges,inclusive
+rank_min_weighed,20
+reference_population,Air and weight in band
+reference_weighed_n,1971
+reference_median_freight_per_kg,7.091310572687225
+reference_mean_freight_per_kg,8.421810441765968

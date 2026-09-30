@@ -1,6 +1,6 @@
 # Logistics Performance Dashboard — Olist Brazilian E-Commerce
 
-> Executive summary — fill in as the project progresses.
+> Coverage is uneven, the extra days are in transit, and the 93.2% on-time rate hides the wait. Do not reprice freight from the rise in freight per item, and do not book a saving. The weekly page is the HTML dashboard, not a Tableau workbook.
 
 ## Business Question
 Where are our customers relative to our sellers, how does distance affect delivery time and freight cost, and what does leadership need to see weekly?
@@ -12,7 +12,7 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
 - **Plan:** question, grain, distance, and KPI definitions. See [`reports/01-plan.md`](reports/01-plan.md).
 - **Analyze:** grain, distance, delivery time, and freight. See [`reports/02-analyze.md`](reports/02-analyze.md).
 - **Construct:** weekly page, frozen distance bands, and the extracts that page reads. See [`reports/03-construct.md`](reports/03-construct.md).
-- **Execute:** _how results are delivered (dashboard, report, recommendation)_
+- **Execute:** the recommendation, what is not claimed, and how the page is delivered. See [`reports/04-execute.md`](reports/04-execute.md). The one-page decision is [`reports/executive-summary.md`](reports/executive-summary.md). The longer write-up is [`reports/business-report.md`](reports/business-report.md).
 
 ## Key Findings
 - 63.8% of delivered items cross a state line (70,328 / 110,189). São Paulo has 59.7% of sellers (1,849 / 3,095) and 41.9% of customer people (40,302 / 96,096). Rio de Janeiro has 12.9% of the people and 5.5% of the sellers.
@@ -20,15 +20,19 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
 - Median freight per item rises from R$9.06 under 50 km to R$25.38 at 1,000 km or more. Median freight per kilogram is R$22.22 and is not higher in every longer band. On time, by calendar date, is 93.2% (89,936 / 96,470), including 89.6% in the longest band where the median wait is 16.4 days.
 
 ## Recommendation
-_What should the business do, and why?_
+Treat coverage, transit, and the promise as three conversations, and do not reprice from the freight slope. Sellers are concentrated in São Paulo (59.7% of sellers, 41.9% of customer people). Rio de Janeiro is 12.9% of people and 5.5% of sellers. Paraná is seller-heavy (5.1% of people, 11.3% of sellers). Alagoas, Tocantins, Amapá, and Roraima have customers and no seller. 63.8% of delivered items cross a state. The extra days are in transit (median 2.0 days under 50 km, 13.2 days at 1,000 km or more), not in handling (1.7–1.9 days). Keep median days next to the on-time rate: 93.2% on time overall, and about 89.6% in the longest band, where the median wait is 16.4 days. Median freight per item rises from R$9.06 to R$25.38, but freight per kilogram dips and then rises, so weight is in the mix. Do not turn the slope into a new price, and do not quote a saving.
 
 ## Impact
-_Estimated $ / % / service-level impact._
+Not a dollar impact, and not a forecast. In this extract the reported median purchase-to-door time is 11.5 days longer in the 1,000 km or more band than under 50 km (16.4 versus 4.9). Reported median transit is 11.2 days longer (13.2 versus 2.0). Handling differs by 0.2 days (1.9 versus 1.7). On time, by calendar date, is 89,936 / 96,470 = 93.2%, and about 89.6% in the longest band. Those are differences and rates in this historical extract. They are not days saved and not reais saved. Currency is BRL. No USD figure is estimated.
+
+## Dashboard
+The weekly page is published at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>. The same HTML in this repo is [`dashboards/logistics_weekly.html`](dashboards/logistics_weekly.html). There is no Tableau Public URL.
 
 ## Tools
-SQL (PostgreSQL/SQLite), Python (pandas), Tableau/Power BI
+SQL (SQLite; definitions in `sql/`) and Python (pandas). The dashboard is the HTML page above. Tableau Public was not published.
 
 ## How to Reproduce
 1. Download raw data into `data/raw/` (see `data/README.md`).
 2. Run notebooks in `notebooks/` in order; reusable code lives in `src/`, SQL in `sql/`.
 3. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.
+4. Open the published weekly page at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>, or open [`dashboards/logistics_weekly.html`](dashboards/logistics_weekly.html) locally. That HTML is the dashboard. No Tableau Public URL was created.

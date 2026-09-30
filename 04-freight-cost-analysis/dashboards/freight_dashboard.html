@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freight cost per kg — USAID SCMS</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif; background: #f7f4ee; color: #1c1915; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1 { font-size: 1.7rem; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.15rem; font-weight: 600; margin: 28px 0 8px; }
+  p, li { line-height: 1.45; }
+  .lede { font-size: 1.05rem; max-width: 72ch; }
+  .meta { color: #5c584f; font-family: "Segoe UI", sans-serif; font-size: 0.92rem; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 18px 0; }
+  .card { background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px 14px; }
+  .card .k { font-family: "Segoe UI", sans-serif; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: #5c584f; }
+  .card .v { font-size: 1.55rem; margin-top: 4px; }
+  .card .s { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: #3d3a34; }
+  .quote { color: #0f6b4c; }
+  .high { color: #8a4b08; }
+  figure { margin: 12px 0; background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px; }
+  figcaption { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: #5c584f; margin-top: 6px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-family: "Segoe UI", sans-serif; font-size: 0.88rem; }
+  th, td { border-bottom: 1px solid #eee8de; padding: 6px 8px; text-align: left; }
+  th { background: #1f4e79; color: #fff; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.barcell { width: 28%; }
+  .note { font-family: "Segoe UI", sans-serif; font-size: 0.9rem; background: #fff8e8; border-left: 4px solid #c47b2b; padding: 10px 12px; }
+  .bars { background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px 14px; font-family: "Segoe UI", sans-serif; font-size: 0.88rem; }
+  .row { display: grid; grid-template-columns: 150px 1fr 150px; gap: 8px; align-items: center; margin: 8px 0; }
+  .track { background: #eee8de; height: 14px; border-radius: 3px; }
+  .bar { background: #1f4e79; height: 14px; border-radius: 3px; }
+  .bar.hot { background: #8a4b08; }
+  footer { margin-top: 28px; font-family: "Segoe UI", sans-serif; font-size: 0.82rem; color: #5c584f; }
+  code { font-family: ui-monospace, monospace; font-size: 0.9em; }
+  pre { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta">PACE Execute · USAID SCMS shipments · weighed Yes-line notes · delivered 2006-05-02 through 2015-09-14 · no model was refit for this page</p>
+  <h1>Freight cost per kilogram</h1>
+  <p class="lede">Question: what does a typical weighed shipment cost per kilogram, and where does the rate stay high? Answer: the median, $7.26 per kg on 6,174 notes, not the mean of $38.93. Air's median is $10.02. Orgenics stays high on air. The only dollar figure is a what-if upper bound, not a booked saving.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="k">Weighed shipments</div>
+      <div class="v" data-exact="6174" data-kind="int">6,174</div>
+      <div class="s">Yes-line freight and weight, both real numbers. One row per ASN/DN.</div>
+    </div>
+    <div class="card">
+      <div class="k">Median $/kg</div>
+      <div class="v quote" data-exact="7.263901636359817" data-kind="usd2">$7.26</div>
+      <div class="s">Exact 7.263901636359817. Quote this, not the mean. The mean is $38.93.</div>
+    </div>
+    <div class="card">
+      <div class="k">Air median</div>
+      <div class="v" data-exact="10.024019808611591" data-kind="usd2">$10.02</div>
+      <div class="s">n=4,096. Exact 10.024019808611591.</div>
+    </div>
+    <div class="card">
+      <div class="k">Truck median</div>
+      <div class="v" data-exact="2.5032950842130273" data-kind="usd2">$2.50</div>
+      <div class="s">All weighed truck notes, n=1,162. Exact 2.5032950842130273. The what-if uses the heavy-truck median, $1.53, not this figure.</div>
+    </div>
+    <div class="card">
+      <div class="k">What-if upper bound</div>
+      <div class="v high" data-exact="25803810.088146247" data-kind="mil1">$25.8 million</div>
+      <div class="s">Not a booked saving. 1,477 heavy air notes. A 25% share is $6.45 million.</div>
+    </div>
+  </div>
+
+  <h2>Median freight per kg by named mode</h2>
+  <figure>
+    <svg viewBox="0 0 980 292" width="100%" role="img" aria-label="Median freight per kilogram by named mode. Air $10.02 on 4,096 shipments, Air Charter $4.32 on 423, Truck $2.50 on 1,162, Ocean $1.68 on 282. Blank mode is not shown.">
+<rect x="0" y="0" width="980" height="292" fill="#ffffff"/>
+<text x="188" y="22" font-size="12" fill="#5c584f" font-family="Segoe UI, sans-serif">Median USD per kg. Named modes only. Bar length is the median. The label is the count.</text>
+<line x1="188" y1="268" x2="608" y2="268" stroke="#e6e2da"/>
+<text x="188" y="286" font-size="11" fill="#5c584f" font-family="Segoe UI, sans-serif">$0</text>
+<text x="397.5" y="286" font-size="11" fill="#5c584f" text-anchor="middle" font-family="Segoe UI, sans-serif">$5</text>
+<line x1="397.5" y1="36" x2="397.5" y2="268" stroke="#e6e2da" stroke-dasharray="3 3"/>
+<text x="608" y="286" font-size="11" fill="#5c584f" text-anchor="end" font-family="Segoe UI, sans-serif">$10.02</text>
+<text x="180" y="66" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">Air</text>
+<rect x="188" y="48" width="420.00" height="26" fill="#1f4e79"/>
+<text x="624" y="66" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">$10.02 · n=4,096</text>
+<text x="180" y="126" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">Air Charter</text>
+<rect x="188" y="108" width="180.91" height="26" fill="#1f4e79"/>
+<text x="624" y="126" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">$4.32 · n=423</text>
+<text x="180" y="186" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">Truck</text>
+<rect x="188" y="168" width="104.89" height="26" fill="#1f4e79"/>
+<text x="624" y="186" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">$2.50 · n=1,162</text>
+<text x="180" y="246" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">Ocean</text>
+<rect x="188" y="228" width="70.43" height="26" fill="#1f4e79"/>
+<text x="624" y="246" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">$1.68 · n=282</text>
+</svg>
+    <figcaption>Medians from <code>dashboards/shipment_weighed.csv</code>. Air $10.02 (n=4,096), Air Charter $4.32 (n=423), Truck $2.50 (n=1,162), Ocean $1.68 (n=282). Blank mode is not a mode: 211 rows, median $4.65, are left off this chart. Do not sort a mode view by total freight dollars.</figcaption>
+  </figure>
+  <p class="note">Charter looks cheap on the median because of size. Median weight is 3,289 kg on air charter and 656 kg on air. The regression is not shown as a live model on this page. Holding weight, that log model puts charter about 66% above air. After rates above $67.65 per kg are dropped (the weighed-set 95th percentile), the cautious figure is about 21%, not 66%. It is still not a saving.</p>
+
+  <h2>Median versus mean: the mean is the tail</h2>
+  <p class="meta">The mean sits next to the median so $38.93 is not read as a typical shipment. Mean ÷ median is how far the tail pulls that row. The maximum is $31,088 per kg on DN-1683, air charter, 4 kg, freight $124,351 (exact rate 31087.705, exact freight 124350.82).</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Mode</th>
+        <th class="num">Shipments</th>
+        <th class="num">Median $/kg</th>
+        <th class="num">Mean $/kg</th>
+        <th class="num">Median weight, kg</th>
+        <th class="num">Mean ÷ median</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Air</td><td class='num' data-exact='4096' data-kind='int'>4,096</td><td class='num' data-exact='10.024019808611591' data-kind='usd2'>$10.02</td><td class='num' data-exact='33.52045768694116' data-kind='usd2'>$33.52</td><td class='num'>656</td><td class='num'>3.3×</td></tr>
+<tr><td>Air Charter</td><td class='num' data-exact='423' data-kind='int'>423</td><td class='num' data-exact='4.317785194174758' data-kind='usd2'>$4.32</td><td class='num' data-exact='162.32892875891395' data-kind='usd2'>$162.33</td><td class='num'>3,289</td><td class='num'>37.6×</td></tr>
+<tr><td>Truck</td><td class='num' data-exact='1162' data-kind='int'>1,162</td><td class='num' data-exact='2.5032950842130273' data-kind='usd2'>$2.50</td><td class='num' data-exact='14.440804922441961' data-kind='usd2'>$14.44</td><td class='num'>2,673</td><td class='num'>5.8×</td></tr>
+<tr><td>Ocean</td><td class='num' data-exact='282' data-kind='int'>282</td><td class='num' data-exact='1.6810197953137624' data-kind='usd2'>$1.68</td><td class='num' data-exact='20.662665611969857' data-kind='usd2'>$20.66</td><td class='num'>5,687</td><td class='num'>12.3×</td></tr>
+<tr><td><strong>All weighed</strong></td><td class='num'><strong data-exact='6174' data-kind='int'>6,174</strong></td><td class='num'><strong data-exact='7.263901636359817' data-kind='usd2'>$7.26</strong></td><td class='num'><strong data-exact='38.930123119648606' data-kind='usd2'>$38.93</strong></td><td class='num'><strong>1,054.5</strong></td><td class='num'><strong>5.4×</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="meta">Named-mode counts: 4,096 + 423 + 1,162 + 282 = 5,963. Plus 211 blank-mode rows = 6,174. Blank median $4.65, mean $55.84, median weight 742 kg. Those rows are missing a mode. They are not ranked here. The all-weighed median weight, 1,054.5 kg, is the what-if cutoff.</p>
+
+  <h2>Orgenics versus every other air vendor</h2>
+  <p class="meta">Air only. Orgenics, Ltd against the other air vendors pooled, not a ranking of tiny vendors. 599 of 600 Orgenics weighed notes are air. This is a rate to challenge. It is not a dollar to remove from a contract.</p>
+  
+<div class="bars" role="img" aria-label="Median freight per kg on air. Orgenics, Ltd $17.33 on 599 notes. Every other air vendor pooled $8.77 on 3,497 notes.">
+  <div class="row"><span>Orgenics, Ltd</span><div class="track"><div class="bar hot" style="width:100%"></div></div><span>$17.33 · n=599</span></div>
+  <div class="row"><span>Other air vendors</span><div class="track"><div class="bar" style="width:50.61%"></div></div><span>$8.77 · n=3,497</span></div>
+</div>
+
+  <p class="meta">Inside 500–5,000 kg, air's median is $7.09 on 1,971 weighed air notes. Orgenics in that band is $15.12 on 390 notes. SCMS from RDC is the largest vendor there (612 of 1,971) and sits below the band, median $5.66.</p>
+
+  <h2>Air vendors with at least 50 weighed air shipments</h2>
+  <p class="meta">Filter: shipment mode Air, and at least 50 weighed air notes. 51 air vendors; 12 meet the cutoff. Vendors under 50 are not ranked. Bar length is that vendor's median divided by the Orgenics median ($17.33).</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Vendor</th>
+        <th class="num">Air notes</th>
+        <th class="num">Median $/kg</th>
+        <th>Median, scaled to Orgenics</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Orgenics, Ltd</td><td class='num'>599</td><td class='num' data-exact='17.334166666666665' data-kind='usd2'>$17.33</td><td class='barcell'><div class='track'><div class='bar hot' style='width:100.00%'></div></div></td></tr>
+<tr><td>Trinity Biotech, Plc</td><td class='num'>265</td><td class='num' data-exact='15.049060402684564' data-kind='usd2'>$15.05</td><td class='barcell'><div class='track'><div class='bar' style='width:86.82%'></div></div></td></tr>
+<tr><td>SHANGHAI KEHUA BIOENGINEERING CO.,LTD.  (KHB)</td><td class='num'>70</td><td class='num' data-exact='12.109739751336452' data-kind='usd2'>$12.11</td><td class='barcell'><div class='track'><div class='bar' style='width:69.86%'></div></div></td></tr>
+<tr><td>ABBVIE LOGISTICS (FORMERLY ABBOTT LOGISTICS BV)</td><td class='num'>304</td><td class='num' data-exact='11.540497475497475' data-kind='usd2'>$11.54</td><td class='barcell'><div class='track'><div class='bar' style='width:66.58%'></div></div></td></tr>
+<tr><td>Standard Diagnostics, Inc.</td><td class='num'>93</td><td class='num' data-exact='10.584032634032637' data-kind='usd2'>$10.58</td><td class='barcell'><div class='track'><div class='bar' style='width:61.06%'></div></div></td></tr>
+<tr><td>CHEMBIO DIAGNOSTIC SYSTEMS, INC.</td><td class='num'>103</td><td class='num' data-exact='9.375661861074706' data-kind='usd2'>$9.38</td><td class='barcell'><div class='track'><div class='bar' style='width:54.09%'></div></div></td></tr>
+<tr><td>SCMS from RDC</td><td class='num'>1,411</td><td class='num' data-exact='7.841043478260869' data-kind='usd2'>$7.84</td><td class='barcell'><div class='track'><div class='bar' style='width:45.23%'></div></div></td></tr>
+<tr><td>Aurobindo Pharma Limited</td><td class='num'>361</td><td class='num' data-exact='6.815802781289507' data-kind='usd2'>$6.82</td><td class='barcell'><div class='track'><div class='bar' style='width:39.32%'></div></div></td></tr>
+<tr><td>MYLAN LABORATORIES LTD (FORMERLY MATRIX LABORATORIES)</td><td class='num'>211</td><td class='num' data-exact='5.980235380355107' data-kind='usd2'>$5.98</td><td class='barcell'><div class='track'><div class='bar' style='width:34.50%'></div></div></td></tr>
+<tr><td>CIPLA LIMITED</td><td class='num'>105</td><td class='num' data-exact='5.944518492672716' data-kind='usd2'>$5.94</td><td class='barcell'><div class='track'><div class='bar' style='width:34.29%'></div></div></td></tr>
+<tr><td>STRIDES ARCOLAB LIMITED</td><td class='num'>55</td><td class='num' data-exact='5.422539682539682' data-kind='usd2'>$5.42</td><td class='barcell'><div class='track'><div class='bar' style='width:31.28%'></div></div></td></tr>
+<tr><td>HETERO LABS LIMITED</td><td class='num'>148</td><td class='num' data-exact='4.1888433497469695' data-kind='usd2'>$4.19</td><td class='barcell'><div class='track'><div class='bar' style='width:24.17%'></div></div></td></tr>
+    </tbody>
+  </table>
+
+  <h2>What-if upper bound, not a booked saving</h2>
+  <p class="meta">Weighed air at or above the weighed-set median weight (1,054.5 kg), repriced at the heavy-truck median of $1.53 per kg, and only where the air rate is higher. Heavy-truck median is the median on 793 truck notes at or above that same weight. Exact truck-slice median 1.5292046183450931. It is not the all-truck median and not the ocean median.</p>
+  <table>
+    <thead>
+      <tr><th>What-if piece</th><th class="num">Figure</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Heavy air notes (weight ≥ 1,054.5 kg)</td><td class="num" data-exact="1664" data-kind="int">1,664</td></tr>
+      <tr><td>Of which the air rate is above $1.53/kg</td><td class="num" data-exact="1477" data-kind="int">1,477</td></tr>
+      <tr><td>Kilograms on those 1,477 notes</td><td class="num" data-exact="4761674.0" data-kind="kgm">4.76 million</td></tr>
+      <tr><td>Actual freight on those notes</td><td class="num" data-exact="33085383.96" data-kind="mil1">$33.1 million</td></tr>
+      <tr><td>Dollar difference, upper bound</td><td class="num" data-exact="25803810.088146247" data-kind="mil1">$25.8 million</td></tr>
+      <tr><td>25 percent of that difference</td><td class="num" data-exact="6450952.522036562" data-kind="mil2">$6.45 million</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Truck may be infeasible for the lane, the lead time, the cold chain, or the commodity. Included-in-price (593) and invoiced-separately (239) freight are excluded, not zeroed. Ocean is not the counterfactual, because DDP hides freight (193 of 282 ocean model rows are DDP). 187 of the 1,664 heavy air notes are already at or below the heavy-truck median and add nothing to the gap. Dollars are historical, 2006–2015. This is an upper bound, not a booked saving.</p>
+
+  <h2>What not to conclude</h2>
+  <ul>
+    <li>Do not call a country expensive off an uncontrolled median. Among countries with at least 20 weighed shipments, Botswana leads that list (median $38.94 on 62). Inside air and the 500–5,000 kg band that count is 7. Seven is under the rank threshold of 20.</li>
+    <li>Do not plan on the 66 percent charter gap. The cautious association, after dropping rates above $67.65 per kg, is about 21 percent, and it is still not a saving.</li>
+    <li>Do not switch a lane to ocean because the ocean median is $1.68. Ocean's cheap median is tangled with DDP.</li>
+    <li>Do not headline the mean of $38.93. The median, $7.26, is the typical weighed shipment.</li>
+  </ul>
+
+  <footer>
+    <p>This HTML file is the openable stand-in. Tableau Public is still not published. There is no public URL. The extract, if that manual upload is done later, is <code>dashboards/shipment_weighed.csv</code> (6,174 weighed shipments). This page does not log in anywhere. Aggregates were computed from that file. The raw rows are not embedded.</p>
+    <p>Mode scorecard embedded in this file (mode, shipments, median freight per kg, mean freight per kg, median weight kg). The blank row is labeled as not a mode:</p>
+    <pre id="scorecard">Air,4096,10.024019808611591,33.520457686941157,656.0
+Air Charter,423,4.317785194174758,162.328928758913946,3289.0
+Truck,1162,2.503295084213027,14.440804922441961,2673.0
+Ocean,282,1.681019795313762,20.662665611969857,5687.0
+(blank),211,4.654915254237289,55.841524016710288,742.0
+All weighed,6174,7.263901636359817,38.930123119648606,1054.5</pre>
+  </footer>
+</main>
+<script type="application/json" id="agg">{
+  "source_rows": 6174,
+  "median": 7.263901636359817,
+  "mean": 38.930123119648606,
+  "modes": [
+    {
+      "mode": "Air",
+      "n": 4096,
+      "median": 10.024019808611591,
+      "mean": 33.52045768694116,
+      "named": true
+    },
+    {
+      "mode": "Air Charter",
+      "n": 423,
+      "median": 4.317785194174758,
+      "mean": 162.32892875891395,
+      "named": true
+    },
+    {
+      "mode": "Truck",
+      "n": 1162,
+      "median": 2.5032950842130273,
+      "mean": 14.440804922441961,
+      "named": true
+    },
+    {
+      "mode": "Ocean",
+      "n": 282,
+      "median": 1.6810197953137624,
+      "mean": 20.662665611969857,
+      "named": true
+    },
+    {
+      "mode": "(blank)",
+      "n": 211,
+      "median": 4.654915254237289,
+      "mean": 55.84152401671029,
+      "named": false
+    }
+  ],
+  "orgenics_air_n": 599,
+  "orgenics_air_median": 17.334166666666665,
+  "other_air_n": 3497,
+  "other_air_median": 8.772086217124778,
+  "whatif_n": 1477,
+  "whatif_gap": 25803810.088146247,
+  "whatif_share": 6450952.522036562,
+  "heavy_truck_median": 1.5292046183450931,
+  "vendor_ns": [
+    599,
+    265,
+    70,
+    304,
+    93,
+    103,
+    1411,
+    361,
+    211,
+    105,
+    55,
+    148
+  ]
+}</script>
+<script>
+  const agg = JSON.parse(document.getElementById("agg").textContent);
+  const lines = document.getElementById("scorecard").textContent.trim().split(/\n/).filter(function (s) { return s.length; });
+  let namedN = 0;
+  let blankN = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const parts = lines[i].split(",");
+    if (parts[0] === "All weighed") continue;
+    if (parts[0] === "(blank)") blankN += Number(parts[1]);
+    else namedN += Number(parts[1]);
+  }
+  const modeN = agg.modes.reduce(function (s, m) { return s + m.n; }, 0);
+  const vendorN = agg.vendor_ns.reduce(function (s, n) { return s + n; }, 0);
+  function fmt(el) {
+    const x = Number(el.dataset.exact);
+    const k = el.dataset.kind;
+    if (k === "usd2") return "$" + x.toFixed(2);
+    if (k === "int") return x.toLocaleString("en-US");
+    if (k === "mil1") return "$" + (x / 1e6).toFixed(1) + " million";
+    if (k === "mil2") return "$" + (x / 1e6).toFixed(2) + " million";
+    if (k === "kgm") return (x / 1e6).toFixed(2) + " million";
+    return null;
+  }
+  let bad = [];
+  document.querySelectorAll("[data-exact]").forEach(function (el) {
+    const expect = fmt(el);
+    const got = el.textContent.trim();
+    if (expect !== null && got !== expect) bad.push(got + " != " + expect);
+  });
+  if (lines.length !== 6 || namedN !== 5963 || blankN !== 211 || namedN + blankN !== 6174 || modeN !== 6174 || agg.source_rows !== 6174 || agg.whatif_n !== 1477 || agg.orgenics_air_n + agg.other_air_n !== 4096 || vendorN < 599 || bad.length) {
+    document.body.insertAdjacentHTML("afterbegin", "<p style='background:#f8d0d0;padding:8px'>Freight dashboard check failed. " + bad.join("; ") + "</p>");
+  }
+</script>
+</body>
+</html>

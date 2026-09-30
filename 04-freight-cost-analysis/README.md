@@ -30,10 +30,11 @@ Use the median rate, not the mean, as the description of a typical shipment. Cha
 Not a booked saving. Upper-bound what-if only: $25.8 million if every one of 1,477 heavy air notes had moved at the observed heavy-truck median of $1.53 per kg, or $6.45 million at a 25 percent share of that gap. Historical prices, delivered to client 2006-05-02 through 2015-09-14. Included-in-price and invoiced-separately freight are not in the figure.
 
 ## Tools
-Python (pandas, statsmodels) and SQL for the Analyze rate checks. Tableau Public is not published; the extract is dashboards/shipment_weighed.csv (6,174 weighed shipments).
+Python (pandas, statsmodels) and SQL for the Analyze rate checks. The openable stand-in is [dashboards/freight_dashboard.html](dashboards/freight_dashboard.html). Tableau Public is still not published; the extract is dashboards/shipment_weighed.csv (6,174 weighed shipments).
 
 ## How to Reproduce
 1. Download raw data into `data/raw/` (see `data/README.md`). The project copy is already on disk and stays git-ignored.
 2. Run notebooks in `notebooks/` in order; reusable code lives in `src/`, SQL in `sql/`.
 3. The Execute scenario is `python src/execute_freight.py` from this folder, or `python 04-freight-cost-analysis/src/execute_freight.py` from the repo root.
 4. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.
+5. Open [`dashboards/freight_dashboard.html`](dashboards/freight_dashboard.html) in a browser. That HTML is the openable stand-in. Tableau Public is still not published.

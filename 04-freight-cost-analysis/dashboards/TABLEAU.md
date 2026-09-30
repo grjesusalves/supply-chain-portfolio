@@ -2,6 +2,8 @@
 
 Planner file: [`shipment_weighed.csv`](shipment_weighed.csv), one row per weighed `ASN/DN #`, from the Yes-line rollup. Execute checked this file against that rollup. **6,174** rows. The file was not rewritten. `tableau` and `tabcmd` are not how this stage publishes, and this workbook was **not** published to Tableau Public. There is no public URL. Publishing is a manual step the user still has to do.
 
+The openable stand-in is [`freight_dashboard.html`](freight_dashboard.html). Tableau Public is still not published.
+
 The file is the weighed set only. Yes-line freight is a plain decimal and Yes-line weight is a plain decimal greater than zero. Included-in-price (593 shipments), invoiced separately (239), weight captured separately (23), and `ASN-22365` (weight 0) are not in this file and are not zeros. A low rate on this extract is not a cheap INCO term. Insurance and manufacturing site are not columns. There is no savings column. Do not add one. The dollar what-if is computed in `src/execute_freight.py` and written under `data/processed/execute_scenario_*.csv`. Summing a counterfactual on this extract would look like an invoice, and it would not match the scenario unless the filter is exactly the one below.
 
 | Column | Meaning |

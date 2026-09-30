@@ -1,0 +1,182 @@
+metric,value
+scenario_label,what_if_not_a_saving
+population_rule,Weighed Air shipments whose Yes-line weight is at or above the median Yes-line weight of the weighed set
+counterfactual_rule,"Observed median freight per kg of weighed Truck shipments on that same weight slice, not a regression coefficient"
+weight_cutoff_kg,1054.5
+weight_cutoff_source,median weight_kg on the weighed set
+weighed_n,6174
+weighed_median_freight_per_kg,7.263901636359817
+weighed_mean_freight_per_kg,38.93012311964861
+weighed_max_freight_per_kg,31087.705
+weighed_p95_freight_per_kg,67.64871004566209
+max_rate_asn,DN-1683
+max_rate_mode,Air Charter
+max_rate_weight_kg,4.0
+max_rate_freight_usd,124350.82
+freight_to_value_n,6186
+median_freight_to_value,0.08758549492765344
+total_numeric_freight,68817849.41
+total_numeric_freight_weighed,68686757.92
+priced_n,6198
+excluded_included_in_price,593
+excluded_invoiced_separately,239
+excluded_see_another_note,0
+excluded_weight_not_numeric,23
+excluded_weight_not_positive,1
+zero_weight_asn,ASN-22365
+air_weighed_n,4096
+air_median_weight_kg,656.0
+air_median_freight_per_kg,10.02401980861159
+heavy_air_n,1664
+heavy_air_total_kg,7437442.0
+heavy_air_total_freight_usd,34144242.03
+heavy_air_not_above_truck_median_n,187
+truck_slice_n,793
+truck_slice_median_freight_per_kg,1.5292046183450931
+truck_slice_total_kg,7291964.0
+entering_n,1477
+entering_total_kg,4761674.0
+entering_total_freight_usd,33085383.96
+dollar_difference_usd,25803810.088146247
+dollar_difference_from_bill_usd,25803810.088146247
+share,0.25
+share_25_of_gap_usd,6450952.522036562
+share_25_meaning,25 percent of the full dollar gap. Not a selected subset of notes. Both the full gap and this share are upper-bound what-ifs.
+charter_weighed_at_or_above_cutoff_not_moved,301
+ocean_weighed_at_or_above_cutoff_not_counterfactual,250
+blank_weighed_at_or_above_cutoff_not_in_scenario,79
+air_band_n,1971
+air_band_median_freight_per_kg,7.091310572687225
+orgenics_air_band_n,390
+orgenics_air_band_median_freight_per_kg,15.1159699363971
+rdc_air_band_n,612
+rdc_air_band_median_freight_per_kg,5.655085537731795
+top_uncontrolled_country,Botswana
+top_uncontrolled_country_weighed_n,62
+top_uncontrolled_country_median_freight_per_kg,38.938094117647054
+top_uncontrolled_country_air_band_n,7
+uncontrolled_top5_keeping_air_band_n_ge_20,"Guyana|Congo, DRC"
+model_n,5963
+blank_weighed_n,211
+air_model_n,4096
+full_n,5963
+full_r_squared,0.6660299231602032
+mode_only_r_squared,0.17142161894896146
+mode_weight_r_squared,0.624897919846368
+p95_n,5658
+p95_r_squared,0.6094230866419924
+ocean_model_n,282
+ocean_model_ddp_n,193
+orgenics_model_n,600
+orgenics_model_air_n,599
+delivered_min,2006-05-02
+delivered_max,2015-09-14
+mode_reference,Air
+inco_reference,N/A - From RDC
+full_air_charter_ci_high,0.6086972147710609
+full_air_charter_ci_low,0.40014577395283873
+full_air_charter_coef,0.5044214943619498
+full_air_charter_contains_0,0
+full_air_charter_expm1,0.6560272222122926
+full_air_charter_term,"C(mode, Treatment(reference='Air'))[T.Air Charter]"
+full_log_weight_ci_high,-0.48859133659342635
+full_log_weight_ci_low,-0.521310803420571
+full_log_weight_coef,-0.5049510700069987
+full_log_weight_contains_0,0
+full_log_weight_expm1,-0.3964648943269261
+full_log_weight_term,log_weight
+full_ocean_ci_high,0.20296891044869508
+full_ocean_ci_low,-0.04630920831811078
+full_ocean_coef,0.07832985106529215
+full_ocean_contains_0,1
+full_ocean_expm1,0.08147932695122935
+full_ocean_term,"C(mode, Treatment(reference='Air'))[T.Ocean]"
+full_orgenics_ci_high,0.650353472569052
+full_orgenics_ci_low,0.49503741646674093
+full_orgenics_coef,0.5726954445178964
+full_orgenics_contains_0,0
+full_orgenics_expm1,0.7730397465414948
+full_orgenics_term,orgenics
+full_truck_ci_high,-0.3751347482727915
+full_truck_ci_low,-0.5134742340654226
+full_truck_coef,-0.44430449116910703
+full_truck_contains_0,0
+full_truck_expm1,-0.35872986999493534
+full_truck_term,"C(mode, Treatment(reference='Air'))[T.Truck]"
+mode_only_air_charter_ci_high,-0.2477443742061095
+mode_only_air_charter_ci_low,-0.5791710892556131
+mode_only_air_charter_coef,-0.4134577317308613
+mode_only_air_charter_contains_0,0
+mode_only_air_charter_expm1,-0.33864051168950005
+mode_only_air_charter_term,"C(mode, Treatment(reference='Air'))[T.Air Charter]"
+mode_only_ocean_ci_high,-1.4031853835206334
+mode_only_ocean_ci_low,-1.7000753195882716
+mode_only_ocean_coef,-1.5516303515544525
+mode_only_ocean_contains_0,0
+mode_only_ocean_expm1,-0.788097783058091
+mode_only_ocean_term,"C(mode, Treatment(reference='Air'))[T.Ocean]"
+mode_only_truck_ci_high,-1.238118048236483
+mode_only_truck_ci_low,-1.4011861033141193
+mode_only_truck_coef,-1.3196520757753012
+mode_only_truck_contains_0,0
+mode_only_truck_expm1,-0.7327717390209149
+mode_only_truck_term,"C(mode, Treatment(reference='Air'))[T.Truck]"
+mode_weight_air_charter_ci_high,0.49483544080400926
+mode_weight_air_charter_ci_low,0.2903765000992002
+mode_weight_air_charter_coef,0.3926059704516047
+mode_weight_air_charter_contains_0,0
+mode_weight_air_charter_expm1,0.4808347816972092
+mode_weight_air_charter_term,"C(mode, Treatment(reference='Air'))[T.Air Charter]"
+mode_weight_log_weight_ci_high,-0.48710997324224425
+mode_weight_log_weight_ci_low,-0.5193263119112531
+mode_weight_log_weight_coef,-0.5032181425767487
+mode_weight_log_weight_contains_0,0
+mode_weight_log_weight_expm1,-0.3954181050442178
+mode_weight_log_weight_term,log_weight
+mode_weight_ocean_ci_high,-0.3333946099760558
+mode_weight_ocean_ci_low,-0.5606804601135622
+mode_weight_ocean_coef,-0.447037535044809
+mode_weight_ocean_contains_0,0
+mode_weight_ocean_expm1,-0.360480096583939
+mode_weight_ocean_term,"C(mode, Treatment(reference='Air'))[T.Ocean]"
+mode_weight_truck_ci_high,-0.4989911430268443
+mode_weight_truck_ci_low,-0.625484098750756
+mode_weight_truck_coef,-0.5622376208888001
+mode_weight_truck_contains_0,0
+mode_weight_truck_expm1,-0.43006765654350976
+mode_weight_truck_term,"C(mode, Treatment(reference='Air'))[T.Truck]"
+p95_air_charter_ci_high,0.2809591679866576
+p95_air_charter_ci_low,0.10229920733529456
+p95_air_charter_coef,0.19162918766097609
+p95_air_charter_contains_0,0
+p95_air_charter_expm1,0.21122129787951574
+p95_air_charter_term,"C(mode, Treatment(reference='Air'))[T.Air Charter]"
+p95_log_weight_ci_high,-0.3931965902228805
+p95_log_weight_ci_low,-0.4245428785493292
+p95_log_weight_coef,-0.40886973438610485
+p95_log_weight_contains_0,0
+p95_log_weight_expm1,-0.3355992247398284
+p95_log_weight_term,log_weight
+p95_ocean_ci_high,0.03781813233413786
+p95_ocean_ci_low,-0.18359269167036268
+p95_ocean_coef,-0.07288727966811241
+p95_ocean_contains_0,1
+p95_ocean_expm1,-0.07029437915420675
+p95_ocean_term,"C(mode, Treatment(reference='Air'))[T.Ocean]"
+p95_orgenics_ci_high,0.6742141189048899
+p95_orgenics_ci_low,0.5247227556656192
+p95_orgenics_coef,0.5994684372852546
+p95_orgenics_contains_0,0
+p95_orgenics_expm1,0.8211504873567377
+p95_orgenics_term,orgenics
+p95_truck_ci_high,-0.46141398566072106
+p95_truck_ci_low,-0.592743463412094
+p95_truck_coef,-0.5270787245364076
+p95_truck_contains_0,0
+p95_truck_expm1,-0.4096730390852022
+p95_truck_term,"C(mode, Treatment(reference='Air'))[T.Truck]"
+extract_path,dashboards/shipment_weighed.csv
+extract_rows,6174
+extract_rewritten,0
+extract_check,matches
+tableau_published,0

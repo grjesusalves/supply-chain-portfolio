@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Late delivery by shipping mode — DataCo</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif; background: #f6f3ec; color: #1c1915; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1 { font-size: 1.7rem; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.15rem; font-weight: 600; margin: 28px 0 8px; }
+  p, li { line-height: 1.45; }
+  .lede { font-size: 1.05rem; max-width: 72ch; }
+  .meta { color: #5c584f; font-family: "Segoe UI", sans-serif; font-size: 0.92rem; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 18px 0; }
+  .card { background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px 14px; }
+  .card .k { font-family: "Segoe UI", sans-serif; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: #5c584f; }
+  .card .v { font-size: 1.55rem; margin-top: 4px; }
+  .card .s { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: #3d3a34; }
+  .late { color: #9a3412; }
+  figure { margin: 12px 0; background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px; }
+  figcaption { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: #5c584f; margin-top: 6px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-family: "Segoe UI", sans-serif; font-size: 0.88rem; }
+  th, td { border-bottom: 1px solid #eee8de; padding: 6px 8px; text-align: left; }
+  th { background: #3f2e22; color: #fff; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .note { font-family: "Segoe UI", sans-serif; font-size: 0.9rem; background: #fff8e8; border-left: 4px solid #9a3412; padding: 10px 12px; }
+  .region { font-family: "Segoe UI", sans-serif; font-size: 0.95rem; background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px 14px; }
+  footer { margin-top: 28px; font-family: "Segoe UI", sans-serif; font-size: 0.82rem; color: #5c584f; }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta">PACE Execute · DataCo supply chain · non-canceled order lines · no model was refit for this page</p>
+  <h1>Late delivery is the shipping mode</h1>
+  <p class="lede">Question: which lines miss the promised date, and does a classifier beat a rule that only knows the shipping mode? Answer: manage the mode. On 172,765 non-canceled lines, 98,977 are late. First Class is late on every one of its 26,513 lines. The logistic model and the random forest did not beat that mode rule.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="k">On-time rate</div>
+      <div class="v">42.7%</div>
+      <div class="s">73,788 / 172,765. Ratio 0.4271003964923451.</div>
+    </div>
+    <div class="card">
+      <div class="k">Late rate</div>
+      <div class="v late">57.3%</div>
+      <div class="s">98,977 / 172,765. Ratio 0.5728996035076549.</div>
+    </div>
+    <div class="card">
+      <div class="k">First Class</div>
+      <div class="v late">26,513 / 26,513</div>
+      <div class="s">Late rate 1.0. Promise is 1 day. Real days are 2. Median slip 1.</div>
+    </div>
+    <div class="card">
+      <div class="k">Classifier</div>
+      <div class="v">Do not deploy</div>
+      <div class="s">Mode baseline test ROC AUC 0.7383939473457695. Logistic 0.736119769260069. Forest 0.7347929101103273.</div>
+    </div>
+  </div>
+
+  <h2>Four modes: late rate, line count, median slip</h2>
+  <figure>
+    <svg viewBox="0 0 980 280" width="100%" role="img" aria-label="Late rate by shipping mode. First Class 100 percent of 26513 lines, Second Class 79.8 percent of 33806, Same Day 47.9 percent of 9293, Standard Class 39.8 percent of 103153.">
+      <rect x="0" y="0" width="980" height="280" fill="#ffffff"/>
+      <text x="168" y="22" font-size="12" fill="#5c584f" font-family="Segoe UI, sans-serif">Late rate on non-canceled lines. Bar length is the rate. The label is the line count and the median slip.</text>
+      <line x1="168" y1="248" x2="608" y2="248" stroke="#e6e2da"/>
+      <text x="168" y="266" font-size="11" fill="#5c584f" font-family="Segoe UI, sans-serif">0</text>
+      <text x="388" y="266" font-size="11" fill="#5c584f" text-anchor="middle" font-family="Segoe UI, sans-serif">0.5</text>
+      <text x="608" y="266" font-size="11" fill="#5c584f" text-anchor="end" font-family="Segoe UI, sans-serif">1.0</text>
+      <line x1="388" y1="36" x2="388" y2="248" stroke="#e6e2da" stroke-dasharray="3 3"/>
+
+      <text x="160" y="68" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">First Class</text>
+      <rect x="168" y="48" width="440" height="26" fill="#9a3412"/>
+      <text x="624" y="66" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">26,513 lines · median slip 1</text>
+
+      <text x="160" y="124" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">Second Class</text>
+      <rect x="168" y="104" width="351.25" height="26" fill="#c2410c"/>
+      <text x="624" y="122" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">33,806 lines · median slip 2</text>
+
+      <text x="160" y="180" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">Same Day</text>
+      <rect x="168" y="160" width="210.89" height="26" fill="#d97706"/>
+      <text x="624" y="178" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">9,293 lines · median slip 0</text>
+
+      <text x="160" y="236" text-anchor="end" font-size="13" fill="#1c1915" font-family="Segoe UI, sans-serif">Standard Class</text>
+      <rect x="168" y="216" width="174.98" height="26" fill="#a8a29e"/>
+      <text x="624" y="234" font-size="12" fill="#1c1915" font-family="Segoe UI, sans-serif">103,153 lines · median slip 0</text>
+    </svg>
+    <figcaption>Rates and counts are copied from <code>data/processed/mode_scorecard.csv</code>, which is the non-canceled scorecard in <code>late_rate_by_shipping_mode.csv</code> and <code>kpi_overall.csv</code>. Percents in the cards are those ratios times 100, to one decimal. Standard Class has the most late lines (41,023) and the lowest late rate.</figcaption>
+  </figure>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Shipping mode</th>
+        <th class="num">Lines</th>
+        <th class="num">Late lines</th>
+        <th class="num">Late rate</th>
+        <th class="num">Median slip</th>
+        <th class="num">Scheduled days</th>
+        <th class="num">Median real days</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>First Class</td>
+        <td class="num">26,513</td>
+        <td class="num">26,513</td>
+        <td class="num">1.0</td>
+        <td class="num">1</td>
+        <td class="num">1</td>
+        <td class="num">2</td>
+      </tr>
+      <tr>
+        <td>Second Class</td>
+        <td class="num">33,806</td>
+        <td class="num">26,987</td>
+        <td class="num">0.7982902443353251</td>
+        <td class="num">2</td>
+        <td class="num">2</td>
+        <td class="num">4</td>
+      </tr>
+      <tr>
+        <td>Same Day</td>
+        <td class="num">9,293</td>
+        <td class="num">4,454</td>
+        <td class="num">0.47928548369740664</td>
+        <td class="num">0</td>
+        <td class="num">0</td>
+        <td class="num">0</td>
+      </tr>
+      <tr>
+        <td>Standard Class</td>
+        <td class="num">103,153</td>
+        <td class="num">41,023</td>
+        <td class="num">0.39769080879858076</td>
+        <td class="num">0</td>
+        <td class="num">4</td>
+        <td class="num">4</td>
+      </tr>
+      <tr>
+        <td><strong>All non-canceled</strong></td>
+        <td class="num"><strong>172,765</strong></td>
+        <td class="num"><strong>98,977</strong></td>
+        <td class="num"><strong>0.5728996035076549</strong></td>
+        <td class="num"><strong>1</strong></td>
+        <td class="num">—</td>
+        <td class="num"><strong>3</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="meta">26,513 + 33,806 + 9,293 + 103,153 = 172,765. Late lines: 26,513 + 26,987 + 4,454 + 41,023 = 98,977. On-time lines: 73,788. Slip is real days minus scheduled days. The pooled median real days of 3 is a mixture. It is not the median of any mode.</p>
+
+  <h2>Region, once mode is fixed</h2>
+  <p class="region">Region does not move the late rate once shipping mode is fixed: First Class is late on every non-canceled line in all 23 regions and all 5 markets, and median slip is 1 day in every region. The largest gap between a region’s late rate and the rate implied by its own mode mix is Canada, −0.06522236464088049, on 907 lines.</p>
+
+  <h2>What to do</h2>
+  <ul>
+    <li>Fix the First Class promise or the operation. The promise is 1 day. Delivery is 2 days on all 26,513 non-canceled First Class lines.</li>
+    <li>Treat Second Class as the other mode problem: 26,987 / 33,806 late, median slip 2.</li>
+    <li>Do not deploy the logistic regression or the random forest. They lost to the shipping-mode baseline.</li>
+    <li>Do not set an operating threshold on either model.</li>
+    <li>Do not quote a dollar penalty. The file has no late-delivery cost. Dollar impact is not estimated.</li>
+  </ul>
+  <p class="note">Category is the same kind of negative result. Median slip is 1 for 49 of 50 categories. The exception is Men’s Golf Clubs, 135 / 274 late, median slip 0. The largest category, Cleats, is 13,496 / 23,514, late rate 0.5739559411414477, next to the overall rate. The forest puts 0.006610455290712629 of its impurity importance on category and 0.9308387729436968 on shipping mode.</p>
+
+  <footer>
+    <p>Tableau Public is the publish step, and it was not done here. The extract to upload is <code>data/processed/mode_scorecard.csv</code>. This environment cannot sign into the user’s Tableau Public account. There is no public Tableau URL.</p>
+    <p>Scorecard embedded in this file (shipping mode, lines, late lines, on-time lines, late rate, median slip, median real days, scheduled days):</p>
+    <pre id="scorecard">All non-canceled,172765,98977,73788,0.5728996035076549,1,3,
+First Class,26513,26513,0,1.0,1,2,1
+Second Class,33806,26987,6819,0.7982902443353251,2,4,2
+Same Day,9293,4454,4839,0.47928548369740664,0,0,0
+Standard Class,103153,41023,62130,0.39769080879858076,0,4,4</pre>
+  </footer>
+</main>
+<script>
+  const lines = document.getElementById("scorecard").textContent.trim().split(/\n/).filter(function (s) { return s.length; });
+  let linesSum = 0;
+  let lateSum = 0;
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split(",");
+    linesSum += Number(parts[1]);
+    lateSum += Number(parts[2]);
+  }
+  const all = lines[0].split(",");
+  if (lines.length !== 5 || linesSum !== Number(all[1]) || lateSum !== Number(all[2]) || linesSum !== 172765 || lateSum !== 98977) {
+    document.body.insertAdjacentHTML("afterbegin", "<p style='background:#9a3412;color:#fff;padding:8px'>Scorecard check failed.</p>");
+  }
+</script>
+</body>
+</html>

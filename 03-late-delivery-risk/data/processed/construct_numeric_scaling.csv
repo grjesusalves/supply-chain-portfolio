@@ -1,0 +1,4 @@
+column_name,train_mean,train_scale,note
+Order Item Quantity,2.128504689767714,1.4542774118382458,logistic coefficient is per one training standard deviation
+Order Item Product Price,140.98781301417907,139.6840203920134,logistic coefficient is per one training standard deviation
+Order Item Discount,20.656988164612837,21.817394404032083,logistic coefficient is per one training standard deviation

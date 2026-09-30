@@ -1,0 +1,10 @@
+rank,source_column,importance
+1,Shipping Mode,0.9308387729436968
+2,Order Region,0.014061308835884793
+3,order_month,0.011954269667323929
+4,Order Item Discount,0.011172679668771833
+5,order_dow,0.010624542758950173
+6,Category Name,0.006610455290712629
+7,Customer Segment,0.00577178981130233
+8,Order Item Product Price,0.005655018425003311
+9,Order Item Quantity,0.0033111625983541886

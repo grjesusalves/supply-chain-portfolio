@@ -1,0 +1,2 @@
+sklearn_version,logistic_C,logistic_l1_ratio,logistic_penalty,logistic_max_iter,logistic_n_iter,rf_trees,rf_min_samples_leaf,rf_max_features,random_state
+1.9.1,1.0,0.0,L2 (l1_ratio 0),2000,26,200,50,sqrt,42

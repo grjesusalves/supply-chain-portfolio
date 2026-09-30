@@ -11,13 +11,14 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
 - **Plan:** question, late-delivery definition, KPI formulas, and model rules are in [`reports/01-plan.md`](reports/01-plan.md). No rates computed yet.
 - **Analyze:** label checks, the late rate, and the mode / region / category scorecard are in [`reports/02-analyze.md`](reports/02-analyze.md). No model is fit in this stage.
-- **Construct:** _models / queries / calculations built_
+- **Construct:** the two baselines, a logistic regression, and a random forest are scored on held-out orders in [`reports/03-construct.md`](reports/03-construct.md). No operating threshold is chosen in this stage.
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_
 
 ## Key Findings
 - On non-canceled lines, 98,977 of 172,765 are late (late rate 0.5728996035076549). On-time delivery is 73,788 / 172,765.
 - The late flag matches real days greater than scheduled days on every non-canceled line. All 4,423 disagreements are canceled lines, and the flag marks every canceled line 0.
 - Shipping mode is the cut that moves the rate. First Class is late on 26,513 / 26,513 non-canceled lines. Median slip is 1 day in all 23 regions.
+- On held-out orders, a logistic regression and a random forest did not beat the shipping-mode baseline on test ROC AUC (0.736119769260069 and 0.7347929101103273 versus 0.7383939473457695). Shipping mode accounts for 0.9308387729436968 of the forest's impurity importance.
 
 ## Recommendation
 _What should the business do, and why?_

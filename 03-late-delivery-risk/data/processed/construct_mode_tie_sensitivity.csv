@@ -1,0 +1,3 @@
+scoring,roc_auc,average_precision,note
+ties_kept,0.7383939473457695,0.7831387247952716,one step per shipping mode; this is the published baseline
+within_mode_seeded_shuffle,0.7367561963526698,0.8329247801265168,modes stay in the same order; lines inside a mode are shuffled with random_state 42

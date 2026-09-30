@@ -1,0 +1,103 @@
+rank,feature,source_column,level,importance
+1,Shipping Mode_Standard Class,Shipping Mode,Standard Class,0.40815745077265775
+2,Shipping Mode_First Class,Shipping Mode,First Class,0.3420496781352057
+3,Shipping Mode_Second Class,Shipping Mode,Second Class,0.1513257334297564
+4,Shipping Mode_Same Day,Shipping Mode,Same Day,0.02930591060607697
+5,Order Item Discount,Order Item Discount,,0.011172679668771833
+6,Order Item Product Price,Order Item Product Price,,0.005655018425003311
+7,Order Item Quantity,Order Item Quantity,,0.0033111625983541886
+8,Customer Segment_Consumer,Customer Segment,Consumer,0.0022143200801723216
+9,Customer Segment_Corporate,Customer Segment,Corporate,0.002031710502832308
+10,order_dow_Monday,order_dow,Monday,0.0017567128104907864
+11,order_dow_Thursday,order_dow,Thursday,0.0016150779734411635
+12,Customer Segment_Home Office,Customer Segment,Home Office,0.0015257592282977006
+13,order_dow_Friday,order_dow,Friday,0.0015191142343528744
+14,order_dow_Tuesday,order_dow,Tuesday,0.0014574632826076148
+15,order_dow_Sunday,order_dow,Sunday,0.001439926398312727
+16,order_dow_Saturday,order_dow,Saturday,0.0014214108741728234
+17,order_dow_Wednesday,order_dow,Wednesday,0.001414837185572183
+18,Order Region_Central America,Order Region,Central America,0.0013557525565976543
+19,Order Region_Western Europe,Order Region,Western Europe,0.0012178461803672121
+20,order_month_April,order_month,April,0.0011796636033303725
+21,order_month_July,order_month,July,0.00116731685789471
+22,order_month_March,order_month,March,0.0011261851252059953
+23,order_month_September,order_month,September,0.001086727195460389
+24,order_month_June,order_month,June,0.0010720592976312874
+25,order_month_August,order_month,August,0.00103897450669793
+26,order_month_May,order_month,May,0.000989705592620325
+27,order_month_January,order_month,January,0.000953094027528786
+28,order_month_February,order_month,February,0.0009459653475281296
+29,Order Region_Oceania,Order Region,Oceania,0.0009350452869166491
+30,Order Region_South America,Order Region,South America,0.0009282860503707733
+31,order_month_November,order_month,November,0.0008226258502720006
+32,Category Name_Cleats,Category Name,Cleats,0.0008181423616665028
+33,Order Region_Southern Europe,Order Region,Southern Europe,0.0007991130567747939
+34,order_month_October,order_month,October,0.0007867964476858837
+35,order_month_December,order_month,December,0.0007851558154681192
+36,Order Region_Southeast Asia,Order Region,Southeast Asia,0.0007842888321393608
+37,Order Region_West of USA ,Order Region,West of USA ,0.0007726229390402782
+38,Category Name_Indoor/Outdoor Games,Category Name,Indoor/Outdoor Games,0.0007470493248332401
+39,Order Region_Northern Europe,Order Region,Northern Europe,0.0007376086458055786
+40,Category Name_Men's Footwear,Category Name,Men's Footwear,0.0007283186310546394
+41,Order Region_Caribbean,Order Region,Caribbean,0.0007252309296655525
+42,Category Name_Women's Apparel,Category Name,Women's Apparel,0.0007111990866085499
+43,Order Region_South Asia,Order Region,South Asia,0.0006998032524397687
+44,Order Region_East of USA,Order Region,East of USA,0.0006995362667702361
+45,Order Region_Eastern Asia,Order Region,Eastern Asia,0.0006444482067536754
+46,Order Region_US Center ,Order Region,US Center ,0.0006218370526558866
+47,Category Name_Water Sports,Category Name,Water Sports,0.0005990817605759908
+48,Order Region_West Asia,Order Region,West Asia,0.0005480849069540119
+49,Category Name_Fishing,Category Name,Fishing,0.0005424039001436031
+50,Category Name_Camping & Hiking,Category Name,Camping & Hiking,0.0004989791373677331
+51,Category Name_Cardio Equipment,Category Name,Cardio Equipment,0.0004864684502833917
+52,Order Region_South of  USA ,Order Region,South of  USA ,0.000471337506697777
+53,Order Region_North Africa,Order Region,North Africa,0.00043935133664725384
+54,Category Name_Shop By Sport,Category Name,Shop By Sport,0.00041616525186491534
+55,Order Region_Eastern Europe,Order Region,Eastern Europe,0.00034621610790231213
+56,Order Region_Canada,Order Region,Canada,0.0003045351831078475
+57,Order Region_Central Africa,Order Region,Central Africa,0.00027793728702062625
+58,Order Region_West Africa,Order Region,West Africa,0.00027641632612772376
+59,Order Region_East Africa,Order Region,East Africa,0.00025058071053991844
+60,Category Name_Electronics,Category Name,Electronics,0.000161996037195449
+61,Order Region_Southern Africa,Order Region,Southern Africa,0.00011761134078273635
+62,Order Region_Central Asia,Order Region,Central Asia,0.00010781887380716709
+63,Category Name_Accessories,Category Name,Accessories,6.633589915805512e-05
+64,Category Name_Cameras ,Category Name,Cameras ,5.827041857369467e-05
+65,Category Name_Men's Golf Clubs,Category Name,Men's Golf Clubs,5.349587179895543e-05
+66,Category Name_Golf Balls,Category Name,Golf Balls,5.001196066241068e-05
+67,Category Name_Golf Gloves,Category Name,Golf Gloves,4.728276749910218e-05
+68,Category Name_Girls' Apparel,Category Name,Girls' Apparel,4.419138241729684e-05
+69,Category Name_Lacrosse,Category Name,Lacrosse,4.068348488666951e-05
+70,Category Name_Pet Supplies,Category Name,Pet Supplies,3.7784501885703376e-05
+71,Category Name_Video Games,Category Name,Video Games,3.5893196236152236e-05
+72,Category Name_Golf Apparel,Category Name,Golf Apparel,3.5450481372078646e-05
+73,Category Name_Golf Shoes,Category Name,Golf Shoes,2.908382396150389e-05
+74,Category Name_DVDs,Category Name,DVDs,2.757474293751137e-05
+75,Category Name_Hockey,Category Name,Hockey,2.4614747947190394e-05
+76,Category Name_Computers,Category Name,Computers,2.3032178175140914e-05
+77,Category Name_Children's Clothing,Category Name,Children's Clothing,2.2562466617208677e-05
+78,Category Name_Men's Clothing,Category Name,Men's Clothing,2.2294516874558955e-05
+79,Category Name_Consumer Electronics,Category Name,Consumer Electronics,2.214283595073919e-05
+80,Category Name_Trade-In,Category Name,Trade-In,2.15224167829689e-05
+81,Category Name_Crafts,Category Name,Crafts,2.118670709088663e-05
+82,Category Name_Books ,Category Name,Books ,2.0995056354057395e-05
+83,Category Name_Baseball & Softball,Category Name,Baseball & Softball,2.0758889746548567e-05
+84,Category Name_Boxing & MMA,Category Name,Boxing & MMA,2.0322176174451878e-05
+85,Category Name_Women's Clothing,Category Name,Women's Clothing,1.8821074362233447e-05
+86,Category Name_Music,Category Name,Music,1.7029764677852433e-05
+87,Category Name_Fitness Accessories,Category Name,Fitness Accessories,1.6947261549625655e-05
+88,Category Name_Kids' Golf Clubs,Category Name,Kids' Golf Clubs,1.6047403612720025e-05
+89,Category Name_Toys,Category Name,Toys,1.579002104927578e-05
+90,Category Name_Tennis & Racquet,Category Name,Tennis & Racquet,1.5305234490068804e-05
+91,Category Name_Garden,Category Name,Garden,1.145775820695175e-05
+92,Category Name_Health and Beauty,Category Name,Health and Beauty,1.0124438013513145e-05
+93,Category Name_Hunting & Shooting,Category Name,Hunting & Shooting,9.240727495177436e-06
+94,Category Name_Sporting Goods,Category Name,Sporting Goods,6.869447000249859e-06
+95,Category Name_Baby ,Category Name,Baby ,6.723366411250337e-06
+96,Category Name_CDs ,Category Name,CDs ,5.509183174354944e-06
+97,Category Name_Women's Golf Clubs,Category Name,Women's Golf Clubs,2.6587313516303344e-06
+98,Category Name_Strength Training,Category Name,Strength Training,1.3515426873217146e-06
+99,Category Name_Soccer,Category Name,Soccer,1.2848719335028815e-06
+100,Category Name_As Seen on  TV!,Category Name,As Seen on  TV!,0.0
+101,Category Name_Basketball,Category Name,Basketball,0.0
+102,Category Name_Golf Bags & Carts,Category Name,Golf Bags & Carts,0.0

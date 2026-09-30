@@ -1,0 +1,6 @@
+check,max_abs_diff,lines,kept_column,why
+product_price_vs_order_item_product_price,0.0,172765,Order Item Product Price,identical on this population; one price column
+sales_vs_quantity_times_price,2.289999997628911e-05,172765,Order Item Quantity and Order Item Product Price,"Sales is quantity times price, up to float noise"
+sales_per_customer_vs_order_item_total,0.0,172765,"neither; net of discount is price, quantity, discount",the two pay columns are the same number
+order_item_total_vs_sales_minus_discount,0.010013549999996485,172765,Order Item Discount,"line total is sales minus the dollar discount, to the cent"
+discount_rate_vs_discount_over_sales,0.005407278273508759,172765,Order Item Discount,"the rate is the dollar discount over sales, up to rounding"

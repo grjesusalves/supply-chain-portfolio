@@ -1,0 +1,5 @@
+model,threshold,note,tn,fp,fn,tp
+majority_baseline,0.5,not the decision; Execute picks the threshold,0,14550,0,19722
+shipping_mode_baseline,0.5,not the decision; Execute picks the threshold,13132,1418,9142,10580
+logistic_regression,0.5,not the decision; Execute picks the threshold,13082,1468,9096,10626
+random_forest,0.5,not the decision; Execute picks the threshold,12610,1940,8652,11070

@@ -1,0 +1,12 @@
+column_name,distinct_values_kpi,decision
+Shipping Mode,4,kept
+Order Region,23,kept
+Market,5,dropped; rollup of Order Region
+Category Name,50,kept
+Department Name,11,dropped; rollup of Category Name
+Customer Segment,3,kept
+Product Name,118,dropped; long one-hot beside category
+Order Country,164,dropped; long one-hot beside region
+Order City,3585,dropped; huge one-hot
+Order State,1083,dropped; huge one-hot
+Order Status,7,dropped; CANCELED and SUSPECTED_FRAUD are exactly Shipping canceled

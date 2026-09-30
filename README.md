@@ -9,7 +9,7 @@ Each project follows the PACE framework (Plan, Analyze, Construct, Execute) and 
 | 02 | [Inventory Optimization](02-inventory-optimization/) | Set safety stock / reorder points / EOQ for target service level | Output of Project 01 | Inventory policy, service level, cost trade-offs |
 | 03 | [Late Delivery Risk](03-late-delivery-risk/) | Predict and explain late deliveries | DataCo Smart Supply Chain (Mendeley) | Classification, feature importance, SQL |
 | 04 | [Freight Cost Analysis](04-freight-cost-analysis/) | What drives freight cost and where to save | USAID SCMS Shipment Pricing Data | Regression, cost drivers, spend analysis |
-| 05 | [Logistics Dashboard](05-logistics-dashboard/) | Track delivery KPIs (lead time, OTD, freight, reviews) | Olist Brazilian E-Commerce | SQL joins, KPI design, Tableau/Power BI |
+| 05 | [Logistics Dashboard](05-logistics-dashboard/) | Where customers sit relative to sellers, and how distance affects delivery time and freight | Olist Brazilian E-Commerce | SQL joins, geographic analysis, Tableau Public |
 
 ## Repository structure
 Every project has the same layout:

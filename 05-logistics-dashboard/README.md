@@ -3,13 +3,13 @@
 > Executive summary — fill in as the project progresses.
 
 ## Business Question
-How are delivery lead times, on-time rate, freight cost, and customer reviews trending across Brazilian states and sellers, and where should logistics improvements focus?
+Where are our customers relative to our sellers, how does distance affect delivery time and freight cost, and what does leadership need to see weekly?
 
 ## Data
 See [`data/README.md`](data/README.md) for source, license, and file inventory.
 
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
-- **Plan:** _stakeholders, success metrics, scope, assumptions_
+- **Plan:** question, grain, distance, and KPI definitions. See [`reports/01-plan.md`](reports/01-plan.md).
 - **Analyze:** _data cleaning, EDA, key descriptive stats_
 - **Construct:** _models / queries / calculations built_
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_

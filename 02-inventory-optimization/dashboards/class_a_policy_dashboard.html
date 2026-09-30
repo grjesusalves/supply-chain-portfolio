@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CA_3 FOODS — class A inventory policy</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif; background: #f7f4ee; color: #1c1915; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1 { font-size: 1.7rem; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.15rem; font-weight: 600; margin: 28px 0 8px; }
+  p, li { line-height: 1.45; }
+  .lede { font-size: 1.05rem; max-width: 68ch; }
+  .meta { color: #5c584f; font-family: "Segoe UI", sans-serif; font-size: 0.92rem; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 18px 0; }
+  .card { background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px 14px; }
+  .card .k { font-family: "Segoe UI", sans-serif; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: #5c584f; }
+  .card .v { font-size: 1.55rem; margin-top: 4px; }
+  .card .s { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: #3d3a34; }
+  .win { color: #0f6b4c; }
+  .high { color: #8a4b08; }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-family: "Segoe UI", sans-serif; font-size: 0.88rem; }
+  th, td { border-bottom: 1px solid #eee8de; padding: 6px 8px; text-align: left; }
+  th { background: #1f4e79; color: #fff; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .note { font-family: "Segoe UI", sans-serif; font-size: 0.9rem; background: #fff8e8; border-left: 4px solid #c47b2b; padding: 10px 12px; }
+  .bars { background: #fff; border: 1px solid #e2dcd0; border-radius: 10px; padding: 12px 14px; font-family: "Segoe UI", sans-serif; font-size: 0.88rem; }
+  .row { display: grid; grid-template-columns: 118px 1fr 42px; gap: 8px; align-items: center; margin: 6px 0; }
+  .track { background: #eee8de; height: 14px; border-radius: 3px; }
+  .bar { background: #1f4e79; height: 14px; border-radius: 3px; }
+  .bar.zero { background: transparent; }
+  footer { margin-top: 28px; font-family: "Segoe UI", sans-serif; font-size: 0.82rem; color: #5c584f; }
+  code { font-family: ui-monospace, monospace; font-size: 0.9em; }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta">PACE Execute · Walmart M5 · FOODS at store CA_3 · class A only · no policy was refit for this page</p>
+  <h1>CA_3 class A inventory policy</h1>
+  <p class="lede">Question: which reorder point and safety stock keep the unfilled share under 5% while holding as few units as possible? Answer: the integers already in <code>policy.csv</code>. The class A unfilled share is 0.0304. No item missed the cap. This page does not claim dollar savings.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="k">Class A items</div>
+      <div class="v">558</div>
+      <div class="s">policy_summary.csv · n_items</div>
+    </div>
+    <div class="card">
+      <div class="k">Units demanded</div>
+      <div class="v">88230</div>
+      <div class="s">2016-04-25 through 2016-05-22</div>
+    </div>
+    <div class="card">
+      <div class="k">Unfilled share</div>
+      <div class="v win">0.0304</div>
+      <div class="s">fill_rate 0.030392921231046102. Units short 2681.5674402151976. Under 0.05.</div>
+    </div>
+    <div class="card">
+      <div class="k">Avg on-hand</div>
+      <div class="v">14461</div>
+      <div class="s">total_avg_on_hand 14461.064128366881 units. Not dollars.</div>
+    </div>
+    <div class="card">
+      <div class="k">Safety stock</div>
+      <div class="v">4079</div>
+      <div class="s">Sum of integer safety_stock. 193 items are zero.</div>
+    </div>
+    <div class="card">
+      <div class="k">Items over the cap</div>
+      <div class="v win">0</div>
+      <div class="s">n_items_missing_cap. Cap is unfilled share strictly under 0.05.</div>
+    </div>
+    <div class="card">
+      <div class="k">Cycle stockout share</div>
+      <div class="v high">0.213</div>
+      <div class="s">601 / 2819 = 0.21319616885420362. Not the constraint. Not 95% cycle service.</div>
+    </div>
+  </div>
+
+  <h2>Safety stock on the watched items</h2>
+  <p class="meta">Bar length is that item's <code>safety_stock</code> divided by 193, the largest safety stock in <code>policy.csv</code> (<code>FOODS_3_681</code>). A zero bar is a zero buffer, not a missing row. Volume is not the buffer.</p>
+  <div class="bars" role="img" aria-label="Safety stock bars for six class A items. FOODS_3_681 is 193, FOODS_3_252 is 71, FOODS_3_090 is 38, FOODS_2_266 is 5, FOODS_3_586 and FOODS_3_120 are 0.">
+    <div class="row"><span>FOODS_3_090</span><div class="track"><div class="bar" style="width:calc(38 / 193 * 100%)"></div></div><span>38</span></div>
+    <div class="row"><span>FOODS_3_586</span><div class="track"><div class="bar zero" style="width:0%"></div></div><span>0</span></div>
+    <div class="row"><span>FOODS_3_120</span><div class="track"><div class="bar zero" style="width:0%"></div></div><span>0</span></div>
+    <div class="row"><span>FOODS_3_252</span><div class="track"><div class="bar" style="width:calc(71 / 193 * 100%)"></div></div><span>71</span></div>
+    <div class="row"><span>FOODS_3_681</span><div class="track"><div class="bar" style="width:100%"></div></div><span>193</span></div>
+    <div class="row"><span>FOODS_2_266</span><div class="track"><div class="bar" style="width:calc(5 / 193 * 100%)"></div></div><span>5</span></div>
+  </div>
+
+  <h2>Items to watch</h2>
+  <p class="meta">Rows copied from <code>policy.csv</code>. <code>fill_rate</code> is the unfilled share, units short divided by units demanded. <code>FOODS_2_266</code> is the item closest to the cap and is still under 0.05.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th class="num">Units demanded</th>
+        <th class="num">Order qty</th>
+        <th class="num">Safety stock</th>
+        <th class="num">Reorder point</th>
+        <th class="num">Units short</th>
+        <th class="num">Unfilled share</th>
+        <th class="num">Units filled share</th>
+        <th class="num">Days stocked out</th>
+        <th class="num">Cycles</th>
+        <th class="num">Cycles with stockout</th>
+        <th class="num">Avg on-hand</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>FOODS_3_090</td>
+        <td class="num">3357</td>
+        <td class="num">713</td>
+        <td class="num">38</td>
+        <td class="num">750.8852726036218</td>
+        <td class="num">167.11472739637816</td>
+        <td class="num">0.04978097330842364</td>
+        <td class="num">0.95021902669157636</td>
+        <td class="num">3</td>
+        <td class="num">5</td>
+        <td class="num">2</td>
+        <td class="num">345.9080843935039</td>
+      </tr>
+      <tr>
+        <td>FOODS_3_586</td>
+        <td class="num">1883</td>
+        <td class="num">474</td>
+        <td class="num">0</td>
+        <td class="num">473.8546930978276</td>
+        <td class="num">20.145306902172422</td>
+        <td class="num">0.010698516676671493</td>
+        <td class="num">0.989301483323328507</td>
+        <td class="num">1</td>
+        <td class="num">4</td>
+        <td class="num">1</td>
+        <td class="num">242.2902913781059</td>
+      </tr>
+      <tr>
+        <td>FOODS_3_120</td>
+        <td class="num">1617</td>
+        <td class="num">435</td>
+        <td class="num">0</td>
+        <td class="num">434.0506172848497</td>
+        <td class="num">64.9493827151503</td>
+        <td class="num">0.04016659413429209</td>
+        <td class="num">0.95983340586570791</td>
+        <td class="num">2</td>
+        <td class="num">4</td>
+        <td class="num">2</td>
+        <td class="num">222.0822751324678</td>
+      </tr>
+      <tr>
+        <td>FOODS_3_252</td>
+        <td class="num">1405</td>
+        <td class="num">272</td>
+        <td class="num">71</td>
+        <td class="num">342.45635833336723</td>
+        <td class="num">69.54364166663277</td>
+        <td class="num">0.049497253855254636</td>
+        <td class="num">0.950502746144745364</td>
+        <td class="num">2</td>
+        <td class="num">5</td>
+        <td class="num">2</td>
+        <td class="num">141.59779107143584</td>
+      </tr>
+      <tr>
+        <td>FOODS_3_681</td>
+        <td class="num">1253</td>
+        <td class="num">230</td>
+        <td class="num">193</td>
+        <td class="num">422.7964730863048</td>
+        <td class="num">62.203526913695214</td>
+        <td class="num">0.04964367670685971</td>
+        <td class="num">0.95035632329314029</td>
+        <td class="num">1</td>
+        <td class="num">6</td>
+        <td class="num">1</td>
+        <td class="num">259.0610107229974</td>
+      </tr>
+      <tr>
+        <td>FOODS_2_266</td>
+        <td class="num">61</td>
+        <td class="num">13</td>
+        <td class="num">5</td>
+        <td class="num">17.95326251764203</td>
+        <td class="num">3.046737482357969</td>
+        <td class="num">0.049946516104229</td>
+        <td class="num">0.950053483895771</td>
+        <td class="num">1</td>
+        <td class="num">5</td>
+        <td class="num">1</td>
+        <td class="num">10.2656839361323</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>What not to conclude</h2>
+  <ul>
+    <li>Do not manage by cycle service. Cycle stockout share is 0.213. Cycle service level in the summary file is 0.7868038311457963, not 0.95.</li>
+    <li>Lead time is an assumed 7 days. The data have no lead time. The shelf opened on 2016-04-25 at the reorder point. The first receipt is 2016-05-02.</li>
+    <li>Do not debias the forecast before ordering. These safety stocks were searched against <code>lgbm</code> as it is.</li>
+    <li>Do not claim dollar savings. There is no unit cost, holding-cost rate, or order cost in these files.</li>
+  </ul>
+  <p class="note"><code>fill_rate</code> on this page and in <code>dashboards/class_a_policy.csv</code> is the unfilled share. Units filled share for the class is 0.969607078768953898 (1 minus fill_rate 0.030392921231046102). This HTML file is the view. It was not published to Tableau Public. Uploading the CSV there is manual because we cannot sign in as the user. See <code>dashboards/TABLEAU.md</code>.</p>
+
+  <footer>Source: data/processed/policy_summary.csv and data/processed/policy.csv. Class A only. No new simulation. Excel Solver was not run for this page.</footer>
+</main>
+</body>
+</html>

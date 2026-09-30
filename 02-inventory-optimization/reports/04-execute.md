@@ -68,6 +68,8 @@ No new simulation. No change to safety stock, reorder point, or order quantity. 
 
 Excel Solver was not run. No Solver answer was invented. The integers are the Python enumeration from Construct, written into `reports/03-construct-solver.xlsx` so the sheet matches `policy.csv`. This stage does not open Solver.
 
-No dashboard yet. The chart already in Construct is [images/class_a_safety_stock.png](../images/class_a_safety_stock.png). A dashboard is a later stage. None was built here.
+## Dashboard
+
+The dashboard file is [dashboards/class_a_policy_dashboard.html](../dashboards/class_a_policy_dashboard.html), with the planner extract at [dashboards/class_a_policy.csv](../dashboards/class_a_policy.csv); Tableau Public publish is a manual upload because we cannot sign in as the user.
 
 The one-page version is [executive-summary.md](executive-summary.md). The longer story is [business-report.md](business-report.md). The scores and the simulation rules are [03-construct.md](03-construct.md).

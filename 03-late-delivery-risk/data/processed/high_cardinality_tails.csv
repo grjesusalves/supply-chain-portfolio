@@ -1,0 +1,5 @@
+column_name,distinct_values,min_lines,median_lines_low,median_lines_high,max_lines,levels_with_1_line,levels_with_under_30_lines
+Product Name,118,10,281,282,24515,0,7
+Order Country,164,1,152,163,24840,2,41
+Order City,3597,1,20,20,2211,69,2270
+Order State,1089,1,41,41,6722,16,459

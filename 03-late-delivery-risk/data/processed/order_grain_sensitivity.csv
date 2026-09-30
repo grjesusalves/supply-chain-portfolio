@@ -1,0 +1,2 @@
+population,orders,late_orders,on_time_orders,late_rate,why_not_the_kpi
+sensitivity_non_canceled_orders_not_the_kpi,62897,36048,26849,0.5731274941571141,lines inside an Order Id do not disagree on the flag; the published KPI stays at line grain

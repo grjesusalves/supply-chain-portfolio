@@ -10,14 +10,14 @@ See [`data/README.md`](data/README.md) for source, license, and file inventory.
 
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
 - **Plan:** question, late-delivery definition, KPI formulas, and model rules are in [`reports/01-plan.md`](reports/01-plan.md). No rates computed yet.
-- **Analyze:** _data cleaning, EDA, key descriptive stats_
+- **Analyze:** label checks, the late rate, and the mode / region / category scorecard are in [`reports/02-analyze.md`](reports/02-analyze.md). No model is fit in this stage.
 - **Construct:** _models / queries / calculations built_
 - **Execute:** _how results are delivered (dashboard, report, recommendation)_
 
 ## Key Findings
-- _Finding 1 (quantified)_
-- _Finding 2_
-- _Finding 3_
+- On non-canceled lines, 98,977 of 172,765 are late (late rate 0.5728996035076549). On-time delivery is 73,788 / 172,765.
+- The late flag matches real days greater than scheduled days on every non-canceled line. All 4,423 disagreements are canceled lines, and the flag marks every canceled line 0.
+- Shipping mode is the cut that moves the rate. First Class is late on 26,513 / 26,513 non-canceled lines. Median slip is 1 day in all 23 regions.
 
 ## Recommendation
 _What should the business do, and why?_

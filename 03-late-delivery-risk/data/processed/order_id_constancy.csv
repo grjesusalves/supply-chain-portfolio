@@ -1,0 +1,2 @@
+rows,distinct_order_id,distinct_order_item_id,duplicate_order_item_id,min_lines_per_order,max_lines_per_order,orders_where_Shipping Mode_varies,orders_where_Late_delivery_risk_varies,orders_where_Days for shipping (real)_varies,orders_where_Days for shipment (scheduled)_varies,orders_where_Delivery Status_varies
+180519,65752,180519,0,1,5,0,0,0,0,0

@@ -1,0 +1,2 @@
+rows,order_date_min,order_date_max,shipping_date_min,shipping_date_max,calendar_day_gap_equals_real_days,truncated_24h_gap_equals_real_days,shipping_before_order
+180519,2015-01-01 00:00:00,2018-01-31 23:38:00,2015-01-03 00:00:00,2018-02-06 22:14:00,180519,175862,0

@@ -1,0 +1,93 @@
+Order Region,Market,Shipping Mode,lines,late_lines,late_rate,median_slip
+Canada,USCA,First Class,170,170,1.0,1
+Canada,USCA,Same Day,29,7,0.2413793103448276,0
+Canada,USCA,Second Class,154,125,0.8116883116883117,2
+Canada,USCA,Standard Class,554,166,0.2996389891696751,-1
+Caribbean,LATAM,First Class,1132,1132,1.0,1
+Caribbean,LATAM,Same Day,428,224,0.5233644859813084,1
+Caribbean,LATAM,Second Class,1548,1277,0.8249354005167958,2
+Caribbean,LATAM,Standard Class,4843,1782,0.3679537476770597,0
+Central Africa,Africa,First Class,278,278,1.0,1
+Central Africa,Africa,Same Day,79,24,0.3037974683544304,0
+Central Africa,Africa,Second Class,291,241,0.8281786941580757,2
+Central Africa,Africa,Standard Class,968,429,0.4431818181818182,0
+Central America,LATAM,First Class,4185,4185,1.0,1
+Central America,LATAM,Same Day,1357,651,0.4797347089167281,0
+Central America,LATAM,Second Class,5250,4111,0.783047619047619,2
+Central America,LATAM,Standard Class,16382,6571,0.4011109754608717,0
+Central Asia,Pacific Asia,First Class,63,63,1.0,1
+Central Asia,Pacific Asia,Same Day,64,13,0.203125,0
+Central Asia,Pacific Asia,Second Class,112,101,0.9017857142857143,2
+Central Asia,Pacific Asia,Standard Class,303,129,0.42574257425742573,0
+East Africa,Africa,First Class,277,277,1.0,1
+East Africa,Africa,Same Day,95,41,0.43157894736842106,0
+East Africa,Africa,Second Class,353,279,0.7903682719546742,2
+East Africa,Africa,Standard Class,1056,439,0.41571969696969696,0
+East of USA,USCA,First Class,1050,1050,1.0,1
+East of USA,USCA,Same Day,397,200,0.5037783375314862,1
+East of USA,USCA,Second Class,1222,956,0.7823240589198036,2
+East of USA,USCA,Standard Class,3948,1643,0.41616008105369806,0
+Eastern Asia,Pacific Asia,First Class,989,989,1.0,1
+Eastern Asia,Pacific Asia,Same Day,391,193,0.4936061381074169,0
+Eastern Asia,Pacific Asia,Second Class,1341,1116,0.8322147651006712,2
+Eastern Asia,Pacific Asia,Standard Class,4252,1657,0.3896989651928504,0
+Eastern Europe,Europe,First Class,632,632,1.0,1
+Eastern Europe,Europe,Same Day,176,64,0.36363636363636365,0
+Eastern Europe,Europe,Second Class,755,578,0.7655629139072848,2
+Eastern Europe,Europe,Standard Class,2222,908,0.40864086408640865,0
+North Africa,Africa,First Class,472,472,1.0,1
+North Africa,Africa,Same Day,185,108,0.5837837837837838,1
+North Africa,Africa,Second Class,590,483,0.8186440677966101,2
+North Africa,Africa,Standard Class,1839,699,0.3800978792822186,0
+Northern Europe,Europe,First Class,1361,1361,1.0,1
+Northern Europe,Europe,Same Day,502,206,0.4103585657370518,0
+Northern Europe,Europe,Second Class,1879,1489,0.7924427887174029,2
+Northern Europe,Europe,Standard Class,5666,2236,0.39463466290151783,0
+Oceania,Pacific Asia,First Class,1270,1270,1.0,1
+Oceania,Pacific Asia,Same Day,611,263,0.43044189852700493,0
+Oceania,Pacific Asia,Second Class,1965,1562,0.794910941475827,2
+Oceania,Pacific Asia,Standard Class,5887,2387,0.4054696789536266,0
+South America,LATAM,First Class,2154,2154,1.0,1
+South America,LATAM,Same Day,743,398,0.5356662180349933,1
+South America,LATAM,Second Class,2700,2122,0.7859259259259259,2
+South America,LATAM,Standard Class,8587,3437,0.4002562012344241,0
+South Asia,Pacific Asia,First Class,1240,1240,1.0,1
+South Asia,Pacific Asia,Same Day,367,188,0.5122615803814714,1
+South Asia,Pacific Asia,Second Class,1501,1198,0.7981345769487008,2
+South Asia,Pacific Asia,Standard Class,4347,1724,0.39659535311709226,0
+South of  USA ,USCA,First Class,571,571,1.0,1
+South of  USA ,USCA,Same Day,217,100,0.4608294930875576,0
+South of  USA ,USCA,Second Class,815,673,0.8257668711656442,2
+South of  USA ,USCA,Standard Class,2252,912,0.4049733570159858,0
+Southeast Asia,Pacific Asia,First Class,1482,1482,1.0,1
+Southeast Asia,Pacific Asia,Same Day,424,184,0.4339622641509434,0
+Southeast Asia,Pacific Asia,Second Class,1753,1395,0.7957786651454649,2
+Southeast Asia,Pacific Asia,Standard Class,5477,2236,0.4082526930801534,0
+Southern Africa,Africa,First Class,195,195,1.0,1
+Southern Africa,Africa,Same Day,63,42,0.6666666666666666,1
+Southern Africa,Africa,Second Class,139,102,0.7338129496402878,2
+Southern Africa,Africa,Standard Class,703,278,0.39544807965860596,0
+Southern Europe,Europe,First Class,1462,1462,1.0,1
+Southern Europe,Europe,Same Day,535,303,0.5663551401869159,1
+Southern Europe,Europe,Second Class,1630,1293,0.7932515337423313,2
+Southern Europe,Europe,Standard Class,5403,2071,0.3833055709790857,0
+US Center ,USCA,First Class,951,951,1.0,1
+US Center ,USCA,Same Day,318,125,0.39308176100628933,0
+US Center ,USCA,Second Class,1163,905,0.7781599312123818,2
+US Center ,USCA,Standard Class,3221,1271,0.3945979509469109,0
+West Africa,Africa,First Class,453,453,1.0,1
+West Africa,Africa,Same Day,212,79,0.37264150943396224,0
+West Africa,Africa,Second Class,718,570,0.7938718662952646,2
+West Africa,Africa,Standard Class,2188,851,0.3889396709323583,0
+West Asia,Pacific Asia,First Class,947,947,1.0,1
+West Asia,Pacific Asia,Same Day,278,128,0.460431654676259,0
+West Asia,Pacific Asia,Second Class,1157,921,0.7960242005185826,2
+West Asia,Pacific Asia,Standard Class,3364,1326,0.39417360285374553,0
+West of USA ,USCA,First Class,1072,1072,1.0,1
+West of USA ,USCA,Same Day,411,205,0.49878345498783455,0
+West of USA ,USCA,Second Class,1564,1254,0.8017902813299232,2
+West of USA ,USCA,Standard Class,4548,1782,0.391820580474934,0
+Western Europe,Europe,First Class,4107,4107,1.0,1
+Western Europe,Europe,Same Day,1411,708,0.5017717930545712,1
+Western Europe,Europe,Second Class,5206,4236,0.8136765270841337,2
+Western Europe,Europe,Standard Class,15143,6089,0.40209998018886617,0

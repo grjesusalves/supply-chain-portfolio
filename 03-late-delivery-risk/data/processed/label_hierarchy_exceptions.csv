@@ -1,0 +1,7 @@
+check,name,category_id,parent,lines_all_rows
+category_name_in_more_than_one_department,Electronics,13,Footwear,1127
+category_name_in_more_than_one_department,Electronics,37,Outdoors,2029
+order_country_in_more_than_one_region,Estados Unidos,,East of USA | USCA,6915
+order_country_in_more_than_one_region,Estados Unidos,,South of  USA  | USCA,4045
+order_country_in_more_than_one_region,Estados Unidos,,US Center  | USCA,5887
+order_country_in_more_than_one_region,Estados Unidos,,West of USA  | USCA,7993

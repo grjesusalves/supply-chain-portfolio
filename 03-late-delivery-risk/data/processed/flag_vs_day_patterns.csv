@@ -1,0 +1,27 @@
+Delivery Status,Shipping Mode,Late_delivery_risk,Days for shipping (real),Days for shipment (scheduled),slip,real_exceeds_scheduled,flag_matches_day_rule,lines
+Shipping canceled,First Class,0,2,1,1,1,0,1301
+Shipping canceled,Same Day,0,1,0,1,1,0,203
+Shipping canceled,Second Class,0,3,2,1,1,0,306
+Shipping canceled,Second Class,0,4,2,2,1,0,219
+Shipping canceled,Second Class,0,5,2,3,1,0,280
+Shipping canceled,Second Class,0,6,2,4,1,0,286
+Shipping canceled,Standard Class,0,5,4,1,1,0,880
+Shipping canceled,Standard Class,0,6,4,2,1,0,948
+Advance shipping,Standard Class,0,2,4,-2,0,1,20873
+Advance shipping,Standard Class,0,3,4,-1,0,1,20719
+Late delivery,First Class,1,2,1,1,1,1,26513
+Late delivery,Same Day,1,1,0,1,1,1,4454
+Late delivery,Second Class,1,3,2,1,1,1,6759
+Late delivery,Second Class,1,4,2,2,1,1,6759
+Late delivery,Second Class,1,5,2,3,1,1,6772
+Late delivery,Second Class,1,6,2,4,1,1,6697
+Late delivery,Standard Class,1,5,4,1,1,1,20231
+Late delivery,Standard Class,1,6,4,2,1,1,20792
+Shipping canceled,Same Day,0,0,0,0,0,1,241
+Shipping canceled,Second Class,0,2,2,0,0,1,319
+Shipping canceled,Standard Class,0,2,4,-2,0,1,793
+Shipping canceled,Standard Class,0,3,4,-1,0,1,981
+Shipping canceled,Standard Class,0,4,4,0,0,1,997
+Shipping on time,Same Day,0,0,0,0,0,1,4839
+Shipping on time,Second Class,0,2,2,0,0,1,6819
+Shipping on time,Standard Class,0,4,4,0,0,1,20538

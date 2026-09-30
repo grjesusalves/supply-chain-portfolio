@@ -1,0 +1,14 @@
+column_name,stored_value,lines,normalized_distinct_equals_raw
+Category Name,Cameras ,592,1
+Category Name,Books ,405,1
+Category Name,CDs ,271,1
+Category Name,Baby ,207,1
+Category Name,As Seen on  TV!,68,1
+Department Name,Health and Beauty ,362,1
+Order Region,West of USA ,7993,1
+Order Region,US Center ,5887,1
+Order Region,South of  USA ,4045,1
+Product Name,Toys ,529,1
+Product Name,DVDs ,483,1
+Product Name,Sports Books ,405,1
+Product Name,Smart watch ,357,1

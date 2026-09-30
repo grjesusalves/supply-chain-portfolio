@@ -1,0 +1,13 @@
+column_name,distinct_values
+Order Region,23
+Market,5
+Category Name,50
+Department Name,11
+Product Name,118
+Order Country,164
+Order City,3597
+Order State,1089
+Customer Segment,3
+Shipping Mode,4
+Delivery Status,4
+Order Status,9

@@ -1,0 +1,14 @@
+Shipping Mode,Days for shipment (scheduled),Days for shipping (real),Delivery Status,Late_delivery_risk,lines,slip
+Same Day,0,0,Shipping on time,0,4839,0
+Same Day,0,1,Late delivery,1,4454,1
+First Class,1,2,Late delivery,1,26513,1
+Second Class,2,2,Shipping on time,0,6819,0
+Second Class,2,3,Late delivery,1,6759,1
+Second Class,2,4,Late delivery,1,6759,2
+Second Class,2,5,Late delivery,1,6772,3
+Second Class,2,6,Late delivery,1,6697,4
+Standard Class,4,2,Advance shipping,0,20873,-2
+Standard Class,4,3,Advance shipping,0,20719,-1
+Standard Class,4,4,Shipping on time,0,20538,0
+Standard Class,4,5,Late delivery,1,20231,1
+Standard Class,4,6,Late delivery,1,20792,2

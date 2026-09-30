@@ -1,0 +1,11 @@
+freight_pattern,weight_pattern,shipments,line_rows,shipments_with_two_numeric_freights,shipments_with_two_numeric_weights
+constant_numeric,constant_numeric,4942,4942,0,0
+mixed_numeric_and_see,mixed_numeric_and_see,1233,3551,0,0
+constant_included_in_price,constant_captured_separately,397,1217,0,0
+constant_invoiced_separately,constant_captured_separately,181,181,0,0
+constant_included_in_price,constant_numeric,173,173,0,0
+mixed_invoiced_and_see,mixed_captured_and_see,57,161,0,0
+constant_included_in_price,mixed_captured_and_numeric,23,52,0,0
+constant_numeric,constant_captured_separately,15,15,0,0
+mixed_numeric_and_see,mixed_captured_and_see,8,30,0,0
+mixed_invoiced_and_see,mixed_numeric_and_see,1,2,0,0

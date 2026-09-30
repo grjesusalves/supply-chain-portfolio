@@ -1,0 +1,34 @@
+column_name,null_count,blank_or_null_count,blank_or_null_share
+Dosage,1736,1736,0.16815187911662147
+Shipment Mode,360,360,0.03487020534676482
+Line Item Insurance (USD),287,287,0.027799302595893065
+ASN/DN #,0,0,0.0
+Brand,0,0,0.0
+Country,0,0,0.0
+Delivered to Client Date,0,0,0.0
+Delivery Recorded Date,0,0,0.0
+Dosage Form,0,0,0.0
+First Line Designation,0,0,0.0
+Freight Cost (USD),0,0,0.0
+Fulfill Via,0,0,0.0
+ID,0,0,0.0
+Item Description,0,0,0.0
+Line Item Quantity,0,0,0.0
+Line Item Value,0,0,0.0
+Managed By,0,0,0.0
+Manufacturing Site,0,0,0.0
+Molecule/Test Type,0,0,0.0
+PO / SO #,0,0,0.0
+PO Sent to Vendor Date,0,0,0.0
+PQ #,0,0,0.0
+PQ First Sent to Client Date,0,0,0.0
+Pack Price,0,0,0.0
+Product Group,0,0,0.0
+Project Code,0,0,0.0
+Scheduled Delivery Date,0,0,0.0
+Sub Classification,0,0,0.0
+Unit Price,0,0,0.0
+Unit of Measure (Per Pack),0,0,0.0
+Vendor,0,0,0.0
+Vendor INCO Term,0,0,0.0
+Weight (Kilograms),0,0,0.0

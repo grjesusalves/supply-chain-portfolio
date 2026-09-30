@@ -1,0 +1,11 @@
+column_name,distinct_non_null,null_count
+Vendor,73,0
+Country,43,0
+Manufacturing Site,88,0
+Shipment Mode,4,360
+Vendor INCO Term,8,0
+Product Group,5,0
+Sub Classification,6,0
+Managed By,4,0
+Fulfill Via,2,0
+First Line Designation,2,0

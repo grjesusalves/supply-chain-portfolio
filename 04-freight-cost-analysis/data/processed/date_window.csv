@@ -1,0 +1,6 @@
+column_name,role,format_tried,rows,parsed,unparseable,min_date,max_date,years_before_2000_or_after_2068
+Scheduled Delivery Date,delivery_window,%d-%b-%y,10324,10324,0,2006-05-02,2015-12-31,0
+Delivered to Client Date,delivery_window,%d-%b-%y,10324,10324,0,2006-05-02,2015-09-14,0
+Delivery Recorded Date,delivery_window,%d-%b-%y,10324,10324,0,2006-05-02,2015-09-14,0
+PQ First Sent to Client Date,not_the_window,not parsed; mixed labels,10324,7643,2681,,,0
+PO Sent to Vendor Date,not_the_window,not parsed; mixed labels,10324,4592,5732,,,0

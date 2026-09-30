@@ -1,0 +1,20 @@
+Shipment Mode,freight_class,lines,lines_in_label,grain
+(blank),numeric,211,360,line
+(blank),see_another_note,100,360,line
+(blank),included_in_price,49,360,line
+Air,numeric,4115,6113,line
+Air,see_another_note,1474,6113,line
+Air,included_in_price,334,6113,line
+Air,invoiced_separately,190,6113,line
+Air Charter,numeric,424,650,line
+Air Charter,see_another_note,153,650,line
+Air Charter,included_in_price,71,650,line
+Air Charter,invoiced_separately,2,650,line
+Ocean,numeric,282,371,line
+Ocean,see_another_note,44,371,line
+Ocean,included_in_price,30,371,line
+Ocean,invoiced_separately,15,371,line
+Truck,numeric,1166,2830,line
+Truck,included_in_price,958,2830,line
+Truck,see_another_note,674,2830,line
+Truck,invoiced_separately,32,2830,line

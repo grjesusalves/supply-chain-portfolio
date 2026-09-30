@@ -1,0 +1,5 @@
+column_name,rows_with_double_space,distinct_raw,distinct_if_internal_whitespace_collapsed
+Vendor,70,73,73
+Manufacturing Site,23,88,88
+Country,0,43,43
+Shipment Mode,0,4,4

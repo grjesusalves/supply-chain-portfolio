@@ -1,0 +1,2 @@
+ID,ASN/DN #,First Line Designation,Shipment Mode,Weight (Kilograms),Freight Cost (USD),Line Item Value,freight_class,weight_class
+23750,ASN-22365,Yes,Air,0,1002.35,96,numeric,numeric

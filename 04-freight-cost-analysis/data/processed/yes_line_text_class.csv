@@ -1,0 +1,7 @@
+yes_freight_class,yes_weight_class,shipments
+numeric,numeric,6175
+included_in_price,captured_separately,397
+invoiced_separately,captured_separately,238
+included_in_price,numeric,196
+numeric,captured_separately,23
+invoiced_separately,numeric,1

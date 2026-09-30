@@ -1,0 +1,12 @@
+column_name,shipments,shipments_not_constant,shipments_constant,is_money_gate
+Freight Cost (USD),7030,1299,5731,1
+Weight (Kilograms),7030,1322,5708,1
+Shipment Mode,7030,0,7030,0
+Vendor,7030,0,7030,0
+Country,7030,0,7030,0
+Vendor INCO Term,7030,0,7030,0
+Manufacturing Site,7030,880,6150,0
+First Line Designation,7030,1450,5580,0
+Managed By,7030,0,7030,0
+Fulfill Via,7030,0,7030,0
+Product Group,7030,0,7030,0

@@ -1,0 +1,9 @@
+example_for,ASN/DN #,ID,First Line Designation,Shipment Mode,Freight Cost (USD),Weight (Kilograms),freight_class,weight_class,Line Item Value
+ASN-10007,ASN-10007,23194,Yes,Air,1082.89,43,numeric,numeric,1120
+ASN-10007,ASN-10007,69881,No,Air,See ASN-10007 (ID#:23194),See ASN-10007 (ID#:23194),see_another_note,see_another_note,2850
+ASN-2513,ASN-2513,3360,Yes,Air,Invoiced Separately,Weight Captured Separately,invoiced_separately,captured_separately,75
+ASN-2513,ASN-2513,9939,No,Air,See ASN-2513 (ID#:3360),See ASN-2513 (ID#:3360),see_another_note,see_another_note,140
+ASN-130,ASN-130,44,Yes,Air,Freight Included in Commodity Cost,328,included_in_price,numeric,4374
+ASN-130,ASN-130,7968,No,Air,Freight Included in Commodity Cost,Weight Captured Separately,included_in_price,captured_separately,64461.24
+ASN-21679,ASN-21679,13900,Yes,Air,1090.87,Weight Captured Separately,numeric,captured_separately,8658
+ASN-21679,ASN-21679,71241,No,Air,See ASN-21679 (ID#:13900),See ASN-21679 (ID#:13900),see_another_note,see_another_note,250

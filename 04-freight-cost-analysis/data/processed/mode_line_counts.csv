@@ -1,0 +1,6 @@
+Shipment Mode,lines,share_of_lines,grain
+Air,6113,0.5921154591243704,line
+Truck,2830,0.274118558698179,line
+Air Charter,650,0.06296009298721426,line
+Ocean,371,0.035935683843471525,line
+(blank),360,0.03487020534676482,line

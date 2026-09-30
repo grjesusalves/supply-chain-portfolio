@@ -1,0 +1,2 @@
+gate_passed,shipments,shipments_freight_not_constant,shipments_weight_not_constant,shipments_with_two_distinct_numeric_freight_strings,shipments_with_two_distinct_numeric_weight_strings,median_freight_per_kg,mean_freight_per_kg,weighed_shipments,reason
+0,7030,1299,1322,0,0,,,,"not computed; freight or weight is not constant inside ASN/DN, and no rollup rule was invented"

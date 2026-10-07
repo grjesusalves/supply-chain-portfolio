@@ -72,5 +72,5 @@ Python (pandas, LightGBM). Static HTML dashboard in `dashboards/`. Tableau Publi
 
 ## How to Reproduce
 1. Download raw data into `data/raw/` (see `data/README.md`).
-2. Run notebooks in `notebooks/` in order; reusable code lives in `src/`, SQL in `sql/`.
+2. Run `src/analyze_ca.py`, then `src/construct_forecast.py`. All code is Python in `src/`; this project has no notebooks or SQL.
 3. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.

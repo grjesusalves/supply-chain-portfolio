@@ -1,5 +1,21 @@
 # Demand Forecasting — Walmart M5
 
+## Start here
+
+Read the files in this order. It follows the order the work was done: story first, evidence for each stage next, code last.
+
+1. This README, for the question and the result.
+2. [data/README.md](data/README.md), then [data/raw/README.md](data/raw/README.md), for where the data came from and where the downloads go.
+3. [reports/01-plan.md](reports/01-plan.md), for why food at CA_3, the 28-day test, and the measures.
+4. [reports/02-analyze.md](reports/02-analyze.md), with these charts open: [monthly trend](images/ca_monthly_trend.png), [weekday pattern](images/ca_weekday_seasonality.png), [volume by store and category](images/ca_volume_by_store_and_category.png), [SNAP by category](images/ca_snap_by_category.png).
+5. [reports/03-construct.md](reports/03-construct.md), with [forecast vs actual](images/ca3_foods_forecast_vs_actual.png), [daily error](images/ca3_foods_daily_error.png), and the scores in [ca3_foods_metrics.csv](data/processed/ca3_foods_metrics.csv).
+6. [reports/ca3_foods_one_item_forecast.xlsx](reports/ca3_foods_one_item_forecast.xlsx), one item (FOODS_3_090) worked by hand in Excel.
+7. [reports/04-execute.md](reports/04-execute.md), then [reports/business-report.md](reports/business-report.md), for the recommendation and the manager version.
+8. [dashboards/ca3_foods_dashboard.html](dashboards/ca3_foods_dashboard.html), the one-page dashboard. Download it and open it in a browser.
+9. [src/analyze_ca.py](src/analyze_ca.py), then [src/construct_forecast.py](src/construct_forecast.py), the code. Read the `#` comments next to reports 2 and 3.
+
+The other files in [data/processed/](data/processed/) are small tables from the analyze step. Open one when a report mentions it.
+
 ## Executive summary
 
 **Business question.** How many food units will Walmart store CA_3 sell, item by item, over the next 28 days, and does LightGBM beat a same-weekday-four-weeks-ago copy?

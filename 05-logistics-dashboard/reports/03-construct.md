@@ -79,7 +79,7 @@ The same medians, at full precision, match `res_med_p2d_band`, `res_med_transit_
 
 ## What the page shows
 
-`dashboards/logistics_weekly.html` is the seven items and nothing else. No handling series, no freight per kilogram, no review score, no map.
+`dashboards/logistics_weekly.html` carries the seven items below as one executive page: a KPI strip, the weekly trend, the band exhibits, and customers next to sellers by state. It is drawn by `src/build_dashboard.py` from the three extracts, which `construct_logistics.py` calls at the end of its run. Median handling appears only per band, from the Analyze band table, to show the days are in transit. No weekly handling series, no freight per kilogram, no review score, no map.
 
 1. **Orders purchased that week.** 99,441 orders. Every status.
 2. **Median purchase-to-door and median transit.** On 96,470 delivered orders, 10.2 days and 7.1 days. The purchase-to-door median is the average of the two central orders, 10.217476851539686 days, because 96,470 is even. The transit median is 7.10031250026077 days, on 96,446 orders.
@@ -99,7 +99,7 @@ Execute writes the executive summary, the business report, and the recommendatio
 
 Tableau Public is still a manual publish. `dashboards/TABLEAU.md` is the sheet list. The HTML page is the stand-in until that publish exists. Do not add a URL that was not published.
 
-Do not retune the bands in Execute to make a bar smoother. Do not put review score, freight per kilogram, or handling on the weekly page. Do not convert reais. Do not treat a week with no delivery as zero days.
+Do not retune the bands in Execute to make a bar smoother. Do not put review score or freight per kilogram on the weekly page, and do not add a weekly handling series. Do not convert reais. Do not treat a week with no delivery as zero days.
 
 ## How to reproduce
 

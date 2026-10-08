@@ -47,7 +47,7 @@
   function tx(parent, x, y, s, size, fill, anchor, weight, halo) {
     var a = { x: x.toFixed(1), y: y.toFixed(1), "font-size": size, fill: fill,
       "text-anchor": anchor || "start", "font-weight": weight || 400 };
-    if (halo) { a.stroke = "#fff"; a["stroke-width"] = 3; a["paint-order"] = "stroke"; a["stroke-linejoin"] = "round"; }
+    if (halo) { a.stroke = C.bg; a["stroke-width"] = 3; a["paint-order"] = "stroke"; a["stroke-linejoin"] = "round"; }
     var e = mk("text", a, parent);
     e.textContent = s;
     return e;
@@ -110,8 +110,8 @@
     var svg = mk("svg", { viewBox: "0 0 " + W + " " + H, "aria-hidden": "true" });
     var defs = mk("defs", {}, svg);
     var pat = mk("pattern", { id: "wkgap", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
-    mk("rect", { width: 6, height: 6, fill: "#F3F5F8" }, pat);
-    mk("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: "#D7DDE5", "stroke-width": 2 }, pat);
+    mk("rect", { width: 6, height: 6, fill: C.gapBg }, pat);
+    mk("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: C.gapLine, "stroke-width": 2 }, pat);
 
     // Gap runs: Mondays with no purchase, shaded in every panel.
     var runs = [];
@@ -129,29 +129,29 @@
     var low = D.lowIdx, peak = D.peakIdx;
     var lowIn = low >= i0 && low <= i1, peakIn = peak >= i0 && peak <= i1;
     if (lowIn) [P[1], P[2]].forEach(function (p) {
-      mk("rect", { x: X(T[low]) - 1, y: p.top, width: weekW + 2, height: p.h, fill: C.accentPale }, svg);
+      mk("rect", { x: X(T[low]) - 1, y: p.top, width: weekW + 2, height: p.h, fill: C.accentBg }, svg);
     });
 
     // Grid, y labels, year separators.
     P.forEach(function (p) {
       p.ticks.forEach(function (t) {
         var yy = Y(p, t);
-        mk("line", { x1: left, x2: left + plotW, y1: yy, y2: yy, stroke: t === p.lo ? "#B9C2CD" : C.grid }, svg);
+        mk("line", { x1: left, x2: left + plotW, y1: yy, y2: yy, stroke: t === p.lo ? C.axis : C.grid }, svg);
         tx(svg, left - 8, yy + 4, p.fmt(t), fs, C.muted, "end");
       });
       [2017, 2018].forEach(function (yr) {
         var ms = Date.UTC(yr, 0, 1);
-        if (ms > t0 && ms < t1) mk("line", { x1: X(ms), x2: X(ms), y1: p.top, y2: p.bottom, stroke: C.light, "stroke-dasharray": "2 3" }, svg);
+        if (ms > t0 && ms < t1) mk("line", { x1: X(ms), x2: X(ms), y1: p.top, y2: p.bottom, stroke: C.context, "stroke-dasharray": "2 3" }, svg);
       });
     });
 
     // Panel titles with inline keys instead of a legend.
     var tt = function (p) { return p.top - (compact ? 12 : 14); };
-    var t1el = tx(svg, 0, tt(P[0]), compact ? "Orders per week " : "Orders per week, by purchase week  ", tfs, C.ink, "start", 600);
-    tspan(t1el, compact ? "■ delivered " : "■ delivered orders  ", C.navy, 500);
+    var t1el = tx(svg, 0, tt(P[0]), compact ? "Orders per week " : "Orders per week, by purchase week  ", tfs, C.text, "start", 600);
+    tspan(t1el, compact ? "■ delivered " : "■ delivered orders  ", C.series, 500);
     tspan(t1el, compact ? "■ all purchases" : "■ all purchases, any status", C.muted, 500);
-    tx(svg, 0, tt(P[1]), "Median purchase-to-door, days", tfs, C.ink, "start", 600);
-    tx(svg, 0, tt(P[2]), compact ? "On-time rate, % of delivered" : "On-time rate, % of delivered orders (calendar date)", tfs, C.ink, "start", 600);
+    tx(svg, 0, tt(P[1]), "Median purchase-to-door, days", tfs, C.text, "start", 600);
+    tx(svg, 0, tt(P[2]), compact ? "On-time rate, % of delivered" : "On-time rate, % of delivered orders (calendar date)", tfs, C.text, "start", 600);
 
     // Panel 1 bars: purchases behind deliveries. Only weeks in the extract.
     var bw = weekW * 0.78;
@@ -160,10 +160,10 @@
       if (w.s === "gap") continue;
       var bx = X(T[i]) + (weekW - bw) / 2;
       var yp = Y(P[0], w.p);
-      mk("rect", { x: bx, y: yp, width: bw, height: P[0].bottom - yp, fill: C.light }, svg);
+      mk("rect", { x: bx, y: yp, width: bw, height: P[0].bottom - yp, fill: C.context }, svg);
       if (w.n != null) {
         var yd = Y(P[0], w.n);
-        mk("rect", { x: bx, y: yd, width: bw, height: P[0].bottom - yd, fill: C.navy }, svg);
+        mk("rect", { x: bx, y: yd, width: bw, height: P[0].bottom - yd, fill: C.series }, svg);
       }
     }
 
@@ -171,18 +171,18 @@
     [[P[1], D.ref.p2d, "Full-period median", D.ref.p2dLab + " days", D.ref.p2dLab + "d"],
      [P[2], D.ref.ot, "Full-period rate", D.ref.otLab, D.ref.otLab]].forEach(function (a) {
       var yy = Y(a[0], a[1]);
-      mk("line", { x1: left, x2: left + plotW + 6, y1: yy, y2: yy, stroke: C.slate, "stroke-dasharray": "4 3" }, svg);
-      if (compact) tx(svg, left + plotW + 8, yy + 4, a[4], fs, C.slate, "start", 600);
-      else { tx(svg, left + plotW + 10, yy - 3, a[2], 11, C.muted); tx(svg, left + plotW + 10, yy + 11, a[3], 12, C.slate, "start", 600); }
+      mk("line", { x1: left, x2: left + plotW + 6, y1: yy, y2: yy, stroke: C.text2, "stroke-dasharray": "4 3" }, svg);
+      if (compact) tx(svg, left + plotW + 8, yy + 4, a[4], fs, C.text2, "start", 600);
+      else { tx(svg, left + plotW + 10, yy - 3, a[2], 11, C.muted); tx(svg, left + plotW + 10, yy + 11, a[3], 12, C.text2, "start", 600); }
     });
 
     // Lines break at every blank: a missing week is never drawn as zero.
     function line(p, get) {
       var seg = [];
       function flush() {
-        if (seg.length === 1) mk("circle", { cx: seg[0][0], cy: seg[0][1], r: 2.2, fill: C.navy }, svg);
+        if (seg.length === 1) mk("circle", { cx: seg[0][0], cy: seg[0][1], r: 2.2, fill: C.series }, svg);
         else if (seg.length > 1) mk("polyline", { points: seg.map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" "),
-          fill: "none", stroke: C.navy, "stroke-width": compact ? 1.6 : 1.8, "stroke-linejoin": "round" }, svg);
+          fill: "none", stroke: C.series, "stroke-width": compact ? 1.6 : 1.8, "stroke-linejoin": "round" }, svg);
         seg = [];
       }
       for (var k = i0; k <= i1; k++) {
@@ -204,11 +204,11 @@
         var cx = X(T[k]) + weekW / 2, above = v > p.hi;
         var cy = above ? p.top + 4 : p.bottom - 4;
         var pts = above ? [[cx - 4, cy + 3], [cx + 4, cy + 3], [cx, cy - 4]] : [[cx - 4, cy - 3], [cx + 4, cy - 3], [cx, cy + 4]];
-        mk("polygon", { points: pts.map(function (q) { return q.join(","); }).join(" "), fill: C.slate }, svg);
+        mk("polygon", { points: pts.map(function (q) { return q.join(","); }).join(" "), fill: C.text2 }, svg);
         var n = WK[k].n;
         var s = a[2](WK[k]) + ", " + n + (n === 1 ? " order" : " orders");
         var an = fits(s, cx + 7, "start") ? "start" : "end";
-        tx(svg, an === "start" ? cx + 7 : cx - 7, above ? cy + 4 : cy - 1, s, fs - 1, C.slate, an, 400, true);
+        tx(svg, an === "start" ? cx + 7 : cx - 7, above ? cy + 4 : cy - 1, s, fs - 1, C.text2, an, 400, true);
       }
     });
 
@@ -219,7 +219,7 @@
         : "Peak: " + WK[peak].lab.n + " delivered, week of " + WK[peak].lab.d;
       var pa = compact ? "start" : "end";
       if (!fits(ps, pa === "end" ? px - 8 : px + 6, pa)) pa = pa === "end" ? "start" : "end";
-      tx(svg, pa === "end" ? px - 8 : px + 6, py + 10, ps, fs, C.ink, pa, 500, true);
+      tx(svg, pa === "end" ? px - 8 : px + 6, py + 10, ps, fs, C.text, pa, 500, true);
     }
     if (lowIn) {
       var lx = X(T[low]) + weekW / 2, lw = WK[low];
@@ -236,8 +236,8 @@
     var longest = runs.filter(function (r) { return r[1] - r[0] >= 1; }).sort(function (a, b) { return (b[1] - b[0]) - (a[1] - a[0]); })[0];
     if (longest) {
       var gx = X(T[longest[0]]);
-      tx(svg, gx, P[0].top + 12, "No purchases:", fs - 1, C.slate, "start", 600, true);
-      tx(svg, gx, P[0].top + 25, "gap, not zero", fs - 1, C.slate, "start", 400, true);
+      tx(svg, gx, P[0].top + 12, "No purchases:", fs - 1, C.text2, "start", 600, true);
+      tx(svg, gx, P[0].top + 25, "gap, not zero", fs - 1, C.text2, "start", 400, true);
     }
     // Late-2018 weeks with purchases and no delivery: a marker, not a zero.
     var tail = [];
@@ -246,8 +246,8 @@
       var ta = X(T[tail[0]]), tb = X(T[tail[tail.length - 1]] + 7 * DAY);
       mk("line", { x1: ta, x2: tb, y1: P[1].bottom - 6, y2: P[1].bottom - 6, stroke: C.muted }, svg);
       if (!compact) {
-        tx(svg, left + plotW, P[1].top + 12, "Sep–Oct 2018: purchases but no", fs - 1, C.slate, "end", 400, true);
-        tx(svg, left + plotW, P[1].top + 25, "delivered order, left blank ↓", fs - 1, C.slate, "end", 400, true);
+        tx(svg, left + plotW, P[1].top + 12, "Sep–Oct 2018: purchases but no", fs - 1, C.text2, "end", 400, true);
+        tx(svg, left + plotW, P[1].top + 25, "delivered order, left blank ↓", fs - 1, C.text2, "end", 400, true);
       }
     }
 
@@ -272,11 +272,11 @@
 
     // Crosshair synced across the three panels.
     var cross = mk("g", { display: "none", "pointer-events": "none" }, svg);
-    var cl = mk("line", { y1: P[0].top, y2: axisY, stroke: C.ink, "stroke-opacity": 0.55 }, cross);
+    var cl = mk("line", { y1: P[0].top, y2: axisY, stroke: C.text, "stroke-opacity": 0.55 }, cross);
     var cb = mk("rect", { y: P[0].top, height: P[0].h, fill: "none", stroke: C.accent, "stroke-width": 1.5 }, cross);
-    var c2 = mk("circle", { r: 4.5, fill: "#fff", stroke: C.navy, "stroke-width": 2 }, cross);
-    var c3 = mk("circle", { r: 4.5, fill: "#fff", stroke: C.navy, "stroke-width": 2 }, cross);
-    var overlay = mk("rect", { x: left, y: P[0].top, width: plotW, height: axisY - P[0].top, fill: "#fff", "fill-opacity": 0, style: "cursor:crosshair" }, svg);
+    var c2 = mk("circle", { r: 4.5, fill: C.bg, stroke: C.series, "stroke-width": 2 }, cross);
+    var c3 = mk("circle", { r: 4.5, fill: C.bg, stroke: C.series, "stroke-width": 2 }, cross);
+    var overlay = mk("rect", { x: left, y: P[0].top, width: plotW, height: axisY - P[0].top, fill: C.bg, "fill-opacity": 0, style: "cursor:crosshair" }, svg);
     var cur = -1;
 
     function setCross(k, pageX, pageY) {

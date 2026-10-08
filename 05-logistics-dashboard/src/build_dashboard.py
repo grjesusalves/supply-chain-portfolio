@@ -112,17 +112,87 @@ STATE_NAMES = {
     "TO": "Tocantins",
 }
 
-# Palette: navy for the data, slate for context, one crimson accent for the
-# single thing each exhibit wants the reader to look at.
-NAVY = "#14284B"
-INK = "#1C2430"
-SLATE = "#5A6779"
-MUTED = "#8C97A6"
-LIGHT = "#C9D2DD"
-PALE = "#E9EDF2"
-GRID = "#E4E8ED"
-ACCENT = "#A51C30"
-ACCENT_PALE = "#F6E3E6"
+# Palette (dark theme). Near-black page, slightly lifted dark-grey panels,
+# white primary text, light-grey secondary text. One light steel-blue series
+# colour replaces the old navy, one coral accent replaces the old crimson for
+# the single thing each exhibit wants the reader to see, and a gold detail is
+# used sparingly for exhibit tags, the hint and focus rings. Every text and
+# mark colour is checked for contrast against the background it sits on
+# (WCAG AA: 4.5:1 for text, 3:1 for large text and chart marks) in
+# contrast_checks() before the page is written.
+BG = "#0B0B0D"          # page background
+SURFACE = "#151518"     # KPI strip, panels, tooltip, controls
+SURFACE2 = "#1D1D22"    # hover / pressed surfaces
+BORDER = "#2C2C34"      # subtle panel borders
+RULE = "#34343D"        # section rules and table lines
+HEAD = "#FFFFFF"        # headings and headline numbers
+BODY = "#D9DDE3"        # paragraph text
+TEXT = "#F2F3F5"        # chart labels (was ink)
+TEXT2 = "#B8BEC8"       # secondary text and labels
+MUTED = "#9299A5"       # axis ticks, notes, source lines
+SERIES = "#7DB4EA"      # primary data series (was navy)
+CONTEXT = "#6F7683"     # context marks: all purchases, handling bars
+ROWLINE = "#26262D"     # faint row separators inside charts
+GRID = "#25252C"        # gridlines
+AXIS = "#6A6A76"        # zero baselines and axis ticks
+ACCENT = "#FF6B61"      # emphasis: 1,000+ km band, sellers, the low week
+ACCENT_BG = "#3A1B1E"   # tinted band behind the annotated week
+GOLD = "#E8B44E"        # sparing detail colour
+GAP_BG = "#121216"      # hatch for weeks with no purchase
+GAP_LINE = "#34343E"
+ROW_HI = "#1A1E26"      # SP / RJ / PR rows
+ROW_NOSELL = "#2B181B"  # states with customers and no sellers
+SEL_BG = "#22354D"      # selected state row
+ON_BG = "#1B2635"       # selected band row
+
+# Tiny inline favicon (three bars), so the browser does not request
+# /favicon.ico and log a 404. '#' must be URL-encoded inside a data URI.
+FAVICON = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E"
+    "%3Crect width='16' height='16' rx='3' fill='%230B0B0D'/%3E"
+    "%3Cpath d='M3 13h2.5V8H3zm3.75 0h2.5V3h-2.5zm3.75 0H13V6h-2.5z' fill='%237DB4EA'/%3E%3C/svg%3E"
+)
+
+
+def _luminance(hex_colour):
+    rgb = [int(hex_colour.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def contrast(fg, bg):
+    hi, lo = sorted((_luminance(fg), _luminance(bg)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def contrast_checks():
+    """WCAG AA on the dark palette, for every pairing the page uses.
+    Text needs 4.5:1; large text and chart marks need 3:1. A miss stops the
+    build, like a number mismatch does.
+    """
+    text_pairs = [
+        ("HEAD on BG", HEAD, BG), ("BODY on BG", BODY, BG), ("BODY on SURFACE", BODY, SURFACE),
+        ("TEXT on BG", TEXT, BG), ("TEXT2 on BG", TEXT2, BG), ("TEXT2 on SURFACE", TEXT2, SURFACE),
+        ("MUTED on BG", MUTED, BG), ("MUTED on SURFACE", MUTED, SURFACE),
+        ("MUTED on footer", MUTED, "#111114"), ("TEXT2 on footer", TEXT2, "#111114"),
+        ("SERIES text on BG", SERIES, BG), ("ACCENT text on BG", ACCENT, BG),
+        ("ACCENT text on SURFACE", ACCENT, SURFACE), ("GOLD text on BG", GOLD, BG),
+        ("TEXT on ROW_HI", TEXT, ROW_HI), ("ACCENT on ROW_NOSELL", ACCENT, ROW_NOSELL),
+        ("TEXT on SEL_BG", TEXT, SEL_BG), ("TEXT on ON_BG", TEXT, ON_BG),
+        ("ACCENT on ON_BG", ACCENT, ON_BG), ("ACCENT on ACCENT_BG", ACCENT, ACCENT_BG),
+        ("BG on SERIES (pressed button)", BG, SERIES), ("BG on ACCENT (pressed chip)", BG, ACCENT),
+        ("TEXT on SURFACE2 (tooltip)", TEXT, SURFACE2),
+    ]
+    mark_pairs = [
+        ("SERIES mark on BG", SERIES, BG), ("CONTEXT mark on BG", CONTEXT, BG),
+        ("ACCENT mark on BG", ACCENT, BG), ("AXIS on BG", AXIS, BG),
+        ("SERIES mark on ROW_HI", SERIES, ROW_HI), ("CONTEXT mark on SURFACE", CONTEXT, SURFACE),
+    ]
+    for label, fg, bg, need in [(*t, 4.5) for t in text_pairs] + [(*t, 3.0) for t in mark_pairs]:
+        r = contrast(fg, bg)
+        if r < need:
+            fail(f"contrast {label}: {r:.2f} < {need}")
+    print(f"CHECK contrast (WCAG AA): PASS {len(text_pairs)} text pairs, {len(mark_pairs)} mark pairs")
 
 
 def fail(message):
@@ -258,7 +328,7 @@ def compute(weekly, bands, band_summary, states, summary):
 # ---------------------------------------------------------------------------
 # SVG helpers
 # ---------------------------------------------------------------------------
-def svg_text(x, y, text, size=12, fill=SLATE, anchor="start", weight=400,
+def svg_text(x, y, text, size=12, fill=TEXT2, anchor="start", weight=400,
              extra=""):
     return (
         f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" fill="{fill}" '
@@ -356,7 +426,7 @@ def weekly_svg(weekly, m, width, compact):
     for p in panels[1:]:
         out.append(
             f'<rect x="{X(low_week) - 1:.1f}" y="{p["top"]:.1f}" '
-            f'width="{week_w + 2:.1f}" height="{p["h"]:.1f}" fill="{ACCENT_PALE}"/>'
+            f'width="{week_w + 2:.1f}" height="{p["h"]:.1f}" fill="{ACCENT_BG}"/>'
         )
 
     # Grid lines, y labels, year separators.
@@ -364,7 +434,7 @@ def weekly_svg(weekly, m, width, compact):
     for p in panels:
         for t in p["ticks"]:
             yy = Y(p, t)
-            stroke = "#B9C2CD" if t == p["lo"] else GRID
+            stroke = AXIS if t == p["lo"] else GRID
             out.append(
                 f'<line x1="{left}" x2="{left + plot_w:.1f}" y1="{yy:.1f}" '
                 f'y2="{yy:.1f}" stroke="{stroke}" stroke-width="1"/>'
@@ -373,7 +443,7 @@ def weekly_svg(weekly, m, width, compact):
         for yr in years:
             out.append(
                 f'<line x1="{X(yr):.1f}" x2="{X(yr):.1f}" y1="{p["top"]:.1f}" '
-                f'y2="{p["bottom"]:.1f}" stroke="{LIGHT}" stroke-dasharray="2 3"/>'
+                f'y2="{p["bottom"]:.1f}" stroke="{CONTEXT}" stroke-dasharray="2 3"/>'
             )
 
     # Panel titles with inline keys (direct labels instead of a legend).
@@ -381,22 +451,22 @@ def weekly_svg(weekly, m, width, compact):
     t_y = lambda p: p["top"] - (12 if compact else 14)
     if compact:
         out.append(
-            f'<text x="0" y="{t_y(p1):.1f}" font-size="{title_fs}" fill="{INK}" font-weight="600">'
-            f'Orders per week <tspan fill="{NAVY}">■ delivered</tspan> '
+            f'<text x="0" y="{t_y(p1):.1f}" font-size="{title_fs}" fill="{TEXT}" font-weight="600">'
+            f'Orders per week <tspan fill="{SERIES}">■ delivered</tspan> '
             f'<tspan fill="{MUTED}">■ all purchases</tspan></text>'
         )
     else:
         out.append(
-            f'<text x="0" y="{t_y(p1):.1f}" font-size="{title_fs}" fill="{INK}" font-weight="600">'
+            f'<text x="0" y="{t_y(p1):.1f}" font-size="{title_fs}" fill="{TEXT}" font-weight="600">'
             f'Orders per week, by purchase week  '
-            f'<tspan fill="{NAVY}" font-weight="500">■ delivered orders</tspan>  '
+            f'<tspan fill="{SERIES}" font-weight="500">■ delivered orders</tspan>  '
             f'<tspan fill="{MUTED}" font-weight="500">■ all purchases, any status</tspan></text>'
         )
     out.append(svg_text(0, t_y(p2), "Median purchase-to-door, days" if not compact
-                        else "Median purchase-to-door, days", title_fs, INK, weight=600))
+                        else "Median purchase-to-door, days", title_fs, TEXT, weight=600))
     out.append(svg_text(0, t_y(p3), "On-time rate, % of delivered orders (calendar date)"
                         if not compact else "On-time rate, % of delivered", title_fs,
-                        INK, weight=600))
+                        TEXT, weight=600))
 
     # Panel 1: purchased bars behind delivered bars. Both are counts that
     # exist in the extract; no week is filled in.
@@ -408,18 +478,18 @@ def weekly_svg(weekly, m, width, compact):
         yp = Y(p1, row["orders_purchased"])
         out.append(
             f'<rect x="{x:.2f}" y="{yp:.2f}" width="{bw:.2f}" '
-            f'height="{p1["bottom"] - yp:.2f}" fill="{LIGHT}"/>'
+            f'height="{p1["bottom"] - yp:.2f}" fill="{CONTEXT}"/>'
         )
         if not pd.isna(row["delivered_orders"]):
             yd = Y(p1, row["delivered_orders"])
             out.append(
                 f'<rect x="{x:.2f}" y="{yd:.2f}" width="{bw:.2f}" '
-                f'height="{p1["bottom"] - yd:.2f}" fill="{NAVY}"/>'
+                f'height="{p1["bottom"] - yd:.2f}" fill="{SERIES}"/>'
             )
 
     # Lines that break at blanks. An isolated week gets a dot so it is not
     # silently dropped.
-    def line(p, col, scale=1.0, color=NAVY):
+    def line(p, col, scale=1.0, color=SERIES):
         segs, cur = [], []
         for d, v in full[col].items():
             if pd.isna(v):
@@ -452,14 +522,14 @@ def weekly_svg(weekly, m, width, compact):
         yy = Y(p, v)
         out.append(
             f'<line x1="{left}" x2="{left + plot_w + 6:.1f}" y1="{yy:.1f}" y2="{yy:.1f}" '
-            f'stroke="{SLATE}" stroke-width="1" stroke-dasharray="4 3"/>'
+            f'stroke="{TEXT2}" stroke-width="1" stroke-dasharray="4 3"/>'
         )
         if compact:
             out.append(svg_text(left + plot_w + 8, yy + 4, label[1].replace(" days", "d"),
-                                fs, SLATE, weight=600))
+                                fs, TEXT2, weight=600))
         else:
             out.append(svg_text(left + plot_w + 10, yy - 3, label[0], 11, MUTED))
-            out.append(svg_text(left + plot_w + 10, yy + 11, label[1], 12, SLATE, weight=600))
+            out.append(svg_text(left + plot_w + 10, yy + 11, label[1], 12, TEXT2, weight=600))
 
     out += line(p2, "median_purchase_to_door_days")
     out += line(p3, "on_time_rate", scale=100)
@@ -479,12 +549,12 @@ def weekly_svg(weekly, m, width, compact):
                 tri = (f"{cx - 4:.1f},{cy + 3:.1f} {cx + 4:.1f},{cy + 3:.1f} {cx:.1f},{cy - 4:.1f}"
                        if above else
                        f"{cx - 4:.1f},{cy - 3:.1f} {cx + 4:.1f},{cy - 3:.1f} {cx:.1f},{cy + 4:.1f}")
-                out.append(f'<polygon points="{tri}" fill="{SLATE}"/>')
+                out.append(f'<polygon points="{tri}" fill="{TEXT2}"/>')
                 n_del = int(row["delivered_orders"])
                 txt = (f"{v:.1f} days, {n_del} order" if scale == 1 else
                        f"{v:.0f}%, {n_del} order") + ("" if n_del == 1 else "s")
                 ty = cy + 4 if above else cy - 1
-                out.append(svg_text(cx + 7, ty, txt, fs - 1, SLATE))
+                out.append(svg_text(cx + 7, ty, txt, fs - 1, TEXT2))
 
     # Annotations: peak week (panel 1) and the low on-time week (2 and 3).
     px = X(peak_week) + week_w / 2
@@ -494,9 +564,9 @@ def weekly_svg(weekly, m, width, compact):
     # Desktop: label to the left of the peak bar. Mobile: to the right, so it
     # does not run into the "No purchases" label over the 2016 gap.
     if compact:
-        out.append(svg_text(px + 6, py + 9, pk_txt, fs, INK, "start", 500))
+        out.append(svg_text(px + 6, py + 9, pk_txt, fs, TEXT, "start", 500))
     else:
-        out.append(svg_text(px - 8, py + 10, pk_txt, fs, INK, "end", 500))
+        out.append(svg_text(px - 8, py + 10, pk_txt, fs, TEXT, "end", 500))
 
     lx = X(low_week) + week_w / 2
     out.append(
@@ -517,8 +587,8 @@ def weekly_svg(weekly, m, width, compact):
     if runs:
         longest = max(runs, key=lambda r: (r[1] - r[0]).days)
         gx = X(longest[0])
-        out.append(svg_text(gx, p1["top"] + 12, "No purchases:", fs - 1, SLATE, weight=600))
-        out.append(svg_text(gx, p1["top"] + 25, "gap, not zero", fs - 1, SLATE))
+        out.append(svg_text(gx, p1["top"] + 12, "No purchases:", fs - 1, TEXT2, weight=600))
+        out.append(svg_text(gx, p1["top"] + 25, "gap, not zero", fs - 1, TEXT2))
     no_del = full[full["orders_purchased"].notna() & full["delivered_orders"].isna()]
     tail = no_del[no_del.index > pd.Timestamp("2018-01-01")]
     if len(tail):
@@ -531,8 +601,8 @@ def weekly_svg(weekly, m, width, compact):
             # Top-right of the panel: late-2018 weekly medians stay well
             # below 15 days, so this corner is empty.
             xr = left + plot_w
-            out.append(svg_text(xr, p2["top"] + 12, "Sep–Oct 2018: purchases but no", fs - 1, SLATE, "end"))
-            out.append(svg_text(xr, p2["top"] + 25, "delivered order, left blank ↓", fs - 1, SLATE, "end"))
+            out.append(svg_text(xr, p2["top"] + 12, "Sep–Oct 2018: purchases but no", fs - 1, TEXT2, "end"))
+            out.append(svg_text(xr, p2["top"] + 25, "delivered order, left blank ↓", fs - 1, TEXT2, "end"))
 
     # X axis: quarters on desktop, half-years on mobile.
     step = 6 if compact else 3
@@ -553,8 +623,8 @@ def weekly_svg(weekly, m, width, compact):
 
     defs = (
         f'<defs><pattern id="gap-{width}" width="6" height="6" patternUnits="userSpaceOnUse" '
-        f'patternTransform="rotate(45)"><rect width="6" height="6" fill="#F3F5F8"/>'
-        f'<line x1="0" y1="0" x2="0" y2="6" stroke="#D7DDE5" stroke-width="2"/></pattern></defs>'
+        f'patternTransform="rotate(45)"><rect width="6" height="6" fill="{GAP_BG}"/>'
+        f'<line x1="0" y1="0" x2="0" y2="6" stroke="{GAP_LINE}" stroke-width="2"/></pattern></defs>'
     )
     return (
         f'<svg viewBox="0 0 {width} {height + (6 if not compact else 0)}" role="img" '
@@ -589,7 +659,7 @@ def hit_rect(x, y, w, h):
     # Invisible hit area for hover, tap and the keyboard focus ring. It is
     # painted (fill-opacity 0, not fill none) so it receives pointer events.
     return (f'<rect class="hit" x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
-            f'fill="#EEF2F7" fill-opacity="0"/>')
+            f'fill="{ON_BG}" fill-opacity="0"/>')
 
 
 def days_split_svg(bands, band_summary, m):
@@ -617,14 +687,14 @@ def days_split_svg(bands, band_summary, m):
         last = i == 4
         out.append(f"<g {band_attrs(i, code, m)}>")
         out.append(hit_rect(0, y0 - 9, W, row_h))
-        out.append(svg_text(0, y0 + bar_h + 3, BAND_SHORT[i], 12, INK, weight=600 if last else 400))
-        out.append(f'<rect x="{left}" y="{y0:.1f}" width="{X(hand) - left:.1f}" height="{bar_h}" fill="{LIGHT}"/>')
-        out.append(f'<rect x="{left}" y="{y0 + bar_h + gap:.1f}" width="{X(tran) - left:.1f}" height="{bar_h}" fill="{ACCENT if last else NAVY}"/>')
+        out.append(svg_text(0, y0 + bar_h + 3, BAND_SHORT[i], 12, TEXT, weight=600 if last else 400))
+        out.append(f'<rect x="{left}" y="{y0:.1f}" width="{X(hand) - left:.1f}" height="{bar_h}" fill="{CONTEXT}"/>')
+        out.append(f'<rect x="{left}" y="{y0 + bar_h + gap:.1f}" width="{X(tran) - left:.1f}" height="{bar_h}" fill="{ACCENT if last else SERIES}"/>')
         h_lab = f"{hand:.1f}" + (" handling" if i == 0 else "")
         t_lab = f"{tran:.1f}" + (" transit" if i == 0 else "")
-        out.append(svg_text(X(hand) + 5, y0 + bar_h - 2, h_lab, 11, SLATE))
+        out.append(svg_text(X(hand) + 5, y0 + bar_h - 2, h_lab, 11, TEXT2))
         out.append(svg_text(X(tran) + 5, y0 + 2 * bar_h + gap - 2, t_lab, 11,
-                            ACCENT if last else NAVY, weight=600))
+                            ACCENT if last else SERIES, weight=600))
         out.append("</g>")
     return f'<svg viewBox="0 0 {W} {H}" role="group" aria-label="Median handling and transit days by distance band">{"".join(out)}</svg>'
 
@@ -645,22 +715,22 @@ def ontime_svg(bands, band_summary, m):
         out.append(f'<line x1="{X(t):.1f}" x2="{X(t):.1f}" y1="{top - 6}" y2="{top + row_h * 5 - 10}" stroke="{GRID}"/>')
         out.append(svg_text(X(t), top + row_h * 5 + 6, f"{t}%", 11, MUTED, "middle"))
     overall = float(m["on_time_pct"].rstrip("%"))
-    out.append(f'<line x1="{X(overall):.1f}" x2="{X(overall):.1f}" y1="{top - 6}" y2="{top + row_h * 5 - 10}" stroke="{SLATE}" stroke-dasharray="3 3"/>')
-    out.append(svg_text(X(overall), top - 12, f"{m['on_time_pct']} overall", 11, SLATE, "middle"))
-    out.append(svg_text(W, top - 12, "Median wait", 11, SLATE, "end", 600))
+    out.append(f'<line x1="{X(overall):.1f}" x2="{X(overall):.1f}" y1="{top - 6}" y2="{top + row_h * 5 - 10}" stroke="{TEXT2}" stroke-dasharray="3 3"/>')
+    out.append(svg_text(X(overall), top - 12, f"{m['on_time_pct']} overall", 11, TEXT2, "middle"))
+    out.append(svg_text(W, top - 12, "Median wait", 11, TEXT2, "end", 600))
     for i, code in enumerate(BAND_CODES):
         yc = top + i * row_h + 12
         rate = 100.0 * int(bs.loc[code, "on_time_n"]) / int(bs.loc[code, "orders"])
         last = i == 4
-        color = ACCENT if last else NAVY
+        color = ACCENT if last else SERIES
         out.append(f"<g {band_attrs(i, code, m)}>")
         out.append(hit_rect(0, yc - row_h / 2, W, row_h))
-        out.append(f'<line x1="{left}" x2="{W - right + 6}" y1="{yc}" y2="{yc}" stroke="{PALE}"/>')
-        out.append(svg_text(0, yc + 4, BAND_SHORT[i], 12, INK, weight=600 if last else 400))
+        out.append(f'<line x1="{left}" x2="{W - right + 6}" y1="{yc}" y2="{yc}" stroke="{ROWLINE}"/>')
+        out.append(svg_text(0, yc + 4, BAND_SHORT[i], 12, TEXT, weight=600 if last else 400))
         out.append(f'<circle cx="{X(rate):.1f}" cy="{yc}" r="6" fill="{color}"/>')
         out.append(svg_text(X(rate) - 10, yc + 4, m["band_ontime"][i], 12, color, "end", 600))
         out.append(svg_text(W, yc + 4, f"{m['band_p2d'][i]} days", 12,
-                            ACCENT if last else INK, "end", 700 if last else 400))
+                            ACCENT if last else TEXT, "end", 700 if last else 400))
         out.append("</g>")
     return f'<svg viewBox="0 0 {W} {H}" role="group" aria-label="On-time rate and median wait by distance band">{"".join(out)}</svg>'
 
@@ -681,10 +751,10 @@ def freight_svg(bands, m):
         y0 = top + i * row_h + 10
         v = float(bands.iloc[i]["median_freight_brl"])
         last = i == 4
-        color = ACCENT if last else NAVY
+        color = ACCENT if last else SERIES
         out.append(f"<g {band_attrs(i, code, m)}>")
         out.append(hit_rect(0, y0 - (row_h - bar_h) / 2, W, row_h))
-        out.append(svg_text(0, y0 + bar_h - 4, BAND_SHORT[i], 12, INK, weight=600 if last else 400))
+        out.append(svg_text(0, y0 + bar_h - 4, BAND_SHORT[i], 12, TEXT, weight=600 if last else 400))
         out.append(f'<rect x="{left}" y="{y0}" width="{X(v) - left:.1f}" height="{bar_h}" fill="{color}"/>')
         out.append(svg_text(X(v) + 6, y0 + bar_h - 4, m["band_freight"][i], 12, color, weight=600))
         out.append("</g>")
@@ -720,11 +790,11 @@ def coverage_svg(states, no_seller):
     # Fixed key at the top. It no longer sits on the first row, because the
     # first row changes when the reader re-sorts.
     ky = 12
-    out.append(f'<circle cx="{left + 5}" cy="{ky}" r="4.6" fill="{NAVY}"/>')
-    out.append(svg_text(left + 14, ky + 4, "Customer share", 12, NAVY, weight=700))
+    out.append(f'<circle cx="{left + 5}" cy="{ky}" r="4.6" fill="{SERIES}"/>')
+    out.append(svg_text(left + 14, ky + 4, "Customer share", 12, SERIES, weight=700))
     out.append(f'<circle cx="{left + 130}" cy="{ky}" r="4.6" fill="{ACCENT}"/>')
     out.append(svg_text(left + 139, ky + 4, "Seller share", 12, ACCENT, weight=700))
-    out.append(f'<circle cx="{left + 236}" cy="{ky}" r="4.2" fill="white" stroke="{ACCENT}" stroke-width="1.8"/>')
+    out.append(f'<circle cx="{left + 236}" cy="{ky}" r="4.2" fill="{BG}" stroke="{ACCENT}" stroke-width="1.8"/>')
     out.append(svg_text(left + 245, ky + 4, "no sellers", 12, ACCENT, extra=' font-style="italic"'))
     y_last = top + row_h * (n - 1)
     for t in (0, 10, 20, 30, 40, 50, 60):
@@ -746,17 +816,17 @@ def coverage_svg(states, no_seller):
             f'<g class="st-row" data-state="{st}" tabindex="0" role="button" aria-pressed="false" '
             f'aria-label="{esc(aria)}" style="transform:translate(0px,{yc}px)">'
         )
-        bg = "#F2F4F7" if hi_row else ("#FBF3F4" if none else "#FFFFFF")
+        bg = ROW_HI if hi_row else (ROW_NOSELL if none else BG)
         out.append(f'<rect class="rowbg" x="0" y="{-row_h / 2}" width="{W}" height="{row_h}" fill="{bg}" fill-opacity="{1 if (hi_row or none) else 0}"/>')
-        out.append(f'<rect class="selbg" x="0.5" y="{-row_h / 2 + 0.5}" width="{W - 1}" height="{row_h - 1}" fill="#DCE5F1" stroke="{NAVY}" stroke-width="1"/>')
-        out.append(svg_text(0, 4, st, 12, INK if (hi_row or none) else SLATE,
+        out.append(f'<rect class="selbg" x="0.5" y="{-row_h / 2 + 0.5}" width="{W - 1}" height="{row_h - 1}" fill="{SEL_BG}" stroke="{SERIES}" stroke-width="1"/>')
+        out.append(svg_text(0, 4, st, 12, TEXT if (hi_row or none) else TEXT2,
                             weight=700 if (hi_row or none) else 400))
         xp, xs = X(r["people_share"]), X(r["seller_share"])
-        out.append(f'<line x1="{min(xp, xs):.1f}" x2="{max(xp, xs):.1f}" y1="0" y2="0" stroke="{LIGHT}" stroke-width="2.5"/>')
-        out.append(f'<circle cx="{xp:.1f}" cy="0" r="4.6" fill="{NAVY}"/>')
+        out.append(f'<line x1="{min(xp, xs):.1f}" x2="{max(xp, xs):.1f}" y1="0" y2="0" stroke="{CONTEXT}" stroke-width="2.5"/>')
+        out.append(f'<circle cx="{xp:.1f}" cy="0" r="4.6" fill="{SERIES}"/>')
         if none:
             # Hollow ring at zero, drawn on top so it stays visible.
-            out.append(f'<circle cx="{xs:.1f}" cy="0" r="4.4" fill="white" stroke="{ACCENT}" stroke-width="1.8"/>')
+            out.append(f'<circle cx="{xs:.1f}" cy="0" r="4.4" fill="{BG}" stroke="{ACCENT}" stroke-width="1.8"/>')
             out.append(svg_text(X(0.025), 4, "customers, no sellers", 12, ACCENT, extra=' font-style="italic"'))
         else:
             out.append(f'<circle cx="{xs:.1f}" cy="0" r="4.6" fill="{ACCENT}"/>')
@@ -766,8 +836,8 @@ def coverage_svg(states, no_seller):
             # of its dot when there is room (SP); otherwise it follows the
             # larger label in its own colour (RJ, PR), so no label sits on a dot.
             big_x, small_x = max(xp, xs), min(xp, xs)
-            big_txt, big_col = (sv, ACCENT) if xs >= xp else (pv, NAVY)
-            small_txt, small_col = (pv, NAVY) if xs >= xp else (sv, ACCENT)
+            big_txt, big_col = (sv, ACCENT) if xs >= xp else (pv, SERIES)
+            small_txt, small_col = (pv, SERIES) if xs >= xp else (sv, ACCENT)
             if small_x - 46 > left + 4:
                 out.append(svg_text(small_x - 8, 4, small_txt, 12, small_col, "end", 600))
                 out.append(svg_text(big_x + 8, 4, big_txt, 12, big_col, "start", 600))
@@ -893,8 +963,9 @@ def page_data(weekly, bands, band_summary, states, m):
                 "ot": float(m["on_time_pct"].rstrip("%")), "otLab": m["on_time_pct"]},
         "bands": band_rows,
         "states": state_rows,
-        "colors": {"navy": NAVY, "ink": INK, "slate": SLATE, "muted": MUTED, "light": LIGHT,
-                   "pale": PALE, "grid": GRID, "accent": ACCENT, "accentPale": ACCENT_PALE},
+        "colors": {"series": SERIES, "text": TEXT, "text2": TEXT2, "muted": MUTED, "context": CONTEXT,
+                   "rowline": ROWLINE, "grid": GRID, "axis": AXIS, "accent": ACCENT, "accentBg": ACCENT_BG,
+                   "bg": BG, "gapBg": GAP_BG, "gapLine": GAP_LINE},
     }
 
 
@@ -903,40 +974,43 @@ def page_data(weekly, bands, band_summary, states, m):
 # Page
 # ---------------------------------------------------------------------------
 CSS = """
-:root{--navy:%(NAVY)s;--ink:%(INK)s;--slate:%(SLATE)s;--muted:%(MUTED)s;--light:%(LIGHT)s;
---pale:%(PALE)s;--accent:%(ACCENT)s;--rule:#D9DFE6;
+:root{color-scheme:dark;--bg:%(BG)s;--surface:%(SURFACE)s;--surface2:%(SURFACE2)s;--border:%(BORDER)s;
+--rule:%(RULE)s;--head:%(HEAD)s;--body:%(BODY)s;--text:%(TEXT)s;--text2:%(TEXT2)s;--muted:%(MUTED)s;
+--series:%(SERIES)s;--context:%(CONTEXT)s;--rowline:%(ROWLINE)s;--accent:%(ACCENT)s;--gold:%(GOLD)s;
+--on-bg:%(ON_BG)s;
 --serif:Georgia,"Iowan Old Style","Palatino Linotype","Source Serif 4","Noto Serif",serif;
 --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%%}
-body{margin:0;background:#EEF1F4;color:var(--ink);font:15px/1.55 var(--sans);
+html{-webkit-text-size-adjust:100%%;background:#000}
+body{margin:0;background:#000;color:var(--body);font:15px/1.55 var(--sans);
 font-variant-numeric:tabular-nums}
-.page{max-width:1200px;margin:0 auto;background:#fff;box-shadow:0 0 0 1px #E1E6EC}
-.mast{background:var(--navy);color:#DCE3EC;padding:11px 48px;display:flex;justify-content:space-between;
+.page{max-width:1200px;margin:0 auto;background:var(--bg);box-shadow:0 0 0 1px var(--border)}
+.mast{background:var(--surface);border-bottom:1px solid var(--border);color:var(--text2);padding:11px 48px;display:flex;justify-content:space-between;
 gap:16px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
-.mast b{color:#fff;font-weight:600}
-.mast .live{color:#F2C9CF}
+.mast b{color:var(--head);font-weight:600}
+.mast .live{color:var(--accent)}
 header{padding:40px 48px 8px}
-.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 12px}
-h1{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:34px;line-height:1.18;margin:0 0 14px;max-width:1000px;letter-spacing:-.005em}
-.dek{font-size:18px;line-height:1.5;color:#2F3A49;max-width:980px;margin:0 0 16px}
-.meta{font-size:12.5px;color:var(--slate);margin:0;padding:12px 0 0;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:6px 22px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 12px}
+h1{font-family:var(--serif);font-weight:700;color:var(--head);font-size:34px;line-height:1.18;margin:0 0 14px;max-width:1000px;letter-spacing:-.005em}
+.dek{font-size:18px;line-height:1.5;color:var(--body);max-width:980px;margin:0 0 16px}
+.meta{font-size:12.5px;color:var(--text2);margin:0;padding:12px 0 0;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:6px 22px}
 .meta span{white-space:nowrap}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin:22px 48px 6px;border-top:3px solid var(--navy);border-bottom:1px solid var(--rule)}
-.kpi{padding:16px 18px 16px;border-right:1px solid var(--rule)}
+.meta b{color:var(--head)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin:22px 48px 6px;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--series);border-radius:0 0 4px 4px}
+.kpi{padding:16px 18px 16px;border-right:1px solid var(--border)}
 .kpi:last-child{border-right:0}
-.kpi .k{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--slate);font-weight:600;margin:0 0 6px;min-height:2.7em;line-height:1.35}
-.kpi .v{font-size:31px;line-height:1.1;font-weight:650;color:var(--navy);margin:0 0 6px;letter-spacing:-.01em}
-.kpi .v small{font-size:16px;font-weight:500;color:var(--slate);margin-left:3px}
-.kpi .c{font-size:12.5px;line-height:1.4;color:var(--slate);margin:0}
+.kpi .k{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);font-weight:600;margin:0 0 6px;min-height:2.7em;line-height:1.35}
+.kpi .v{font-size:31px;line-height:1.1;font-weight:650;color:var(--head);margin:0 0 6px;letter-spacing:-.01em}
+.kpi .v small{font-size:16px;font-weight:500;color:var(--text2);margin-left:3px}
+.kpi .c{font-size:12.5px;line-height:1.4;color:var(--text2);margin:0}
 section{padding:34px 48px 30px;border-top:1px solid var(--rule)}
 section:first-of-type{border-top:0}
 .sec-label{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px}
-h2{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:23px;line-height:1.28;margin:0 0 8px;max-width:980px}
-.lede{color:#3A4554;margin:0 0 20px;max-width:900px}
+h2{font-family:var(--serif);font-weight:700;color:var(--head);font-size:23px;line-height:1.28;margin:0 0 8px;max-width:980px}
+.lede{color:var(--body);margin:0 0 20px;max-width:900px}
 .exhibit{margin:0}
-.ex-tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 3px}
-.ex-title{font-size:15px;font-weight:650;color:var(--ink);margin:0 0 12px;line-height:1.35}
+.ex-tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 3px}
+.ex-title{font-size:15px;font-weight:650;color:var(--head);margin:0 0 12px;line-height:1.35}
 .source{font-size:11.5px;color:var(--muted);margin:10px 0 0;line-height:1.45}
 svg{display:block;width:100%%;height:auto;font-family:var(--sans);overflow:visible}
 .wk-mobile{display:none}
@@ -945,38 +1019,44 @@ svg{display:block;width:100%%;height:auto;font-family:var(--sans);overflow:visib
 .grid3 .exhibit .ex-title{min-height:42px}
 .cov{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:start}
 .cov .exhibit svg{max-width:520px}
-.callouts{display:grid;gap:0;border-top:3px solid var(--navy)}
-.co{padding:14px 0 14px;border-bottom:1px solid var(--rule)}
-.co .big{font-size:26px;font-weight:650;color:var(--navy);line-height:1.1;margin:0 0 4px}
+.callouts{display:grid;gap:0;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--series);padding:0 18px;border-radius:0 0 4px 4px}
+.co{padding:14px 0 14px;border-bottom:1px solid var(--border)}
+.co:last-child{border-bottom:0}
+.co .big{font-size:26px;font-weight:650;color:var(--head);line-height:1.1;margin:0 0 4px}
 .co .big.acc{color:var(--accent)}
-.co p{margin:0;color:#3A4554;font-size:14px}
-table{border-collapse:collapse;width:100%%;font-size:13.5px;margin:26px 0 0}
-th,td{padding:8px 10px;border-bottom:1px solid var(--pale);text-align:right;white-space:nowrap}
+.co .big span{color:var(--text2)!important}
+.co p{margin:0;color:var(--body);font-size:14px}
+.co b{color:var(--head)}
+table{border-collapse:collapse;width:100%%;font-size:13.5px;margin:26px 0 0;color:var(--text)}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
-thead th{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--slate);font-weight:600;border-bottom:1.5px solid var(--navy);vertical-align:bottom;white-space:normal}
+thead th{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);font-weight:600;border-bottom:1.5px solid var(--series);vertical-align:bottom;white-space:normal}
+tbody tr:hover td{background:var(--surface)}
 tbody tr:last-child td{color:var(--accent);font-weight:600}
 .tablewrap{overflow-x:auto}
 .short{display:none}
-.watch{margin:0 48px 34px;background:#F4F6F9;border-left:4px solid var(--accent);padding:26px 30px 24px}
+.watch{margin:0 48px 34px;background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);padding:26px 30px 24px}
 .watch h2{margin:0 0 4px}
 .watch .lede{margin:0 0 18px}
 .watch ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .watch li{counter-increment:w;position:relative;padding-top:38px}
-.watch li::before{content:counter(w);position:absolute;top:0;left:0;width:26px;height:26px;border-radius:50%%;background:var(--navy);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
-.watch li h3{font-size:15.5px;margin:0 0 6px;color:var(--navy);line-height:1.35}
-.watch li p{margin:0;font-size:14px;color:#3A4554}
-.watch .fine{font-size:12px;color:var(--slate);margin:18px 0 0}
-footer{background:#F7F8FA;border-top:1px solid var(--rule);padding:30px 48px 36px;font-size:12.5px;color:#465263}
-footer h4{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);margin:0 0 8px}
+.watch li::before{content:counter(w);position:absolute;top:0;left:0;width:26px;height:26px;border-radius:50%%;background:var(--series);color:var(--bg);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.watch li h3{font-size:15.5px;margin:0 0 6px;color:var(--head);line-height:1.35}
+.watch li p{margin:0;font-size:14px;color:var(--body)}
+.watch .fine{font-size:12px;color:var(--text2);margin:18px 0 0}
+footer{background:#111114;border-top:1px solid var(--rule);padding:30px 48px 36px;font-size:12.5px;color:var(--text2)}
+footer h4{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--head);margin:0 0 8px}
 .fgrid{display:grid;grid-template-columns:3fr 2fr;gap:26px 44px}
 footer dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:5px 14px}
-footer dt{font-weight:600;color:var(--ink)}
+footer dt{font-weight:600;color:var(--head)}
 footer dd{margin:0}
 footer ul{margin:0;padding-left:18px}
 footer li{margin:0 0 5px}
-footer a{color:var(--navy)}
-.foot-bottom{margin-top:22px;padding-top:14px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:var(--slate)}
-a{color:var(--navy)}
+footer li::marker{color:var(--muted)}
+.foot-bottom{margin-top:22px;padding-top:14px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:var(--muted)}
+a{color:var(--series);text-underline-offset:2px}
+a:hover{color:var(--head)}
+a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @media (max-width:1080px){.grid3{grid-template-columns:1fr 1fr}.watch ol{grid-template-columns:1fr}}
 @media (max-width:760px){
  body{font-size:14.5px}
@@ -986,8 +1066,8 @@ a{color:var(--navy)}
  .dek{font-size:16px}
  .meta{gap:4px 14px}
  .kpis{grid-template-columns:1fr 1fr;margin:18px 18px 4px}
- .kpi{padding:12px 12px;border-right:0;border-bottom:1px solid var(--rule)}
- .kpi:nth-child(odd){border-right:1px solid var(--rule)}
+ .kpi{padding:12px 12px;border-right:0;border-bottom:1px solid var(--border)}
+ .kpi:nth-child(odd){border-right:1px solid var(--border)}
  .kpi:last-child{grid-column:1 / -1;border-bottom:0;border-right:0}
  .kpi .v{font-size:25px}
  section{padding:26px 18px 22px}
@@ -996,7 +1076,7 @@ a{color:var(--navy)}
  .grid3{grid-template-columns:1fr;gap:30px}
  .grid3 .exhibit .ex-title{min-height:0}
  .cov{grid-template-columns:1fr;gap:20px}
- .watch{margin:0 0 26px;padding:22px 18px}
+ .watch{margin:0 0 26px;padding:22px 18px;border-left-width:4px;border-right:0}
  footer{padding:24px 18px 28px}
  .fgrid{grid-template-columns:1fr}
  table{font-size:11.5px;margin-top:22px}
@@ -1007,8 +1087,10 @@ a{color:var(--navy)}
  footer dl{grid-template-columns:1fr}
  footer dd{margin-bottom:6px}
 }
-@media print{body{background:#fff}.page{box-shadow:none}.wk-mobile{display:none}.wk-desktop{display:block}}
-""" % dict(NAVY=NAVY, INK=INK, SLATE=SLATE, MUTED=MUTED, LIGHT=LIGHT, PALE=PALE, ACCENT=ACCENT)
+@media print{.wk-mobile{display:none}.wk-desktop{display:block}}
+""" % dict(BG=BG, SURFACE=SURFACE, SURFACE2=SURFACE2, BORDER=BORDER, RULE=RULE, HEAD=HEAD,
+           BODY=BODY, TEXT=TEXT, TEXT2=TEXT2, MUTED=MUTED, SERIES=SERIES, CONTEXT=CONTEXT,
+           ROWLINE=ROWLINE, ACCENT=ACCENT, GOLD=GOLD, ON_BG=ON_BG)
 
 
 # The interactive layer lives in two plain source files next to this script
@@ -1070,6 +1152,9 @@ def page_html(weekly, bands, band_summary, states, summary, m):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="{BG}">
+<link rel="icon" href="{FAVICON}">
 <title>Logistics network review: distance, delivery time and freight (Olist, historical extract)</title>
 <meta name="description" content="Weekly operating review of a historical Olist extract: delivered purchases {first} to {last}. Distance, delivery time, on-time rate, freight and state coverage.">
 <style>{CSS}{css2}</style>
@@ -1178,9 +1263,9 @@ def page_html(weekly, bands, band_summary, states, summary, m):
       <p class="source">Customer share = distinct customer people in the state ÷ 96,096; seller share = sellers in the state ÷ 3,095. Gap sort = customer share minus seller share, most customer-heavy first. {source}</p>
     </figure>
     <div class="callouts">
-      <div class="co"><p class="big acc">{share('SP', 'seller_share')} <span style="color:var(--slate);font-weight:500;font-size:17px">of sellers</span></p><p><b>São Paulo</b> holds {share('SP', 'seller_share')} of sellers but {share('SP', 'people_share')} of customer people.</p></div>
-      <div class="co"><p class="big">{share('RJ', 'people_share')} <span style="color:var(--slate);font-weight:500;font-size:17px">vs {share('RJ', 'seller_share')}</span></p><p><b>Rio de Janeiro</b> is {share('RJ', 'people_share')} of customers and only {share('RJ', 'seller_share')} of sellers.</p></div>
-      <div class="co"><p class="big">{share('PR', 'seller_share')} <span style="color:var(--slate);font-weight:500;font-size:17px">vs {share('PR', 'people_share')}</span></p><p><b>Paraná</b> runs the other way: {share('PR', 'seller_share')} of sellers, {share('PR', 'people_share')} of customers.</p></div>
+      <div class="co"><p class="big acc">{share('SP', 'seller_share')} <span style="color:var(--text2);font-weight:500;font-size:17px">of sellers</span></p><p><b>São Paulo</b> holds {share('SP', 'seller_share')} of sellers but {share('SP', 'people_share')} of customer people.</p></div>
+      <div class="co"><p class="big">{share('RJ', 'people_share')} <span style="color:var(--text2);font-weight:500;font-size:17px">vs {share('RJ', 'seller_share')}</span></p><p><b>Rio de Janeiro</b> is {share('RJ', 'people_share')} of customers and only {share('RJ', 'seller_share')} of sellers.</p></div>
+      <div class="co"><p class="big">{share('PR', 'seller_share')} <span style="color:var(--text2);font-weight:500;font-size:17px">vs {share('PR', 'people_share')}</span></p><p><b>Paraná</b> runs the other way: {share('PR', 'seller_share')} of sellers, {share('PR', 'people_share')} of customers.</p></div>
       <div class="co"><p class="big acc">4 states</p><p>{no_seller_names} have customers and no sellers.</p></div>
       <div class="co"><p class="big">{m['cross_pct']}</p><p>of delivered items cross a state line ({m['cross_n']} / {m['delivered_items']}).</p></div>
     </div>
@@ -1249,6 +1334,7 @@ def page_html(weekly, bands, band_summary, states, summary, m):
 
 
 def build():
+    contrast_checks()
     weekly, bands, band_summary, states, summary = load()
     m = compute(weekly, bands, band_summary, states, summary)
     page = page_html(weekly, bands, band_summary, states, summary, m)

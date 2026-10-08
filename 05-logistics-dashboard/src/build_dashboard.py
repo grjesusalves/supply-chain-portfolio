@@ -17,6 +17,9 @@ What it reads (it does not recompute any metric):
     data/processed/state_coverage.csv       one row per state
     data/processed/analyze_summary.json     extract-level medians and dates
 
+Also reads:
+    src/dashboard_assets/page.js, src/dashboard_assets/interactive.css
+
 What it writes:
     dashboards/logistics_weekly.html
     ../docs/05-logistics-dashboard/index.html  (byte-identical copy, the
@@ -25,6 +28,12 @@ What it writes:
 Design rules this script follows:
     - One self-contained page. Charts are inline SVG written by hand here,
       so there is no CDN, no JavaScript library and no image to break.
+    - Interactive layer (tooltips, weekly date range, band highlight, state
+      picker and sort) is plain JS and CSS from src/dashboard_assets/,
+      inlined into the page. The data it reads is a JSON block built here
+      from the same extracts (page_data). The script only positions marks
+      and sums additive weekly counts; it never computes a median. Without
+      JS the page still shows the static charts.
     - The three extracts are never joined. Week, band and state are
       different grains; each exhibit reads exactly one of them.
     - A Monday with no purchase is a gap in the line, not a zero. A week
@@ -40,6 +49,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 import math
 import sys
 from decimal import Decimal
@@ -93,9 +103,13 @@ BAND_CODES = ["0-50", "50-200", "200-500", "500-1000", "1000+"]
 BAND_SHORT = ["0–50 km", "50–200 km", "200–500 km", "500–1,000 km", "1,000+ km"]
 
 STATE_NAMES = {
-    "SP": "São Paulo", "RJ": "Rio de Janeiro", "MG": "Minas Gerais",
-    "PR": "Paraná", "AL": "Alagoas", "TO": "Tocantins", "AP": "Amapá",
-    "RR": "Roraima",
+    "AC": "Acre", "AL": "Alagoas", "AM": "Amazonas", "AP": "Amapá", "BA": "Bahia",
+    "CE": "Ceará", "DF": "Distrito Federal", "ES": "Espírito Santo", "GO": "Goiás",
+    "MA": "Maranhão", "MG": "Minas Gerais", "MS": "Mato Grosso do Sul", "MT": "Mato Grosso",
+    "PA": "Pará", "PB": "Paraíba", "PE": "Pernambuco", "PI": "Piauí", "PR": "Paraná",
+    "RJ": "Rio de Janeiro", "RN": "Rio Grande do Norte", "RO": "Rondônia", "RR": "Roraima",
+    "RS": "Rio Grande do Sul", "SC": "Santa Catarina", "SE": "Sergipe", "SP": "São Paulo",
+    "TO": "Tocantins",
 }
 
 # Palette: navy for the data, slate for context, one crimson accent for the
@@ -433,8 +447,8 @@ def weekly_svg(weekly, m, width, compact):
     # Extract-level reference lines, labelled in the right margin.
     p2d = float(m["median_p2d"])
     ot = float(m["on_time_pct"].rstrip("%"))
-    for p, v, label in ((p2), p2d, ("Extract median", f"{m['median_p2d']} days")), \
-                       ((p3), ot, ("Extract rate", m["on_time_pct"])):
+    for p, v, label in ((p2), p2d, ("Full-period median", f"{m['median_p2d']} days")), \
+                       ((p3), ot, ("Full-period rate", m["on_time_pct"])):
         yy = Y(p, v)
         out.append(
             f'<line x1="{left}" x2="{left + plot_w + 6:.1f}" y1="{yy:.1f}" y2="{yy:.1f}" '
@@ -554,7 +568,31 @@ def weekly_svg(weekly, m, width, compact):
 # ---------------------------------------------------------------------------
 # Exhibit 2: distance bands (one extract at band grain)
 # ---------------------------------------------------------------------------
-def days_split_svg(bands, band_summary):
+def band_attrs(i, code, m):
+    """Each band row is one focusable, clickable group. The same data-band
+    code is on the matching row in all three exhibits and in the table, so a
+    click highlights the band everywhere. Band grain only; nothing is joined.
+    """
+    label = (
+        f"{BAND_SHORT[i]}: {m['band_orders'][i]} delivered orders, median handling "
+        f"{m['band_handling'][i]} days, median transit {m['band_transit'][i]} days, "
+        f"median purchase-to-door {m['band_p2d'][i]} days, on time {m['band_ontime'][i]}, "
+        f"median freight per item {m['band_freight'][i]}. Press Enter to highlight this band."
+    )
+    return (
+        f'class="band-mark" data-band="{code}" tabindex="0" role="button" '
+        f'aria-pressed="false" aria-label="{esc(label)}"'
+    )
+
+
+def hit_rect(x, y, w, h):
+    # Invisible hit area for hover, tap and the keyboard focus ring. It is
+    # painted (fill-opacity 0, not fill none) so it receives pointer events.
+    return (f'<rect class="hit" x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
+            f'fill="#EEF2F7" fill-opacity="0"/>')
+
+
+def days_split_svg(bands, band_summary, m):
     """Handling and transit medians side by side per band.
 
     Not stacked: medians of two legs do not add up to the median of the
@@ -577,6 +615,8 @@ def days_split_svg(bands, band_summary):
         hand = float(bs.loc[code, "median_handling_nonneg"])
         tran = float(bands.iloc[i]["median_transit_days"])
         last = i == 4
+        out.append(f"<g {band_attrs(i, code, m)}>")
+        out.append(hit_rect(0, y0 - 9, W, row_h))
         out.append(svg_text(0, y0 + bar_h + 3, BAND_SHORT[i], 12, INK, weight=600 if last else 400))
         out.append(f'<rect x="{left}" y="{y0:.1f}" width="{X(hand) - left:.1f}" height="{bar_h}" fill="{LIGHT}"/>')
         out.append(f'<rect x="{left}" y="{y0 + bar_h + gap:.1f}" width="{X(tran) - left:.1f}" height="{bar_h}" fill="{ACCENT if last else NAVY}"/>')
@@ -585,7 +625,8 @@ def days_split_svg(bands, band_summary):
         out.append(svg_text(X(hand) + 5, y0 + bar_h - 2, h_lab, 11, SLATE))
         out.append(svg_text(X(tran) + 5, y0 + 2 * bar_h + gap - 2, t_lab, 11,
                             ACCENT if last else NAVY, weight=600))
-    return f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="Median handling and transit days by distance band">{"".join(out)}</svg>'
+        out.append("</g>")
+    return f'<svg viewBox="0 0 {W} {H}" role="group" aria-label="Median handling and transit days by distance band">{"".join(out)}</svg>'
 
 
 def ontime_svg(bands, band_summary, m):
@@ -612,14 +653,16 @@ def ontime_svg(bands, band_summary, m):
         rate = 100.0 * int(bs.loc[code, "on_time_n"]) / int(bs.loc[code, "orders"])
         last = i == 4
         color = ACCENT if last else NAVY
+        out.append(f"<g {band_attrs(i, code, m)}>")
+        out.append(hit_rect(0, yc - row_h / 2, W, row_h))
         out.append(f'<line x1="{left}" x2="{W - right + 6}" y1="{yc}" y2="{yc}" stroke="{PALE}"/>')
         out.append(svg_text(0, yc + 4, BAND_SHORT[i], 12, INK, weight=600 if last else 400))
         out.append(f'<circle cx="{X(rate):.1f}" cy="{yc}" r="6" fill="{color}"/>')
-        lab_x = X(rate) - 10
-        out.append(svg_text(lab_x, yc + 4, m["band_ontime"][i], 12, color, "end", 600))
+        out.append(svg_text(X(rate) - 10, yc + 4, m["band_ontime"][i], 12, color, "end", 600))
         out.append(svg_text(W, yc + 4, f"{m['band_p2d'][i]} days", 12,
                             ACCENT if last else INK, "end", 700 if last else 400))
-    return f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="On-time rate and median wait by distance band">{"".join(out)}</svg>'
+        out.append("</g>")
+    return f'<svg viewBox="0 0 {W} {H}" role="group" aria-label="On-time rate and median wait by distance band">{"".join(out)}</svg>'
 
 
 def freight_svg(bands, m):
@@ -634,85 +677,226 @@ def freight_svg(bands, m):
         out.append(f'<line x1="{X(t):.1f}" x2="{X(t):.1f}" y1="{top - 2}" y2="{top + row_h * 5}" stroke="{GRID}"/>')
         out.append(svg_text(X(t), top + row_h * 5 + 16, f"R${t}", 11, MUTED, "middle"))
     out.append(svg_text(W - right, top + row_h * 5 + 30, "Median freight per item, BRL", 11, MUTED, "end"))
-    for i in range(5):
+    for i, code in enumerate(BAND_CODES):
         y0 = top + i * row_h + 10
         v = float(bands.iloc[i]["median_freight_brl"])
         last = i == 4
         color = ACCENT if last else NAVY
+        out.append(f"<g {band_attrs(i, code, m)}>")
+        out.append(hit_rect(0, y0 - (row_h - bar_h) / 2, W, row_h))
         out.append(svg_text(0, y0 + bar_h - 4, BAND_SHORT[i], 12, INK, weight=600 if last else 400))
         out.append(f'<rect x="{left}" y="{y0}" width="{X(v) - left:.1f}" height="{bar_h}" fill="{color}"/>')
         out.append(svg_text(X(v) + 6, y0 + bar_h - 4, m["band_freight"][i], 12, color, weight=600))
-    return f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="Median freight per item by distance band">{"".join(out)}</svg>'
+        out.append("</g>")
+    return f'<svg viewBox="0 0 {W} {H}" role="group" aria-label="Median freight per item by distance band">{"".join(out)}</svg>'
 
 
 # ---------------------------------------------------------------------------
 # Exhibit 3: coverage dumbbell (one extract at state grain)
 # ---------------------------------------------------------------------------
 HIGHLIGHT_STATES = {"SP", "RJ", "PR"}
+COV_TOP, COV_ROW_H = 46, 20
 
 
 def coverage_svg(states, no_seller):
-    """Customer share and seller share per state on one 0-60% axis.
+    """Customer share and seller share per state on one 0-67% axis.
 
     Shares come straight from people_share and seller_share. They are not
     recomputed from customer_people, whose rows sum to 96,136 (39 people
     appear in two states); the distinct-people denominator is 96,096.
+
+    Each state is one <g> drawn around y = 0 and moved into place with a CSS
+    transform. The page script re-sorts by changing only that transform, so
+    the marks themselves are never redrawn or recomputed in the browser.
     """
     df = states.sort_values(["people_share", "state"], ascending=[False, True]).reset_index(drop=True)
     W, left, right = 420, 38, 14
-    row_h, top = 20, 44
-    H = top + row_h * len(df) + 34
+    row_h, top = COV_ROW_H, COV_TOP
+    n = len(df)
+    H = top + row_h * n + 34
     xmax = 0.67  # headroom so the SP 59.7% label stays inside the frame
     X = lambda v: left + v / xmax * (W - left - right)
     out = []
+    # Fixed key at the top. It no longer sits on the first row, because the
+    # first row changes when the reader re-sorts.
+    ky = 12
+    out.append(f'<circle cx="{left + 5}" cy="{ky}" r="4.6" fill="{NAVY}"/>')
+    out.append(svg_text(left + 14, ky + 4, "Customer share", 12, NAVY, weight=700))
+    out.append(f'<circle cx="{left + 130}" cy="{ky}" r="4.6" fill="{ACCENT}"/>')
+    out.append(svg_text(left + 139, ky + 4, "Seller share", 12, ACCENT, weight=700))
+    out.append(f'<circle cx="{left + 236}" cy="{ky}" r="4.2" fill="white" stroke="{ACCENT}" stroke-width="1.8"/>')
+    out.append(svg_text(left + 245, ky + 4, "no sellers", 12, ACCENT, extra=' font-style="italic"'))
+    y_last = top + row_h * (n - 1)
     for t in (0, 10, 20, 30, 40, 50, 60):
-        out.append(f'<line x1="{X(t / 100):.1f}" x2="{X(t / 100):.1f}" y1="{top - 8}" y2="{top + row_h * len(df) - 6}" stroke="{GRID}"/>')
-        out.append(svg_text(X(t / 100), top + row_h * len(df) + 10, f"{t}%", 11, MUTED, "middle"))
-    out.append(svg_text(W - right, top + row_h * len(df) + 26,
+        out.append(f'<line x1="{X(t / 100):.1f}" x2="{X(t / 100):.1f}" y1="{top - row_h / 2:.1f}" y2="{y_last + row_h / 2:.1f}" stroke="{GRID}"/>')
+        out.append(svg_text(X(t / 100), y_last + row_h / 2 + 16, f"{t}%", 11, MUTED, "middle"))
+    out.append(svg_text(W - right, y_last + row_h / 2 + 32,
                         "Share of all customer people, or of all sellers", 11, MUTED, "end"))
     for i, r in df.iterrows():
         yc = top + i * row_h
         st = r["state"]
         hi_row = st in HIGHLIGHT_STATES
         none = st in no_seller
-        if hi_row or none:
-            out.append(f'<rect x="0" y="{yc - row_h / 2:.1f}" width="{W}" height="{row_h}" fill="{"#F2F4F7" if hi_row else "#FBF3F4"}"/>')
-        out.append(svg_text(0, yc + 4, st, 12, INK if (hi_row or none) else SLATE,
+        name = STATE_NAMES[st]
+        pv = f"{100 * r['people_share']:.1f}%"
+        sv = f"{100 * r['seller_share']:.1f}%"
+        aria = (f"{name} ({st}): {int(r['customer_people']):,} customer people, {pv} of all; "
+                f"{int(r['sellers']):,} sellers, {sv} of all. Press Enter to select.")
+        out.append(
+            f'<g class="st-row" data-state="{st}" tabindex="0" role="button" aria-pressed="false" '
+            f'aria-label="{esc(aria)}" style="transform:translate(0px,{yc}px)">'
+        )
+        bg = "#F2F4F7" if hi_row else ("#FBF3F4" if none else "#FFFFFF")
+        out.append(f'<rect class="rowbg" x="0" y="{-row_h / 2}" width="{W}" height="{row_h}" fill="{bg}" fill-opacity="{1 if (hi_row or none) else 0}"/>')
+        out.append(f'<rect class="selbg" x="0.5" y="{-row_h / 2 + 0.5}" width="{W - 1}" height="{row_h - 1}" fill="#DCE5F1" stroke="{NAVY}" stroke-width="1"/>')
+        out.append(svg_text(0, 4, st, 12, INK if (hi_row or none) else SLATE,
                             weight=700 if (hi_row or none) else 400))
         xp, xs = X(r["people_share"]), X(r["seller_share"])
-        out.append(f'<line x1="{min(xp, xs):.1f}" x2="{max(xp, xs):.1f}" y1="{yc}" y2="{yc}" stroke="{LIGHT}" stroke-width="2.5"/>')
-        out.append(f'<circle cx="{xp:.1f}" cy="{yc}" r="4.6" fill="{NAVY}"/>')
+        out.append(f'<line x1="{min(xp, xs):.1f}" x2="{max(xp, xs):.1f}" y1="0" y2="0" stroke="{LIGHT}" stroke-width="2.5"/>')
+        out.append(f'<circle cx="{xp:.1f}" cy="0" r="4.6" fill="{NAVY}"/>')
         if none:
             # Hollow ring at zero, drawn on top so it stays visible.
-            out.append(f'<circle cx="{xs:.1f}" cy="{yc}" r="4.4" fill="white" stroke="{ACCENT}" stroke-width="1.8"/>')
-            out.append(svg_text(X(0.025), yc + 4, "customers, no sellers", 12, ACCENT, extra=' font-style="italic"'))
+            out.append(f'<circle cx="{xs:.1f}" cy="0" r="4.4" fill="white" stroke="{ACCENT}" stroke-width="1.8"/>')
+            out.append(svg_text(X(0.025), 4, "customers, no sellers", 12, ACCENT, extra=' font-style="italic"'))
         else:
-            out.append(f'<circle cx="{xs:.1f}" cy="{yc}" r="4.6" fill="{ACCENT}"/>')
+            out.append(f'<circle cx="{xs:.1f}" cy="0" r="4.6" fill="{ACCENT}"/>')
         if hi_row:
             # Value labels on the three highlighted states only. The larger
             # share is labelled right of its dot. The smaller one goes left
             # of its dot when there is room (SP); otherwise it follows the
             # larger label in its own colour (RJ, PR), so no label sits on a dot.
-            pv = f"{100 * r['people_share']:.1f}%"
-            sv = f"{100 * r['seller_share']:.1f}%"
             big_x, small_x = max(xp, xs), min(xp, xs)
             big_txt, big_col = (sv, ACCENT) if xs >= xp else (pv, NAVY)
             small_txt, small_col = (pv, NAVY) if xs >= xp else (sv, ACCENT)
             if small_x - 46 > left + 4:
-                out.append(svg_text(small_x - 8, yc + 4, small_txt, 12, small_col, "end", 600))
-                out.append(svg_text(big_x + 8, yc + 4, big_txt, 12, big_col, "start", 600))
+                out.append(svg_text(small_x - 8, 4, small_txt, 12, small_col, "end", 600))
+                out.append(svg_text(big_x + 8, 4, big_txt, 12, big_col, "start", 600))
             else:
                 out.append(
-                    f'<text x="{big_x + 8:.1f}" y="{yc + 4:.1f}" font-size="12" font-weight="600">'
+                    f'<text x="{big_x + 8:.1f}" y="4" font-size="12" font-weight="600">'
                     f'<tspan fill="{big_col}">{big_txt}</tspan>'
                     f'<tspan fill="{MUTED}" font-weight="400"> vs </tspan>'
                     f'<tspan fill="{small_col}">{small_txt}</tspan></text>'
                 )
-    # Direct labels above the first row instead of a legend.
-    first = df.iloc[0]
-    out.append(svg_text(X(first["people_share"]), top - 16, "Customers", 12, NAVY, "middle", 700))
-    out.append(svg_text(X(first["seller_share"]), top - 16, "Sellers", 12, ACCENT, "middle", 700))
-    return f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="Customer share and seller share by state">{"".join(out)}</svg>'
+        out.append("</g>")
+    return (f'<svg id="cov-svg" data-top="{top}" data-rowh="{row_h}" viewBox="0 0 {W} {H}" '
+            f'role="group" aria-label="Customer share and seller share by state">{"".join(out)}</svg>')
+
+
+# ---------------------------------------------------------------------------
+# Embedded data for the page script
+# ---------------------------------------------------------------------------
+def page_data(weekly, bands, band_summary, states, m):
+    """Everything the browser needs, as JSON, one block per extract.
+
+    The three extracts stay separate keys (weeks, bands, states); the script
+    never looks one up in another. Display strings are formatted here in
+    Python, with the same helpers as the static page, so a tooltip cannot
+    round differently from the table next to it. Raw numbers are included
+    only where the script must position a mark or sum weekly counts.
+    """
+    frame = weekly.copy()
+    frame["week_start"] = pd.to_datetime(frame["week_start"])
+    frame = frame.set_index("week_start").sort_index()
+    mondays = pd.date_range(frame.index.min(), frame.index.max(), freq="W-MON")
+
+    def num(v, cast=float):
+        return None if pd.isna(v) else cast(v)
+
+    weeks = []
+    for d in mondays:
+        if d not in frame.index:
+            # A Monday with no purchase: a gap, never a zero.
+            weeks.append({"d": d.strftime("%Y-%m-%d"), "s": "gap", "lab": {"d": fmt_date(d)}})
+            continue
+        r = frame.loc[d]
+        delivered = num(r["delivered_orders"], int)
+        rec = {
+            "d": d.strftime("%Y-%m-%d"),
+            # nodel: purchases but no delivered order, so days, on-time,
+            # freight and cross-state stay blank (None), not zero.
+            "s": "ok" if delivered is not None else "nodel",
+            "p": int(r["orders_purchased"]),
+            "n": delivered,
+            "m": num(r["median_purchase_to_door_days"]),
+            "r": num(r["on_time_rate"]),
+            "o": num(r["on_time_orders"], int),
+            "it": num(r["delivered_items"], int),
+            "ci": num(r["cross_state_items"], int),
+        }
+        lab = {"d": fmt_date(d), "p": n0(rec["p"])}
+        if delivered is not None:
+            lab.update(n=n0(delivered), m=d1(rec["m"]), r=f"{100 * rec['r']:.1f}%", o=n0(rec["o"]))
+        rec["lab"] = lab
+        weeks.append(rec)
+
+    # Guards on the embedded block: the weekly counts the script will sum
+    # must reproduce the locked full-period totals exactly.
+    ok = [w for w in weeks if w["s"] == "ok"]
+    checks = {
+        "json purchase weeks": (sum(w["s"] != "gap" for w in weeks), EXPECTED["weeks"]),
+        "json gap Mondays": (sum(w["s"] == "gap" for w in weeks), 11),
+        "json weeks without delivery": (sum(w["s"] == "nodel" for w in weeks), 10),
+        "json delivered orders": (n0(sum(w["n"] for w in ok)), EXPECTED["delivered_orders"]),
+        "json on-time orders": (n0(sum(w["o"] for w in ok)), EXPECTED["on_time_n"]),
+        "json delivered items": (n0(sum(w["it"] for w in ok)), EXPECTED["delivered_items"]),
+        "json cross-state items": (n0(sum(w["ci"] for w in ok)), EXPECTED["cross_n"]),
+        "json on-time rate from weekly sums": (
+            pct1(sum(w["o"] for w in ok), sum(w["n"] for w in ok)), EXPECTED["on_time_pct"]),
+        "json cross-state share from weekly sums": (
+            pct1(sum(w["ci"] for w in ok), sum(w["it"] for w in ok)), EXPECTED["cross_pct"]),
+    }
+    for label, (got, want) in checks.items():
+        if got != want:
+            fail(f"{label}: {got} != {want}")
+        print(f"CHECK {label}: PASS {got}")
+
+    idx = {w["d"]: i for i, w in enumerate(weeks)}
+    busy = [i for i, w in enumerate(weeks) if w["s"] == "ok" and w["n"] >= 100]
+    low_idx = min(busy, key=lambda i: weeks[i]["r"])
+    peak_idx = max((i for i, w in enumerate(weeks) if w["s"] == "ok"), key=lambda i: weeks[i]["n"])
+
+    def preset(lo, hi):
+        sel = [i for i, w in enumerate(weeks) if lo <= w["d"] < hi]
+        return [sel[0], sel[-1]]
+
+    band_rows = []
+    for i, r in enumerate(bands.to_dict("records")):
+        band_rows.append({
+            "code": BAND_CODES[i], "label": r["band_label"], "short": BAND_SHORT[i],
+            "orders": m["band_orders"][i], "items": n0(r["items"]),
+            "hand": m["band_handling"][i], "tran": m["band_transit"][i],
+            "door": m["band_p2d"][i], "ot": m["band_ontime"][i], "fr": m["band_freight"][i],
+        })
+
+    state_rows = []
+    for r in states.to_dict("records"):
+        state_rows.append({
+            "code": r["state"], "name": STATE_NAMES[r["state"]],
+            "people": n0(r["customer_people"]), "sellers": n0(r["sellers"]),
+            "ps": r["people_share"], "ss": r["seller_share"],
+            "psl": f"{100 * r['people_share']:.1f}%", "ssl": f"{100 * r['seller_share']:.1f}%",
+        })
+
+    return {
+        "weeks": weeks,
+        "ordersHi": int(nice_ceiling(max(w.get("p") or 0 for w in weeks) * 1.05, 500)),
+        "lowIdx": low_idx, "peakIdx": peak_idx,
+        "presets": {
+            "all": [0, len(weeks) - 1],
+            "2017": preset("2017-01-01", "2018-01-01"),
+            "2018": preset("2018-01-01", "2019-01-01"),
+        },
+        # Reference lines sit at the displayed full-period figures; the label
+        # next to each is the locked string itself.
+        "ref": {"p2d": float(m["median_p2d"]), "p2dLab": m["median_p2d"],
+                "ot": float(m["on_time_pct"].rstrip("%")), "otLab": m["on_time_pct"]},
+        "bands": band_rows,
+        "states": state_rows,
+        "colors": {"navy": NAVY, "ink": INK, "slate": SLATE, "muted": MUTED, "light": LIGHT,
+                   "pale": PALE, "grid": GRID, "accent": ACCENT, "accentPale": ACCENT_PALE},
+    }
+
 
 
 # ---------------------------------------------------------------------------
@@ -827,13 +1011,34 @@ a{color:var(--navy)}
 """ % dict(NAVY=NAVY, INK=INK, SLATE=SLATE, MUTED=MUTED, LIGHT=LIGHT, PALE=PALE, ACCENT=ACCENT)
 
 
+# The interactive layer lives in two plain source files next to this script
+# and is inlined into the page, so the published HTML is still one file with
+# no CDN. Vanilla JS, no library: the charts are the SVG drawn above.
+ASSETS = Path(__file__).resolve().parent / "dashboard_assets"
+
+
+def json_for_script(data):
+    """JSON safe to place inside <script>: '</' cannot close the tag."""
+    return json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+
+
 def page_html(weekly, bands, band_summary, states, summary, m):
     wk_desktop, info = weekly_svg(weekly, m, 1100, compact=False)
     wk_mobile, _ = weekly_svg(weekly, m, 380, compact=True)
-    split = days_split_svg(bands, band_summary)
+    split = days_split_svg(bands, band_summary, m)
     ontime = ontime_svg(bands, band_summary, m)
     freight = freight_svg(bands, m)
     cover = coverage_svg(states, m["no_seller_states"])
+    data = page_data(weekly, bands, band_summary, states, m)
+    js = (ASSETS / "page.js").read_text(encoding="utf-8")
+    css2 = (ASSETS / "interactive.css").read_text(encoding="utf-8")
+    state_options = "".join(
+        f'<option value="{c}">{esc(STATE_NAMES[c])} ({c})</option>' for c in sorted(states["state"])
+    )
+    chips = "".join(
+        f'<button type="button" data-chip="{c}" aria-pressed="false">{esc(BAND_SHORT[i])}</button>'
+        for i, c in enumerate(BAND_CODES)
+    )
 
     st = states.set_index("state")
     share = lambda s, col: f"{100 * st.loc[s, col]:.1f}%"
@@ -846,7 +1051,7 @@ def page_html(weekly, bands, band_summary, states, summary, m):
     rows = []
     for i, r in enumerate(bands.to_dict("records")):
         rows.append(
-            "<tr>"
+            f'<tr class="band-row" data-band="{BAND_CODES[i]}" tabindex="0">'
             f"<td><span class=\"full\">{esc(r['band_label'])}</span><span class=\"short\">{esc(BAND_SHORT[i].replace(" km", ""))}</span></td>"
             f"<td>{m['band_orders'][i]}</td>"
             f"<td>{m['band_p2d'][i]}</td>"
@@ -867,7 +1072,7 @@ def page_html(weekly, bands, band_summary, states, summary, m):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Logistics network review: distance, delivery time and freight (Olist, historical extract)</title>
 <meta name="description" content="Weekly operating review of a historical Olist extract: delivered purchases {first} to {last}. Distance, delivery time, on-time rate, freight and state coverage.">
-<style>{CSS}</style>
+<style>{CSS}{css2}</style>
 </head>
 <body>
 <div class="page">
@@ -882,9 +1087,11 @@ def page_html(weekly, bands, band_summary, states, summary, m):
     <span>{m['weeks']} purchase weeks</span>
     <span>Distances: zip-centroid straight-line km</span>
     <span>Currency: BRL (R$), not converted</span>
+    <span class="hint" data-js hidden>Interactive: hover, filter, click</span>
   </p>
 </header>
 
+<p class="kpi-tag">Full period · {first} – {last} · not changed by any filter</p>
 <div class="kpis">
   <div class="kpi"><p class="k">Delivered orders</p><p class="v">{m['delivered_orders']}</p><p class="c">{m['delivered_items']} delivered items, purchased {first} – {last}</p></div>
   <div class="kpi"><p class="k">Median purchase-to-door</p><p class="v">{m['median_p2d']}<small>days</small></p><p class="c">Transit {m['median_transit']} days · seller handling {m['median_handling']} days</p></div>
@@ -900,9 +1107,18 @@ def page_html(weekly, bands, band_summary, states, summary, m):
   <figure class="exhibit">
     <p class="ex-tag">Exhibit 1</p>
     <p class="ex-title">Weekly orders, median purchase-to-door and on-time rate, {m['weeks']} purchase weeks</p>
-    <div class="wk-desktop">{wk_desktop}</div>
-    <div class="wk-mobile">{wk_mobile}</div>
-    <p class="source">Note: Each point is that week’s median or rate on delivered orders purchased that week. Hatched columns are the {info['n_missing']} Mondays with no purchase (gaps, not zeros). {info['n_no_delivery']} weeks have purchases but no delivered order; their days and on-time are left blank. Values outside a panel’s range are pinned to its edge and labelled. The last weeks before {last} hold only orders already delivered when the extract ends, so read them with care. {source}</p>
+    <div class="ctrl" id="wk-ctrl" data-js hidden>
+      <span><span class="lbl">Range</span><span class="seg" role="group" aria-label="Date range presets"><button type="button" data-preset="all" aria-pressed="true">All</button><button type="button" data-preset="2017" aria-pressed="false">2017</button><button type="button" data-preset="2018" aria-pressed="false">2018</button></span></span>
+      <span class="rng"><label class="lbl" for="wk-from">From</label><input type="range" id="wk-from" min="0" step="1" value="0"><output id="wk-from-out" for="wk-from"></output></span>
+      <span class="rng"><label class="lbl" for="wk-to">To</label><input type="range" id="wk-to" min="0" step="1"><output id="wk-to-out" for="wk-to"></output></span>
+    </div>
+    <p class="summary" id="wk-summary" data-js hidden aria-live="polite"></p>
+    <div id="wk-host" tabindex="0" role="group" aria-label="Weekly trend chart. Hover or tap a week, or use the left and right arrow keys, to read its values.">
+      <div class="wk-desktop">{wk_desktop}</div>
+      <div class="wk-mobile">{wk_mobile}</div>
+    </div>
+    <span class="vh" id="wk-live" aria-live="polite"></span>
+    <p class="source">Note: Each point is that week’s median or rate on delivered orders purchased that week. Hatched columns are the {info['n_missing']} Mondays with no purchase (gaps, not zeros). {info['n_no_delivery']} weeks have purchases but no delivered order; their days and on-time are left blank. Values outside a panel’s range are pinned to its edge and labelled. Hover or tap a week (or focus the chart and use ← →) to read it; the range controls rescale the time axis of all three panels together, and the y-axes stay fixed. The last weeks before {last} hold only orders already delivered when the extract ends, so read them with care. {source}</p>
   </figure>
 </section>
 
@@ -910,6 +1126,10 @@ def page_html(weekly, bands, band_summary, states, summary, m):
   <p class="sec-label">2 · Distance</p>
   <h2>Longer hauls come with longer waits and higher freight, and the extra days are in transit: seller handling stays at {hand_lo}–{hand_hi} days in every band</h2>
   <p class="lede">Each delivered order is placed in a band by its farthest seller (zip-centroid straight-line km, not road distance). Freight uses each item’s own distance. These are differences inside this extract, not days or reais the business would get back.</p>
+  <div class="ctrl" id="band-ctrl" data-js hidden>
+    <span><span class="lbl">Highlight band</span><span class="seg" role="group" aria-label="Highlight a distance band"><button type="button" data-chip="all" aria-pressed="true">All</button>{chips}</span></span>
+  </div>
+  <p class="st-readout" id="band-readout" data-js hidden aria-live="polite"></p>
   <div class="grid3">
     <figure class="exhibit">
       <p class="ex-tag">Exhibit 2a</p>
@@ -949,8 +1169,13 @@ def page_html(weekly, bands, band_summary, states, summary, m):
     <figure class="exhibit">
       <p class="ex-tag">Exhibit 3</p>
       <p class="ex-title">Share of customers vs share of sellers, by state (27 states)</p>
+      <div class="ctrl" id="cov-ctrl" data-js hidden>
+        <span><span class="lbl">Sort</span><span class="seg" role="group" aria-label="Sort states"><button type="button" data-sort="people" aria-pressed="true">Customer share</button><button type="button" data-sort="sellers" aria-pressed="false">Seller share</button><button type="button" data-sort="gap" aria-pressed="false">Gap</button></span></span>
+        <label><span class="lbl">State</span><select id="st-pick"><option value="">None</option>{state_options}</select></label>
+      </div>
+      <p class="st-readout" id="st-readout" data-js hidden aria-live="polite"></p>
       {cover}
-      <p class="source">Customer share = distinct customer people in the state ÷ 96,096; seller share = sellers in the state ÷ 3,095. {source}</p>
+      <p class="source">Customer share = distinct customer people in the state ÷ 96,096; seller share = sellers in the state ÷ 3,095. Gap sort = customer share minus seller share, most customer-heavy first. {source}</p>
     </figure>
     <div class="callouts">
       <div class="co"><p class="big acc">{share('SP', 'seller_share')} <span style="color:var(--slate);font-weight:500;font-size:17px">of sellers</span></p><p><b>São Paulo</b> holds {share('SP', 'seller_share')} of sellers but {share('SP', 'people_share')} of customer people.</p></div>
@@ -1000,6 +1225,7 @@ def page_html(weekly, bands, band_summary, states, summary, m):
         <li>Customer shares use the distinct-people denominator (96,096); state rows sum to 96,136 because 39 people appear in two states.</li>
         <li>Week, band and state are different grains and are shown in separate exhibits; they are not joined.</li>
         <li>Review scores are out of scope for this page.</li>
+        <li>Filters, ranges, sorting and highlights only change the view. They do not change any definition, population or full-period figure; a selected range shows sums and ratios of weekly counts, never a median of weekly medians.</li>
       </ul>
       <h4 style="margin-top:16px">Read more</h4>
       <ul>
@@ -1012,6 +1238,11 @@ def page_html(weekly, bands, band_summary, states, summary, m):
   <div class="foot-bottom"><span>Built by Alves · MS Business Analytics · supply-chain analytics portfolio</span><span>Generated by src/build_dashboard.py from data/processed extracts</span></div>
 </footer>
 </div>
+<div id="tip" role="tooltip" hidden></div>
+<script type="application/json" id="dash-data">{json_for_script(data)}</script>
+<script>
+{js}
+</script>
 </body>
 </html>
 """
@@ -1028,7 +1259,10 @@ def build():
         if isinstance(v, list):
             must_show += v
     must_show += list(EXPECTED["band_handling_range"])
-    missing = [s for s in must_show if esc(s) not in page]
+    # Scan the page without its script blocks, so the embedded JSON cannot
+    # satisfy a check that the visible page itself fails.
+    visible = re.sub(r"<script\b.*?</script>", "", page, flags=re.S)
+    missing = [s for s in must_show if esc(s) not in visible]
     if missing:
         fail(f"locked figures missing from page: {missing}")
     print(f"CHECK locked figures on page: PASS ({len(must_show)} strings)")

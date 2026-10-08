@@ -79,7 +79,7 @@ The same medians, at full precision, match `res_med_p2d_band`, `res_med_transit_
 
 ## What the page shows
 
-`dashboards/logistics_weekly.html` carries the seven items below as one executive page: a KPI strip, the weekly trend, the band exhibits, and customers next to sellers by state. It is drawn by `src/build_dashboard.py` from the three extracts, which `construct_logistics.py` calls at the end of its run. Median handling appears only per band, from the Analyze band table, to show the days are in transit. No weekly handling series, no freight per kilogram, no review score, no map.
+`dashboards/logistics_weekly.html` carries the seven items below as one interactive executive page: a KPI strip, the weekly trend, the band exhibits, and customers next to sellers by state, with tooltips, a weekly date range, band highlighting and a state picker. It is drawn by `src/build_dashboard.py` from the three extracts (the script inlines `src/dashboard_assets/`), which `construct_logistics.py` calls at the end of its run. The interactions only change the view; the KPI cards stay full-period. Median handling appears only per band, from the Analyze band table, to show the days are in transit. No weekly handling series, no freight per kilogram, no review score, no map.
 
 1. **Orders purchased that week.** 99,441 orders. Every status.
 2. **Median purchase-to-door and median transit.** On 96,470 delivered orders, 10.2 days and 7.1 days. The purchase-to-door median is the average of the two central orders, 10.217476851539686 days, because 96,470 is even. The transit median is 7.10031250026077 days, on 96,446 orders.

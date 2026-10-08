@@ -1,5 +1,20 @@
 # Late Delivery Risk Prediction — DataCo
 
+## Start here
+
+Read in this order, from the big picture down to the code.
+
+1. This page: the summary just below, then [Business Question](#business-question), [Key Findings](#key-findings), and [Recommendation](#recommendation).
+2. [Dashboard](dashboards/late_delivery_dashboard.html): the result at a glance. GitHub shows the HTML source, so download the file and open it in a browser.
+3. [Business report](reports/business-report.md): the manager version, no code.
+4. [Plan](reports/01-plan.md): the question, the KPI, and what is out of scope.
+5. [Analyze](reports/02-analyze.md): the label check, dropping cancels, and the First Class finding. Charts: [late rate by shipping mode](images/late_rate_by_shipping_mode.png) and [real days by shipping mode](images/real_days_by_shipping_mode.png).
+6. [Construct](reports/03-construct.md): the order-level split, the baselines, the models, and why they lost. Chart: [test AUC and AP by model](images/test_auc_ap_by_model.png).
+7. [Execute](reports/04-execute.md): the recommendation, and why there is no threshold and no dollar figure.
+8. Code: [analyze_late_delivery.py](src/analyze_late_delivery.py), then [construct_late_delivery.py](src/construct_late_delivery.py). The `#` comments show how each number was made.
+9. [SQL KPI queries](sql/kpi_late_delivery.sql): the same KPIs written in SQL.
+10. [Processed tables](data/processed/): open one to check a number, for example [mode_scorecard.csv](data/processed/mode_scorecard.csv) or [construct_metrics.csv](data/processed/construct_metrics.csv).
+
 > On 172,765 non-canceled lines, 98,977 are late (late rate 0.5728996035076549). On-time delivery is 73,788 / 172,765 (0.4271003964923451).
 >
 > Shipping mode is what moves the rate. First Class is late on 26,513 / 26,513: the promise is 1 day and real days are 2 on every line. Second Class is 26,987 / 33,806 (median slip 2). Same Day is 4,454 / 9,293 (median slip 0). Standard Class is 41,023 / 103,153 (median slip 0).

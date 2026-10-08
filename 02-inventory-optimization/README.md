@@ -2,17 +2,19 @@
 
 ## Start here
 
-Read the files in this order. It follows the order the work was done.
+Read the files in this order. The short versions come first for the big picture, then the details.
 
-1. This README, for the question and the result.
-2. [data/README.md](data/README.md), for the one input file (the Project 1 forecast).
-3. [reports/01-plan.md](reports/01-plan.md), for the decisions locked before any numbers: class A, the 5% unit cap, the 7-day lead time, and why the work stays in units.
-4. [reports/02-analyze.md](reports/02-analyze.md), with [ABC cumulative share](images/abc_cumulative_share.png) and [daily forecast error](images/daily_forecast_error_hist.png) open.
-5. [reports/03-construct.md](reports/03-construct.md), with [class A safety stock](images/class_a_safety_stock.png) and the per-item results in [policy.csv](data/processed/policy.csv).
-6. [reports/03-construct-solver.xlsx](reports/03-construct-solver.xlsx), one item (FOODS_3_090) traced in Excel.
-7. [reports/04-execute.md](reports/04-execute.md), [reports/executive-summary.md](reports/executive-summary.md), then [reports/business-report.md](reports/business-report.md), for the recommendation and the manager version.
-8. [dashboards/class_a_policy_dashboard.html](dashboards/class_a_policy_dashboard.html), the one-page dashboard. Download it and open it in a browser.
-9. [src/analyze_inventory.py](src/analyze_inventory.py), then [src/construct_policy.py](src/construct_policy.py), the code. Read the `#` comments next to reports 2 and 3.
+1. This README, for the question, the result, and the limits.
+2. [reports/executive-summary.md](reports/executive-summary.md), for the decision and the key numbers.
+3. [dashboards/class_a_policy_dashboard.html](dashboards/class_a_policy_dashboard.html), the one-page dashboard. Download it and open it in a browser.
+4. [data/README.md](data/README.md), for the one input file (the Project 1 forecast) and what it doesn't contain.
+5. [reports/01-plan.md](reports/01-plan.md), for the rules set before any numbers: class A, the 5% unit cap, the 7-day lead time, and why the work stays in units.
+6. [reports/02-analyze.md](reports/02-analyze.md), with [ABC cumulative share](images/abc_cumulative_share.png) and [daily forecast error](images/daily_forecast_error_hist.png) open.
+7. [reports/03-construct.md](reports/03-construct.md), with [class A safety stock](images/class_a_safety_stock.png) open.
+8. [data/processed/policy.csv](data/processed/policy.csv), to look up any item's reorder point and safety stock.
+9. [reports/03-construct-solver.xlsx](reports/03-construct-solver.xlsx), one item (FOODS_3_090) traced in Excel.
+10. [reports/04-execute.md](reports/04-execute.md) and [reports/business-report.md](reports/business-report.md), for the final recommendation and the manager version.
+11. [src/analyze_inventory.py](src/analyze_inventory.py), then [src/construct_policy.py](src/construct_policy.py), if you want to see the code.
 
 ## Executive summary
 

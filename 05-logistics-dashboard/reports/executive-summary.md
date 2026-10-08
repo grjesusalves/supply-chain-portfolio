@@ -2,7 +2,7 @@
 
 **Decision.** Do not manage this network from the **93.2%** on-time rate, and do not reprice freight from the rise in freight per item. Coverage is uneven, the extra days are in transit, and the promise already stretches with distance. No saving is claimed. Currency stays in reais.
 
-The weekly page is the decision tool: <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>. It is a historical extract, not a live feed. Delivered purchases run from **15 Sep 2016** through **29 Aug 2018**.
+The interactive weekly page is the decision tool: <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>. It is a historical extract, not a live feed. Delivered purchases run from **15 Sep 2016** through **29 Aug 2018**.
 
 ## What to do
 

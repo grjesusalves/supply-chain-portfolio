@@ -66,7 +66,7 @@ Run four checks off the weekly page. Do not turn any of them into a savings targ
 
 ## Where the dashboard is
 
-The dashboard is the HTML page. It is published at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>.
+The dashboard is the interactive HTML page. It is published at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>. Tooltips, the weekly date range, band highlighting, and the state picker change the view only; the KPI cards stay full-period.
 
 Tableau Public is the tool the plan named, and it was not published. There is no Tableau Public URL. Do not look for one. `dashboards/TABLEAU.md` is the sheet list if that publish happens later. The extracts are `data/processed/weekly_scorecard.csv`, `data/processed/distance_bands.csv`, and `data/processed/state_coverage.csv`.
 

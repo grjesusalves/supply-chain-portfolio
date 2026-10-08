@@ -29,6 +29,6 @@ _Estimated $ / % / service-level impact._
 Python (pandas, NumPy, SciPy), Excel, SQL, Tableau/Power BI
 
 ## How to Reproduce
-1. Download raw data into `data/raw/` (see `data/README.md`).
-2. Run notebooks in `notebooks/` in order; reusable code lives in `src/`, SQL in `sql/`.
-3. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.
+1. No download is needed. The input is the committed Project 1 file `../01-demand-forecasting/data/processed/ca3_foods_holdout_predictions.csv` (see `data/README.md`).
+2. Run `python src/analyze_inventory.py`, then `python src/construct_policy.py`.
+3. Outputs go to `data/processed/`, charts to `images/`, dashboard files to `dashboards/`, and write-ups to `reports/`.

@@ -1,15 +1,14 @@
-# Data — Inventory Optimization (Safety Stock / Reorder Point / EOQ)
+# Data — Inventory Optimization (Reorder Point and Safety Stock)
 
-**No new dataset is downloaded for this project.**
+**No new dataset is downloaded for this project, so there is no `data/raw/` folder.**
 
-This project consumes the outputs of **Project 1 (`../01-demand-forecasting`)**:
-- Item-store demand forecasts (28-day horizon) and forecast error (e.g., RMSE/residual std) → `../01-demand-forecasting/data/processed/`
-- Unit prices from `../01-demand-forecasting/data/raw/sell_prices.csv` (for holding-cost assumptions)
-- Calendar from `../01-demand-forecasting/data/raw/calendar.csv`
+The only input is the Project 1 forecast file, which is already committed:
 
-Copy or symlink the needed Project 1 processed files into `data/processed/` here. Cost parameters (holding cost %, ordering cost, lead time, target service level) are assumptions and should be documented in the notebook/report.
+- `../01-demand-forecasting/data/processed/ca3_foods_holdout_predictions.csv`
+- Columns: `item_id`, `day`, `actual`, `baseline`, `lgbm`
+- Daily unit sales and forecasts for 1,437 FOODS items at store CA_3, 2016-04-25 through 2016-05-22 (40,236 rows)
 
-- **Source URL:** n/a (derived from Project 1; see ../01-demand-forecasting/data/README.md)
+Everything this project produces is written to `data/processed/`. The work stays in units. No prices, holding rates, or order costs are used. The 7-day lead time is a labeled assumption, not a fact from the data.
+
+- **Source:** derived from Project 1; see `../01-demand-forecasting/data/README.md`
 - **License:** inherits Project 1 license
-- **Download date:** n/a
-- **Files / row counts:** n/a until Project 1 outputs exist

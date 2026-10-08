@@ -38,5 +38,5 @@ Python (pandas, scikit-learn), SQL, and a browser dashboard. Tableau Public is n
 
 ## How to Reproduce
 1. Download raw data into `data/raw/` (see `data/README.md`).
-2. Run notebooks in `notebooks/` in order; reusable code lives in `src/`, SQL in `sql/`.
+2. From the repo root, run `python 03-late-delivery-risk/src/analyze_late_delivery.py`, then `python 03-late-delivery-risk/src/construct_late_delivery.py`. The KPI queries in `sql/kpi_late_delivery.sql` match the Analyze tables.
 3. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.

@@ -34,7 +34,7 @@ Python (pandas, statsmodels) and SQL for the Analyze rate checks. The openable s
 
 ## How to Reproduce
 1. Download raw data into `data/raw/` (see `data/README.md`). The project copy is already on disk and stays git-ignored.
-2. Run notebooks in `notebooks/` in order; reusable code lives in `src/`, SQL in `sql/`.
+2. Run the scripts in `src/` in order (`analyze_freight.py`, `construct_freight.py`, `execute_freight.py`); SQL checks are in `sql/`.
 3. The Execute scenario is `python src/execute_freight.py` from this folder, or `python 04-freight-cost-analysis/src/execute_freight.py` from the repo root.
 4. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.
 5. Open [`dashboards/freight_dashboard.html`](dashboards/freight_dashboard.html) in a browser. That HTML is the openable stand-in. Tableau Public is still not published.

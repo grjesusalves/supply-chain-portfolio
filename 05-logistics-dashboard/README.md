@@ -33,6 +33,6 @@ SQL (SQLite; definitions in `sql/`) and Python (pandas). The dashboard is one se
 
 ## How to Reproduce
 1. Download raw data into `data/raw/` (see `data/README.md`).
-2. Run notebooks in `notebooks/` in order; reusable code lives in `src/`, SQL in `sql/`.
+2. From `05-logistics-dashboard/`, run `python3 src/analyze_logistics.py`, then `python3 src/construct_logistics.py` (which also rebuilds the dashboard). The KPI definitions are the SQL in `sql/`.
 3. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.
 4. Open the published weekly page at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>, or open [`dashboards/logistics_weekly.html`](dashboards/logistics_weekly.html) locally. That HTML is the interactive dashboard. No Tableau Public URL was created.

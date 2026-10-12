@@ -2,6 +2,21 @@
 
 > Coverage is uneven, the extra days are in transit, and the 93.2% on-time rate hides the wait. Do not reprice freight from the rise in freight per item, and do not book a saving. The weekly page is an interactive HTML dashboard, not a Tableau workbook.
 
+## Start here
+
+Read in this order, from the big picture down to the code. Start at step 1. Stop after step 4 for a quick overview, or finish at step 10 to check every number.
+
+1. **This page:** the summary above, then [Business Question](#business-question), [Key Findings](#key-findings), and [Recommendation](#recommendation).
+2. [Executive summary](reports/executive-summary.md): the findings and the recommendation in about a page.
+3. [Live dashboard](https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/): the result at a glance. Try the date range, the band highlight, and the state picker.
+4. [Plan](reports/01-plan.md): the definitions and why each choice was made (customer, order, seller, distance, on-time).
+5. [Analyze](reports/02-analyze.md): the analysis and its charts in [images/](images/), including the zip-code padding and the data checks.
+6. [Construct](reports/03-construct.md): how the distance bands were frozen and how the weekly extracts and the dashboard were built.
+7. [Execute](reports/04-execute.md) and [Business report](reports/business-report.md): the full recommendation, its limits, and why there is no dollar saving.
+8. [SQL](sql/): the metric definitions behind every number.
+9. Code: [analyze_logistics.py](src/analyze_logistics.py), then [construct_logistics.py](src/construct_logistics.py), then [build_dashboard.py](src/build_dashboard.py). The `#` comments show how each number was made.
+10. **Finish:** [data/README.md](data/README.md) for the source and license, and [data/processed/](data/processed/) to check a number yourself, for example [distance_bands.csv](data/processed/distance_bands.csv) or [weekly_scorecard.csv](data/processed/weekly_scorecard.csv).
+
 ## Business Question
 Where are our customers relative to our sellers, how does distance affect delivery time and freight cost, and what does leadership need to see weekly?
 

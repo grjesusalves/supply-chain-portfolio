@@ -6,6 +6,19 @@
 >
 > The only dollar figure is a what-if, not a saving. Weighed air at or above the weighed-set median weight (1,054.5 kg), priced at the truck median on that slice ($1.53), and only where air is higher: 1,477 notes, 4.76 million kg, actual freight $33.1 million, difference $25.8 million. A 25 percent share of that gap is $6.45 million. Both are upper bounds. Included-in-price (593) and invoiced separately (239) are not in the figure. Dollars are historical, delivered 2006-05-02 through 2015-09-14.
 
+## Where to Start
+Read in this order, from the big picture down to the code:
+
+1. **This README**: the question and the main findings.
+2. [`reports/executive-summary.md`](reports/executive-summary.md): the story and the recommendation on one page.
+3. [`dashboards/freight_dashboard.html`](dashboards/freight_dashboard.html): the key numbers as charts (download and open in a browser).
+4. [`reports/01-plan.md`](reports/01-plan.md): the question, the rules, and why each choice was made.
+5. [`reports/02-analyze.md`](reports/02-analyze.md): data cleaning, median rates, and mode, vendor, and country comparisons.
+6. [`reports/03-construct.md`](reports/03-construct.md): the regression.
+7. [`reports/04-execute.md`](reports/04-execute.md): the savings what-if.
+8. [`reports/business-report.md`](reports/business-report.md): the full write-up.
+9. **Finish with the code** in [`src/`](src/), in order: `analyze_freight.py`, `construct_freight.py`, `execute_freight.py`.
+
 ## Business Question
 What drives freight cost per kg / per shipment (mode, country, vendor, INCO term, weight), and where can freight spend be reduced?
 

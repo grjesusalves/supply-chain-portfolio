@@ -6,7 +6,7 @@
 - **Download command:** `curl -L -o m5-forecasting-accuracy.zip https://zenodo.org/api/records/12636070/files/m5-forecasting-accuracy.zip/content && unzip m5-forecasting-accuracy.zip`
 
 ## Notes
-Kaggle login was not available (no API token), so the identical competition zip was pulled from Zenodo. MD5 verified: `86f57416a314197f40a17cc6fc60cbb4` (matches Zenodo metadata). `m5-forecasting-accuracy.zip` is kept alongside the extracted CSVs; delete it to save 48 MB if desired.
+No Kaggle login was available (there was no API token), so the identical competition zip was pulled from Zenodo instead. Provenance was not taken on faith; the MD5 was verified: `86f57416a314197f40a17cc6fc60cbb4` (matches Zenodo metadata). `m5-forecasting-accuracy.zip` is kept alongside the extracted CSVs; it can be deleted to save 48 MB if desired.
 
 ## Files (`data/raw/`, git-ignored)
 | File | Size | Rows (excl. header) | Columns | Encoding |

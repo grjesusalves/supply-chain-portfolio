@@ -1,19 +1,19 @@
 # Construct — FOODS at CA_3, 28-day forecast
 
-PACE stage: **Construct**. This page fits the seasonal-naive baseline and one LightGBM model, then scores them on the holdout. It is not the executive report and it is not a Tableau dashboard. Those belong to Execute.
+PACE stage: **Construct**. This page fits the seasonal-naive baseline and one LightGBM model, then scores both on the holdout. It is neither the executive report nor a Tableau dashboard; those belong to Execute.
 
 Every figure below is from one run of `src/construct_forecast.py` on the local raw files. The metrics file is `data/processed/ca3_foods_metrics.csv`. The row-level forecasts are `data/processed/ca3_foods_holdout_predictions.csv`. Raw CSVs stay git-ignored.
 
 ## What was built
 
-Scope is the cut Analyze recommended and the plan's rules still apply:
+Scope is the cut Analyze recommended, and the plan's rules still apply in full:
 
 - **Series:** FOODS at store CA_3 only. **1,437** items, one series each. The script stops if that count is not 1,437.
 - **Target:** daily unit sales.
 - **Holdout:** `d_1914` through `d_1941`, **2016-04-25 (Monday) through 2016-05-22 (Sunday)**. 28 days. Confirmed from `calendar.csv` inside the script, not assumed.
 - **Training labels:** `d_1` through `d_1913` only. The first target day that has every sales feature filled is `d_56` (a 28-day rolling window ending at lag 28 reaches back 55 days).
 - **Baseline:** seasonal naive, lag-28. The forecast for each holdout day is that item's actual from 28 days earlier (same weekday, four weeks back). For this horizon those source days are `d_1886` through `d_1913`, the 28 days immediately before the holdout. No holdout actual is used.
-- **Stronger model:** LightGBM, direct multi-step, one pooled model for all 1,437 items. Fit with `lightgbm.train` (native API, LightGBM 4.7.0). Not a separate model per item, and not a recursive forecast.
+- **Stronger model:** LightGBM, direct multi-step, one pooled model for all 1,437 items. Fit with `lightgbm.train` (native API, LightGBM 4.7.0). It is neither a separate model per item nor a recursive forecast.
 
 Outputs:
 
@@ -30,7 +30,7 @@ Outputs:
 
 ## Why these features
 
-Sales features are only lags of 28 or more. At a 28-day horizon, yesterday's units are not known yet, so they are not in the model.
+Sales features are only lags of 28 or more. At a 28-day horizon, yesterday's units are not yet known, which means they cannot be in the model.
 
 | Feature | What it is | Why it is here |
 |---|---|---|
@@ -47,19 +47,19 @@ Sales features are only lags of 28 or more. At a 28-day horizon, yesterday's uni
 
 `wday` and `month` are categorical so the tree does not treat Saturday (1) as "less than" Friday (7).
 
-No `item_id` column. The level of each series enters through its own lags. On the refit model, gain ranked in this order: `roll_mean_28_ending_lag28`, `roll_mean_7_ending_lag28`, `lag_28`, `sell_price`, `month`, `lag_42`, `lag_35`, `wday`, `snap_CA`, `event_flag`. The event flag was barely used. That ranking is from this fit, not a claim that events never matter.
+There is no `item_id` column; the level of each series enters through its own lags. On the refit model, gain ranked in this order: `roll_mean_28_ending_lag28`, `roll_mean_7_ending_lag28`, `lag_28`, `sell_price`, `month`, `lag_42`, `lag_35`, `wday`, `snap_CA`, `event_flag`. The event flag was barely used. That said, the ranking describes this fit; it is not a claim that events never matter.
 
-Price on the holdout was complete: share of missing holdout prices was 0.0. Weeks before an item is listed stay missing in training. They are not filled with a later price.
+Price on the holdout was complete: share of missing holdout prices was 0.0. Weeks before an item is listed stay missing in training rather than being filled with a later price.
 
 ## Leakage rule
 
-A sales feature for target day `t` may use units on day `t − k` only when `k ≥ 28`. Both rolling means **end** on the lag-28 day, so they do not include lags 1–27. Those short lags would sit inside the horizon for a forecast made 28 days ahead.
+A sales feature for target day `t` may use units on day `t − k` only when `k ≥ 28`. Both rolling means **end** on the lag-28 day, so they do not include lags 1–27. Those short lags would sit inside the horizon for a forecast made 28 days ahead — precisely the leak this rule exists to prevent.
 
-Direct multi-step, not recursive: the same columns are filled for all 28 holdout days from history that ends on `d_1913`. The newest sales day any holdout feature reads is the lag-28 day of `d_1941`, which is `d_1913`. The script raises if that check fails. The holdout `lag_28` column is also checked against the sales matrix shifted by 28.
+Direct multi-step, not recursive: the same columns are filled for all 28 holdout days from history that ends on `d_1913`. The newest sales day any holdout feature reads is the lag-28 day of `d_1941`, which is `d_1913`. The script raises an error if that check fails. The holdout `lag_28` column is also checked against the sales matrix shifted by 28.
 
 Calendar fields are the target day's own calendar. The price is the target week's price. Neither is computed from sales inside the horizon.
 
-Holdout actuals are not training labels. The tree count is chosen on an earlier slice that is also before the holdout: `d_1886` through `d_1913` (2,629,710 train rows before that slice, 40,236 rows in the slice). Early stopping watches L2 on that slice, patience 40 rounds, cap 400 trees. The log's best iteration was **82**, with reported validation L2 **12.2367**. The model that is scored is a refit of **82** trees on every feature-complete day from `d_56` through `d_1913`, including that early-stopping slice. The holdout is not in either fit.
+Holdout actuals are not training labels. The tree count is chosen on an earlier slice that is also before the holdout: `d_1886` through `d_1913` (2,629,710 train rows before that slice, 40,236 rows in the slice). Early stopping watches L2 on that slice, patience 40 rounds, cap 400 trees. The log's best iteration was **82**, with reported validation L2 **12.2367**. The model that is scored is a refit of **82** trees on every feature-complete day from `d_56` through `d_1913`, including that early-stopping slice. The holdout is in neither fit.
 
 Other settings, fixed before looking at the holdout score: objective regression (L2), learning rate 0.05, 63 leaves, `min_child_samples` 100, bagging fraction 0.8 every tree, feature fraction 1, seed 42. Predictions below 0 are clipped to 0. This run clipped **0** of 40,236 holdout predictions.
 
@@ -69,9 +69,9 @@ Lags 1–27 are not built recursively and are not used.
 
 Definitions, applied to item-days (not to the daily total, and not averaged per item first):
 
-- **MAPE** = mean of `|forecast − actual| / actual` on item-days with **actual > 0**. A zero actual makes that ratio undefined, so those days are out of MAPE only.
-- **WAPE** = sum of `|forecast − actual|` / sum of actual. Zeros stay in. This is the volume-weighted score. A high-unit miss moves it more than a one-unit miss.
-- **bias** = sum of `(forecast − actual)` / sum of actual. Positive means the forecast is high in total units. Negative means it is low.
+- **MAPE** = mean of `|forecast − actual| / actual` on item-days with **actual > 0**. A zero actual makes that ratio undefined, so those days are excluded from MAPE only.
+- **WAPE** = sum of `|forecast − actual|` / sum of actual. Zeros stay in. This is the volume-weighted score, in which a high-unit miss moves the result more than a one-unit miss.
+- **bias** = sum of `(forecast − actual)` / sum of actual. Positive means the forecast is high in total units; negative means it is low.
 
 The ratios are not multiplied by 100. WAPE of 0.6490765893903951 means the absolute miss is that share of actual units.
 
@@ -84,11 +84,11 @@ Holdout actual units: **109,870**. Item-days: **40,236**. Of those, **25,302** h
 | Seasonal naive (lag-28) | 0.8781250159967809 | 0.777000091016656 | 0.010694457085646673 | 85369.0 | 1175.0 |
 | LightGBM | 0.5633893484087068 | 0.6490765893903951 | 0.02570857287913414 | 71314.04487632272 | 2824.600902230468 |
 
-**LightGBM beat the baseline on WAPE and on MAPE.** WAPE is the volume-weighted comparison the plan asked for. Absolute error fell from 85,369 units to 71,314.04487632272 units.
+**LightGBM beat the baseline on WAPE and on MAPE.** WAPE, note, is the volume-weighted comparison the plan asked for. Absolute error fell from 85,369 units to 71,314.04487632272 units.
 
-**LightGBM did not win on bias.** Both forecasts are high in total. The baseline is high by 1,175 units (bias 0.010694457085646673). LightGBM is high by 2,824.600902230468 units (bias 0.02570857287913414). A lower absolute error with a higher total is still an over-forecast, not a reason to treat the model as unbiased.
+**LightGBM did not win on bias.** Both forecasts are high in total, and the gap is undeniable. The baseline is high by 1,175 units (bias 0.010694457085646673). LightGBM is high by 2,824.600902230468 units (bias 0.02570857287913414). A lower absolute error with a higher total is still an over-forecast; it is not a reason to treat the model as unbiased.
 
-MAPE is much larger than WAPE for both models because it is an unweighted mean over item-days, and many of those days are small counts. A miss of 1 unit on a day that sold 1 unit is a 100% MAPE error. Do not lead a manager with MAPE.
+MAPE is much larger than WAPE for both models because it is an unweighted mean over item-days, and many of those days are small counts. A miss of 1 unit on a day that sold 1 unit is a 100% MAPE error. MAPE, therefore, should never lead a conversation with a manager.
 
 ### By weekday
 
@@ -116,11 +116,11 @@ LightGBM:
 | Thursday | 0.5717487870844438 | 0.7102066377808693 | 0.10688316420335713 | 13309.0 |
 | Friday | 0.5783375936476854 | 0.6772863093573736 | 0.04327542424589884 | 14507.0 |
 
-LightGBM's WAPE is lower on every weekday. Its bias is not. Thursday is the high side (bias 0.10688316420335713). Sunday is the low side (bias -0.04232832418464977), while the baseline's Sunday bias is positive (0.062065025449257294). Sunday is also the highest-unit weekday in this window (19,254 actual units).
+LightGBM's WAPE is lower on every weekday. Its bias, however, is not. Thursday is the high side (bias 0.10688316420335713). Sunday is the low side (bias -0.04232832418464977), while the baseline's Sunday bias is positive (0.062065025449257294). Sunday is also the highest-unit weekday in this window (19,254 actual units).
 
 ## One item in Excel
 
-`reports/ca3_foods_one_item_forecast.xlsx` is **FOODS_3_090**, department **FOODS_3**, store **CA_3**. It was chosen as the FOODS item at CA_3 with the highest sum of units on `d_1` through `d_1913`: **250,502** training units. Holdout units were not used to pick it. The holdout then sold **3,357** units, and all 28 days were positive.
+`reports/ca3_foods_one_item_forecast.xlsx` is **FOODS_3_090**, department **FOODS_3**, store **CA_3**. It was chosen as the FOODS item at CA_3 with the highest sum of units on `d_1` through `d_1913`: **250,502** training units. Holdout units played no part in picking it. The holdout then sold **3,357** units, and all 28 days were positive.
 
 The workbook has the 28 holdout days (actual, lag-28, LightGBM), a line chart, the 28 source days the baseline copies (`2016-03-28` through `2016-04-24`), and this item's scores. The first holdout day matches the worked example in Analyze: **2016-04-25** actual **133**, lag-28 baseline **61** (the actual on 2016-03-28). LightGBM on that day is **81.73313553207025**.
 
@@ -131,7 +131,7 @@ Scores on this item only, from the Item metrics sheet:
 | Seasonal naive | 0.2028302705195178 | 0.1974977658623771 | -0.07953529937444147 | 663 | -267 |
 | LightGBM | 0.1945756276869436 | 0.2129970073026922 | -0.1505686355631554 | 715.0309535151379 | -505.4589095855129 |
 
-**On this item, LightGBM loses on WAPE.** The baseline's absolute error is 663 units; LightGBM's is 715.0309535151379. LightGBM's MAPE is slightly lower. Both forecasts are low here, and LightGBM is lower (bias -0.1505686355631554 versus -0.07953529937444147). The aggregate win is not a win on the busiest series. The pooled model is pulled by the other 1,436 items.
+**On this item, LightGBM loses on WAPE.** The baseline's absolute error is 663 units; LightGBM's is 715.0309535151379. LightGBM's MAPE is slightly lower. Both forecasts are low here, and LightGBM is lower (bias -0.1505686355631554 versus -0.07953529937444147). The aggregate win, then, is not a win on the busiest series, given that the pooled model is pulled by the other 1,436 items.
 
 ## What the charts show
 
@@ -141,21 +141,21 @@ The lines are sums across all 1,437 items, not one item. Both forecasts keep the
 
 ![CA_3 FOODS daily total error](../images/ca3_foods_daily_error.png)
 
-The error chart is daily total forecast minus daily total actual. Above zero means that day's forecast was high. It is the same 28 days, not a new model.
+The error chart is daily total forecast minus daily total actual. Above zero means that day's forecast was high. It covers the same 28 days; it is not a new model.
 
 ## What Execute should say to a manager
 
 Say this, and no more than this:
 
-On food at CA_3, for the 28 days ending 2016-05-22, a LightGBM model beat a same-weekday-four-weeks-ago copy on volume-weighted absolute error. WAPE was 0.6490765893903951 versus 0.777000091016656. The absolute miss was 71,314.04487632272 units versus 85,369 units, on 109,870 units actually sold. Both forecasts came out high in total: the copy by 1,175 units, LightGBM by 2,824.600902230468 units. Lower absolute error is not the same thing as an unbiased forecast.
+On food at CA_3, for the 28 days ending 2016-05-22, a LightGBM model beat a same-weekday-four-weeks-ago copy on volume-weighted absolute error. WAPE was 0.6490765893903951 versus 0.777000091016656. The absolute miss was 71,314.04487632272 units versus 85,369 units, on 109,870 units actually sold. Both forecasts came out high in total: the copy by 1,175 units, LightGBM by 2,824.600902230468 units. Lower absolute error, after all, is not the same thing as an unbiased forecast.
 
 MAPE on days that sold at least one unit was 0.5633893484087068 for LightGBM and 0.8781250159967809 for the copy. That number looks worse than WAPE because small item-days count the same as large ones, and 14,934 of 40,236 item-days sold nothing and are not in MAPE.
 
-The busiest item, FOODS_3_090, is the exception already measured: on that series the four-week copy had the lower WAPE (0.1974977658623771 versus 0.2129970073026922). Do not tell a buyer that the model is better on every item.
+The busiest item, FOODS_3_090, is the exception already measured: on that series the four-week copy had the lower WAPE (0.1974977658623771 versus 0.2129970073026922). A buyer should not be told that the model is better on every item.
 
-This is one category, one store, and one 28-day origin. It is not a score for the other California stores, and not for household or hobbies. Do not attach a dollar saving, a service-level change, or a safety-stock cut to these ratios. Whether the remaining unit error is small enough to change a replenishment buffer is a later decision (inventory is project 02), and it is not answered here.
+This is one category, one store, and one 28-day origin. It is not a score for the other California stores, and not for household or hobbies. No dollar saving, service-level change, or safety-stock cut should be attached to these ratios. Whether the remaining unit error is small enough to change a replenishment buffer is a later decision (inventory is project 02), and it is not answered here.
 
-Execute can show the daily chart and the metrics table. It should not refit the model or widen the scope in the executive page.
+Execute can show the daily chart and the metrics table. It should neither refit the model nor widen the scope in the executive page.
 
 ## What this file does not claim
 

@@ -2,7 +2,7 @@
 
 ## Start here
 
-Read the files in this order. The short versions come first for the big picture, then the details.
+Read the files in this order. The short versions come first, because the decision matters more than the derivation; the details follow for anyone who wants to test it.
 
 1. This README, for the question, the result, and the limits.
 2. [reports/executive-summary.md](reports/executive-summary.md), for the decision and the key numbers.
@@ -20,9 +20,9 @@ Read the files in this order. The short versions come first for the big picture,
 
 **Business question.** For the top food items at Walmart store CA_3, what reorder point and safety stock keep unfilled demand under 5% while holding as few units as possible? This builds on the Project 1 LightGBM forecast.
 
-**Result.** Class A is 558 of 1,437 food items, 80.3% of the 109,870 units sold from 2016-04-25 through 2016-05-22. Replaying those 28 days of real sales, the policy leaves 2,682 of 88,230 class A units unfilled, a 3.0% unfilled share (97.0% unit fill rate). Every item stays under the 5% cap; the tightest, FOODS_2_266, is at 4.99%. Average on-hand is about 14,461 units, of which 4,079 are safety stock. 193 items need no safety stock at all.
+**Result.** Class A is 558 of 1,437 food items, yet it accounts for 80.3% of the 109,870 units sold from 2016-04-25 through 2016-05-22. Replayed against those 28 days of real sales, the policy leaves 2,682 of 88,230 class A units unfilled — a 3.0% unfilled share, or a 97.0% unit fill rate. Every item stays under the 5% cap; the tightest, FOODS_2_266, sits at 4.99%. Average on-hand is about 14,461 units, of which 4,079 are safety stock. Moreover, 193 items need no safety stock at all.
 
-**Recommendation.** Set each class A item's reorder point and safety stock from [policy.csv](data/processed/policy.csv), order one week of that item's forecast each time, and use the forecast as published. Track the unfilled share of units, not cycle service.
+**Recommendation.** Set each class A item's reorder point and safety stock from [policy.csv](data/processed/policy.csv), order one week of that item's forecast each time, and use the forecast as published. The metric to track is the unfilled share of units, not cycle service.
 
 **Not in this result.** Class B and C items, other stores, dollar costs or savings, and real lead times.
 
@@ -42,7 +42,7 @@ Read the files in this order. The short versions come first for the big picture,
 
 ![Class A safety stock by item](images/class_a_safety_stock.png)
 
-The dashboard is a static HTML page. Publishing to Tableau Public is a manual step: import `dashboards/class_a_policy.csv`. In that file, `fill_rate` is the unfilled share, not the filled share. Nothing has been published to Tableau Public yet.
+The dashboard is a static HTML page. Publishing to Tableau Public remains a manual step: import `dashboards/class_a_policy.csv`. Note that in that file `fill_rate` is the unfilled share, not the filled share. Nothing has been published to Tableau Public yet.
 
 ## Data
 See [`data/README.md`](data/README.md). The only input is the committed Project 1 forecast file. No raw data is downloaded.
@@ -56,26 +56,26 @@ See [`data/README.md`](data/README.md). The only input is the committed Project 
   - **Order quantity:** one week of that item's average daily forecast, rounded up to a whole unit. It is not an EOQ.
   - **Forecast:** LightGBM as published, not corrected on the same 28 days used to score the policy.
   - **Replay rules:** check on-hand plus on-order every day, unmet demand is a lost sale, and safety stock is the only thing the search can change.
-- **Analyze:** [reports/02-analyze.md](reports/02-analyze.md). Overall the forecast runs 2.6% high, but on class A it runs 5.7% low (5,021 units). The overall average hides that, because class C is over-forecast by more than it sold. Daily misses on class A average 2.9 units and range from about 82 under to about 60 over.
+- **Analyze:** [reports/02-analyze.md](reports/02-analyze.md). Overall, the forecast runs 2.6% high; on class A, however, it runs 5.7% low (5,021 units). The overall average conceals that gap, given that class C is over-forecast by more than it sold. Daily misses on class A average 2.9 units and range from about 82 under to about 60 over.
 - **Construct:** [reports/03-construct.md](reports/03-construct.md). For each item, safety stock starts at zero and goes up one unit at a time. Each step replays the 28 days, and the smallest amount that keeps that item under 5% unfilled is kept. Reorder point is one week of forecast plus that safety stock. The replay starts on April 25 with on-hand at the reorder point, because the data has no inventory history.
 - **Execute:** [reports/04-execute.md](reports/04-execute.md), [reports/executive-summary.md](reports/executive-summary.md), [reports/business-report.md](reports/business-report.md), and the dashboard.
 
 ## Key Findings
-- **Fill target met with room to spare.** 3.0% of class A units went unfilled against a 5% cap, and no single item went over.
-- **Safety stock follows forecast error, not sales volume.** The best seller, FOODS_3_090, needs 38 units. The second-best seller, FOODS_3_586, needs none. FOODS_3_681, fifth by volume, needs 193, the most in the class, because its forecast said 919 units and it sold 1,253.
-- **The textbook formula would have failed.** Daily error spread times the square root of 7 gives 3,012 units of safety stock, but 186 items still go over 5%, while 314 others get more than they need. Testing each item directly takes 4,079 units and passes every item.
-- **Fill rate and cycle service tell different stories.** About 21% of order cycles had at least one stockout, so cycle service is about 79%, not 95%. Most of those were small misses, which is why the unit fill rate is still 97%.
+- **The fill target was met with room to spare.** Only 3.0% of class A units went unfilled against a 5% cap, and no single item went over.
+- **Safety stock follows forecast error, not sales volume.** The best seller, FOODS_3_090, needs 38 units; the second-best seller, FOODS_3_586, needs none. FOODS_3_681, fifth by volume, needs 193 — the most in the class — because its forecast said 919 units and it sold 1,253.
+- **The textbook formula would have failed.** Daily error spread times the square root of 7 yields 3,012 units of safety stock, yet 186 items still go over 5% while 314 others receive more than they need. Testing each item directly takes 4,079 units and passes every item.
+- **Fill rate and cycle service tell different stories.** About 21% of order cycles had at least one stockout, which means cycle service is about 79%, not 95%. Most of those were small misses; that is why the unit fill rate still holds at 97%.
 
 ## Recommendation
-Set the reorder point and safety stock for each of the 558 class A items from [policy.csv](data/processed/policy.csv). Order one week of that item's forecast each time. Don't correct the forecast upward on the same period used to test the policy, and judge the shelf by the share of units unfilled, not by cycle service. Before using this in a real store, replace the 7-day lead time with actual supplier lead times and rerun the search.
+Set the reorder point and safety stock for each of the 558 class A items from [policy.csv](data/processed/policy.csv), and order one week of that item's forecast each time. The forecast should not be corrected upward on the same period used to test the policy, and the shelf should be judged by the share of units unfilled, not by cycle service. Before any of this reaches a real store, the 7-day lead time must be replaced with actual supplier lead times and the search rerun.
 
 ## Impact
-Every class A item meets the 5% unfilled-unit cap while holding about 14,461 units on average, 4,079 of them safety stock. No dollar savings are claimed. The data has no supplier costs, and there are no "before" reorder points to compare against.
+Every class A item meets the 5% unfilled-unit cap while holding about 14,461 units on average, 4,079 of them safety stock. No dollar savings are claimed, and for good reason: the data has no supplier costs, and there are no "before" reorder points to compare against.
 
 ## Limitations
 - Lead time is an assumed 7 days with no variability.
 - The opening stock on April 25 is assumed. A different starting balance would change both the unfilled units and the units held.
-- The policy is tested on one 28-day window, and a typical item has only about 4 order cycles in it.
+- The policy is tested on one 28-day window, in which a typical item has only about 4 order cycles.
 - Excel Solver was not run. The workbook reproduces the Python results for FOODS_3_090, but the search itself was done in Python.
 
 ## Tools
@@ -85,3 +85,6 @@ Python (pandas, NumPy, Matplotlib), Excel
 1. No download is needed. The input is the committed Project 1 file `../01-demand-forecasting/data/processed/ca3_foods_holdout_predictions.csv` (see `data/README.md`).
 2. Run `python src/analyze_inventory.py`, then `python src/construct_policy.py`.
 3. Outputs go to `data/processed/`, charts to `images/`, dashboard files to `dashboards/`, and write-ups to `reports/`.
+
+## Takeaway
+The policy works on the window it was tested on, and it works for a reason that is easy to miss: it sizes safety stock to each item's forecast error rather than to its volume. That said, one window, one assumed lead time and one assumed opening balance are a starting point, not a verdict. The measured next step is to rerun the same search with real supplier lead times before trusting it with a real shelf.

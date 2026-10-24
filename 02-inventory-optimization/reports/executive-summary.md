@@ -20,6 +20,6 @@ Several assumptions sit beneath these numbers, and they deserve to be stated pla
 
 The forecast was used as it stands. Note that on these class A items it runs low rather than high, by **-5,020.5579692516685** units — a share of **-0.05690307116912239**, or about 5.7% low. Even so, it should not be debiased before ordering, since the safety stocks were sized against the forecast as it is. The largest safety stock in the file, **193** units, belongs to `FOODS_3_681`, and it is there because that item's forecast is low, not because the item is the busiest. The busiest item, `FOODS_3_090`, carries a safety stock of 38.
 
-Finally, Excel Solver was not run. The quantities come from a Python search over integer safety stocks, written into `reports/03-construct-solver.xlsx`, and this page does not recompute them. There is no dashboard yet.
+Finally, Excel Solver was not run. The quantities come from a Python search over integer safety stocks, written into `reports/03-construct-solver.xlsx`, and this page does not recompute them. The interactive dashboard is [dashboards/class_a_policy_dashboard.html](../dashboards/class_a_policy_dashboard.html).
 
 The policy, in short, meets its cap with room to spare on units, though not on cycles, and it should be adopted on exactly those terms. The planner page is [04-execute.md](04-execute.md); the longer story is [business-report.md](business-report.md).

@@ -49,15 +49,15 @@ See [`data/README.md`](data/README.md). The only input is the committed Project 
 
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
 - **Plan:** [reports/01-plan.md](reports/01-plan.md). Decisions made before any results:
-  - **Which items:** ABC on actual holdout units. Class A is the items that add up to 80% of units, including the whole tie at the cutoff.
-  - **The cap:** unit fill rate. Units short divided by units demanded must be under 5% for every class A item. Cycle service and stockout days are reported but not used as the target.
-  - **Lead time:** a fixed 7 days. The data has no lead time, so this is a labeled assumption.
-  - **Units, not dollars:** the data has no unit cost, holding rate, or order cost. Shelf price is not supplier cost, so no dollar figures are claimed.
-  - **Order quantity:** one week of that item's average daily forecast, rounded up to a whole unit. It is not an EOQ.
+  - **Which items:** ABC on actual holdout units. Class A comprises the items that add up to 80% of units, including the whole tie at the cutoff.
+  - **The cap:** unit fill rate. Units short divided by units demanded must be under 5% for every class A item. Cycle service and stockout days are reported, but neither is used as the target.
+  - **Lead time:** a fixed 7 days. Given that the data has no lead time, this is a labeled assumption.
+  - **Units, not dollars:** the data has no unit cost, holding rate, or order cost. Shelf price is not supplier cost, which means no dollar figures are claimed.
+  - **Order quantity:** one week of that item's average daily forecast, rounded up to a whole unit — not an EOQ.
   - **Forecast:** LightGBM as published, not corrected on the same 28 days used to score the policy.
   - **Replay rules:** check on-hand plus on-order every day, unmet demand is a lost sale, and safety stock is the only thing the search can change.
 - **Analyze:** [reports/02-analyze.md](reports/02-analyze.md). Overall, the forecast runs 2.6% high; on class A, however, it runs 5.7% low (5,021 units). The overall average conceals that gap, given that class C is over-forecast by more than it sold. Daily misses on class A average 2.9 units and range from about 82 under to about 60 over.
-- **Construct:** [reports/03-construct.md](reports/03-construct.md). For each item, safety stock starts at zero and goes up one unit at a time. Each step replays the 28 days, and the smallest amount that keeps that item under 5% unfilled is kept. Reorder point is one week of forecast plus that safety stock. The replay starts on April 25 with on-hand at the reorder point, because the data has no inventory history.
+- **Construct:** [reports/03-construct.md](reports/03-construct.md). For each item, safety stock starts at zero and rises one unit at a time; each step replays the 28 days, and the smallest amount that keeps that item under 5% unfilled is kept. Reorder point is one week of forecast plus that safety stock. Note that the replay starts on April 25 with on-hand at the reorder point, given that the data has no inventory history.
 - **Execute:** [reports/04-execute.md](reports/04-execute.md), [reports/executive-summary.md](reports/executive-summary.md), [reports/business-report.md](reports/business-report.md), and the dashboard.
 
 ## Key Findings

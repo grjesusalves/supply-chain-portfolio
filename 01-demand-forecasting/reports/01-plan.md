@@ -1,6 +1,6 @@
 # Plan — California demand forecasting (Walmart M5)
 
-PACE stage: **Plan**. This document decides the question, the scope, the score, and the baseline. It does not fit a model, tune a parameter, or report an accuracy number. Those belong to Analyze and Construct.
+PACE stage: **Plan**. This document fixes the question, the scope, the score, and the baseline before a single model is fit. It does not fit a model, tune a parameter, or report an accuracy number; those belong to Analyze and Construct.
 
 The study path is: read this page, then the checks in [What Analyze will check](#what-analyze-will-check). The project README points here and keeps the later PACE stages as placeholders until they are written.
 
@@ -11,22 +11,22 @@ How many units will each item sell, in each California Walmart store, on each of
 Two people use the answer, at two grains:
 
 - A **replenishment planner** needs the forecast at **item–store–day**. That is the series the shelf is ordered from.
-- A **category manager** needs the same forecast **rolled up to category–store–week**. That is the view in an executive meeting. We will not build a second model for that view. We will add up the item–store–day forecasts (bottom-up), so the weekly chart is the same forecast, just summed.
+- A **category manager** needs the same forecast **rolled up to category–store–week**. That is the view in an executive meeting. Rather than build a second model for that view, we will add up the item–store–day forecasts (bottom-up), which means the weekly chart is the same forecast, simply summed.
 
-The business question is not "what is the dollar sales forecast." Dollar sales mix price and units. Replenishment orders units. Price is a feature we may use later, not the target.
+The business question is not "what is the dollar sales forecast." Dollar sales mix price and units, whereas replenishment orders units. Price is a feature we may use later — not the target.
 
 ## Why accuracy matters (units of safety stock, not dollars)
 
-A forecast is an input to inventory, not the inventory decision itself. Turning error into a reorder point is **project 02**. This project only has to get the direction right.
+A forecast is an input to inventory, not the inventory decision itself. Turning error into a reorder point is the work of **project 02**; this project only has to get the direction right.
 
-Safety stock is the extra units held so that ordinary forecast misses do not empty the shelf. In the usual textbook form it grows with how wide the forecast errors are over the lead time: a bigger typical miss means **more units** of buffer to hold the same service level. A tight forecast means fewer units of buffer. That is the link between accuracy and inventory, stated in units.
+Safety stock is the extra units held so that ordinary forecast misses do not empty the shelf. In the usual textbook form it grows with how wide the forecast errors are over the lead time: a bigger typical miss means **more units** of buffer to hold the same service level. A tight forecast, by contrast, means fewer units of buffer. That is the pivotal link between accuracy and inventory, stated in units.
 
 Bias has a direction, and the direction matters more than a single average error:
 
 - **Biased high** means the average forecast sits above actual demand. The store orders as if it will sell more than it does. On-hand inventory rises. Safety stock placed on top of an already high forecast makes the extra inventory larger, not smaller.
 - **Biased low** means the average forecast sits below actual demand. The store orders too little. Shelves stock out even when the absolute error looks modest, because the misses all point the same way.
 
-We will **not** convert that into dollars here. A dollar figure needs a holding-cost rate and a margin, and this dataset does not give us those. Any dollar number at this stage would be invented. Project 02 is where service level and inventory cost are in scope.
+We will **not** convert that into dollars here. A dollar figure needs a holding-cost rate and a margin, and this dataset provides neither; any dollar number at this stage would be invented. Project 02 is where service level and inventory cost are in scope.
 
 ## Scope, and why it is this wide
 
@@ -40,11 +40,11 @@ We will **not** convert that into dollars here. A dollar figure needs a holding-
 | Executive grain | Category–store–week | Sum of the item–store–day forecasts. Week means Walmart's week (`wm_yr_wk`), which runs Saturday–Friday (`wday` 1 is Saturday), not Monday–Sunday. |
 | What we will not forecast | The other six stores; dollar sales; a separate model at the weekly grain | See [Out of scope](#out-of-scope). |
 
-The full competition is 3,049 products × 10 stores = 30,490 series and about 450 MB of CSV. Cutting to California drops the series count to about 40% of the file (4 of 10 stores) without dropping the hard part, which is intermittent item-level demand.
+The full competition is 3,049 products × 10 stores = 30,490 series and about 450 MB of CSV. Cutting to California drops the series count to about 40% of the file (4 of 10 stores) without dropping the hard part — intermittent item-level demand.
 
 ## Train and test
 
-All scoring uses data we already have. We do **not** forecast the Kaggle days that were never published as actuals (`d_1942`–`d_1969`, 2016-05-23 through 2016-06-19). Those actuals are not in the files, so we could not score them.
+All scoring uses data we already have. We do **not** forecast the Kaggle days that were never published as actuals (`d_1942`–`d_1969`, 2016-05-23 through 2016-06-19). Those actuals are not in the files, which means they could not be scored.
 
 **Test window:** the last 28 days of `sales_train_evaluation`.
 
@@ -57,13 +57,13 @@ All scoring uses data we already have. We do **not** forecast the Kaggle days th
 - Dates **2011-01-29 through 2016-04-24**.
 - That is exactly the span of `sales_train_validation`. The validation file is the same history with the test days removed. Analyze will check that the two files agree on `d_1`–`d_1913` for the California rows, so we are not mixing two histories.
 
-One origin, one 28-day block. We will not use an actual from inside the test window to forecast a later day in that window. That rule is what makes the baseline below the right naive model.
+One origin, one 28-day block. No actual from inside the test window will be used to forecast a later day in that window; that rule, more than any other, is what makes the baseline below the right naive model.
 
-The holdout is not a quiet four weeks. The calendar already shows, inside those 28 days: Pesach End, Orthodox Easter, Cinco de Mayo, Mother's Day, and a run of `snap_CA = 1` days (2016-05-01 through 2016-05-10). It also does not line up with Walmart weeks: `wm_yr_wk` 11613 contributes only Monday–Friday, 11614–11616 are full Saturday–Friday weeks, and 11617 contributes only Saturday–Sunday. Analyze will treat the partial weeks as partial when it rolls up. None of that is a fitted result. It is the calendar, read so we do not pretend the test window is a typical anonymous month.
+The holdout is not a quiet four weeks. The calendar already shows, inside those 28 days: Pesach End, Orthodox Easter, Cinco de Mayo, Mother's Day, and a run of `snap_CA = 1` days (2016-05-01 through 2016-05-10). It also does not line up with Walmart weeks: `wm_yr_wk` 11613 contributes only Monday–Friday, 11614–11616 are full Saturday–Friday weeks, and 11617 contributes only Saturday–Sunday. Analyze will treat the partial weeks as partial when it rolls up. None of that is a fitted result. It is the calendar, read carefully so that we do not pretend the test window is a typical anonymous month.
 
 ## Metrics
 
-We will report four numbers. They answer different questions. None of them is computed in this stage.
+We will report four numbers. They answer different questions, and none of them is computed in this stage.
 
 ### MAPE
 
@@ -73,12 +73,12 @@ In words: for each scored row, take the absolute gap between forecast and actual
 
 If we score each item–store–day, a row with actual 10 and forecast 12 contributes `|12 − 10| / 10 = 0.20` (20%). The MAPE is the average of those ratios.
 
-**MAPE explodes or is undefined when actual is 0**, because the formula divides by actual. M5 has many zero-sales days. A MAPE that silently drops those days, or that divides by zero and becomes infinity, is not a usable score.
+**MAPE explodes or is undefined when actual is 0**, because the formula divides by actual. Given that M5 has many zero-sales days, a MAPE that silently drops those days, or that divides by zero and becomes infinity, is not a usable score.
 
 **Decision for zero-sales days:**
 
 - Publish MAPE **only on days whose actual units are greater than zero**.
-- Next to it, publish the **share of test days that were excluded** because actual was 0. If we hide that share, MAPE looks better than the business is.
+- Next to it, publish the **share of test days that were excluded** because actual was 0. Hiding that share would make MAPE look better than the business is.
 - Also publish a sensitivity: the same MAPE with a **floor of 1 unit in the denominator**, so a zero-actual day contributes `|forecast − 0| / 1`. That stops the explosion without pretending the day did not happen. It is a sensitivity, not the headline MAPE.
 
 ### WAPE
@@ -87,9 +87,9 @@ Weighted absolute percentage error. In words: add up the absolute gaps, and divi
 
 `WAPE = (sum of |forecast − actual|) / (sum of actual)`.
 
-WAPE stays defined as long as total actual units are not zero. A day with actual 0 still adds `|forecast|` to the numerator (a forecast of 3 units on a day that sold nothing is a 3-unit error) and adds nothing to the denominator. That is the right companion to MAPE. We will compute WAPE on **all** test days, zeros included.
+WAPE stays defined as long as total actual units are not zero. A day with actual 0 still adds `|forecast|` to the numerator (a forecast of 3 units on a day that sold nothing is a 3-unit error) and adds nothing to the denominator. That makes it the right companion to MAPE. We will compute WAPE on **all** test days, zeros included.
 
-WAPE is not the same thing as an average of percentages. One bad day on a huge item moves WAPE more than many bad days on a tiny item. That is what we want for a volume conversation, and it is why we still show MAPE beside it.
+WAPE is not the same thing as an average of percentages. One bad day on a huge item moves WAPE more than many bad days on a tiny item. That is precisely what a volume conversation needs; that said, it is also why we still show MAPE beside it.
 
 ### Volume-weighted MAPE
 
@@ -97,7 +97,7 @@ Unweighted MAPE lets a tiny, intermittent item count as much as a high-volume gr
 
 In words: compute MAPE **per item–store series** on the test window (positive-actual days only, same rule as above). Then take a weighted average of those series MAPEs, where the weight is that series' **total actual units** in the test window. Divide by the sum of those units.
 
-A series that sold 1 unit barely moves the number. A series that sold 1,000 units moves it a lot. This is the MAPE a category manager should look at. The unweighted MAPE is the one that tells us whether we are systematically bad at slow items.
+A series that sold 1 unit barely moves the number; a series that sold 1,000 units moves it a lot. This is the MAPE a category manager should look at. The unweighted MAPE is the one that tells us whether we are systematically bad at slow items.
 
 If someone weights each *day's* percentage error by that day's actual units, the weights cancel and the result collapses toward WAPE (and zero-actual days drop out, because their weight is zero). We will **not** call that volume-weighted MAPE. Volume-weighted MAPE here means **series-level MAPE, weighted by series volume**. WAPE is reported separately, under its own name, so the two are not confused.
 
@@ -108,9 +108,9 @@ In words: average forecast minus average actual, divided by average actual, time
 - **Positive bias:** forecast is too high, on average. Inventory inflates.
 - **Negative bias:** forecast is too low, on average. Stockouts.
 
-We will report bias in percent and also in units (average forecast minus average actual, not divided), at item–store over the 28 days and again after the category–store–week rollup. A model can win on MAPE and still be dangerously biased. Both numbers stay on the scorecard.
+We will report bias in percent and also in units (average forecast minus average actual, not divided), at item–store over the 28 days and again after the category–store–week rollup. A model can win on MAPE and still be dangerously biased, which is why both numbers stay on the scorecard.
 
-We will not use the M5 competition metric (WRMSSE) as the decision metric. It is a weighted, scaled error across the whole hierarchy and all ten stores. It is the right score for a Kaggle leaderboard. It is a poor score for explaining a replenishment miss to a planner. We may compute it later as a footnote. It is not the number this project is built around.
+We will not use the M5 competition metric (WRMSSE) as the decision metric. It is a weighted, scaled error across the whole hierarchy and all ten stores. It is the right score for a Kaggle leaderboard, yet a poor one for explaining a replenishment miss to a planner. We may compute it later as a footnote; it is not the number this project is built around.
 
 ## Baseline and the stronger model
 
@@ -157,7 +157,7 @@ Interviewers often open a spreadsheet and nothing else. Construct will add one w
 - Two columns of forecast over the same 28-day holdout: the **lag-28 seasonal naive**, and one **simple Excel forecast** (Excel's forecast function or an equivalent that a reviewer can see the formula for).
 - The same metrics as the Python path, on that one series, so the spreadsheet and the notebook cannot disagree about the definition.
 
-The workbook is a teaching and interview artifact. It is not the model we will trust for 12,196 series.
+The workbook is a teaching and interview artifact — not the model we will trust for 12,196 series.
 
 ## Data on hand
 
@@ -187,11 +187,11 @@ Categories in the file are `HOBBIES`, `HOUSEHOLD`, and `FOODS`. Departments sit 
 
 ## Risks
 
-**Intermittent demand.** Many item–store series sell on a small share of days. The first rows of the evaluation file (hobby items) are long runs of zeros with occasional units of 1 or 2. A point forecast of "0.2 units" is a rate, not a shelf quantity. Analyze must show the share of zero days by category and store **before** any model is praised. A method that predicts zero every day can look acceptable on a badly defined MAPE and still miss every day that matters.
+**Intermittent demand.** Many item–store series sell on a small share of days. The first rows of the evaluation file (hobby items) are long runs of zeros with occasional units of 1 or 2. A point forecast of "0.2 units" is a rate, not a shelf quantity. Analyze must show the share of zero days by category and store **before** any model is praised. After all, a method that predicts zero every day can look acceptable on a badly defined MAPE and still miss every day that matters.
 
 **Zeros and MAPE.** Covered above. If Construct reports a MAPE without the share of zero-actual days, the number is not interpretable. WAPE is on the scorecard so those days still create error.
 
-**SNAP days in California.** `snap_CA` marks days when SNAP benefits are issued in California. Food demand often jumps on those days. The flag is not the same series as `snap_TX` or `snap_WI`. A California model that ignores `snap_CA`, or that copies another state's flag, will pile its food-category error onto the SNAP calendar. The test window itself contains ten SNAP days in a row in early May 2016. That is a feature of this holdout, not a reason to drop the holdout. It is a reason Analyze should plot FOODS against `snap_CA` before Construct fits anything.
+**SNAP days in California.** `snap_CA` marks days when SNAP benefits are issued in California. Food demand often jumps on those days. The flag is not the same series as `snap_TX` or `snap_WI`. A California model that ignores `snap_CA`, or that copies another state's flag, will pile its food-category error onto the SNAP calendar. The test window itself contains ten SNAP days in a row in early May 2016. That is a feature of this holdout, not a reason to drop it; it is, however, a reason for Analyze to plot FOODS against `snap_CA` before Construct fits anything.
 
 **Events in this particular test window.** Religious and retail holidays fall inside the 28 days (listed above). A single 28-day holdout can flatter or punish a model that handles events well or badly. We will not add more cutoffs in Plan. We will label the events on the error charts so a bad week is not read as a bad model in general.
 
@@ -201,11 +201,11 @@ Categories in the file are `HOBBIES`, `HOUSEHOLD`, and `FOODS`. Departments sit 
 
 **Hierarchy that does not add up.** Avoided by construction: we forecast at the bottom and sum. We will not average a weekly model with a daily model and hope they match.
 
-**One holdout.** A single origin cannot prove the model works in November the way it works in May. Plan accepts that. A rolling origin would be a Construct extension, not a reason to change the test window. The window stays the last 28 days so the split is the same one M5 used between the validation file and the evaluation file.
+**One holdout.** A single origin cannot prove the model works in November the way it works in May. Plan concedes the point. A rolling origin would be a Construct extension, not a reason to change the test window. The window stays the last 28 days so the split is the same one M5 used between the validation file and the evaluation file.
 
 ## Assumptions
 
-- The evaluation file's unit columns are the actual demand we are willing to treat as demand. A zero can mean "did not sell" or "was not in stock." We cannot see stockouts separately. Analyze should not call every zero a demand zero without saying that.
+- The evaluation file's unit columns are the actual demand we are willing to treat as demand. A zero can mean "did not sell" or "was not in stock." We cannot see stockouts separately, so Analyze should not call every zero a demand zero without saying so.
 - All four California stores sell the same item list. That is the M5 file layout (every item appears in every store). Analyze confirms it on the filtered rows.
 - The forecast origin is the morning of 2016-04-25, with history through 2016-04-24. No later actuals.
 - Walmart week is the week we roll up to, because price and the calendar are already in `wm_yr_wk`.
@@ -232,4 +232,4 @@ Analyze is still descriptive. It does not fit LightGBM or Prophet.
 - **Construct** builds the lag-28 baseline, the LightGBM model under the leakage rule, the 12-series Prophet check, and the one-category Excel workbook. It reports MAPE (with the zero-day share), volume-weighted MAPE, bias, and WAPE.
 - **Execute** says what a planner should do with a biased-high versus biased-low result, in units, and points inventory policy at project 02.
 
-This Plan stage stops before any of that fitting.
+This Plan stage stops, deliberately, before any of that fitting.

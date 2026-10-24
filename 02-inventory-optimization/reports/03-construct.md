@@ -1,6 +1,6 @@
 # Construct — CA_3 FOODS inventory (reorder point and safety stock)
 
-PACE stage: **Construct**. This file builds the reorder point and the safety stock the plan already defined, and it scores them on the holdout. It does not reopen the ten decisions at the end of [01-plan.md](01-plan.md). Class A is the 558 items from [02-analyze.md](02-analyze.md). The forecast is not refit and it is not debiased. The project README is still the template. This file does not fill it.
+PACE stage: **Construct**. This file builds the reorder point and the safety stock the plan already defined, and it scores them on the holdout. It does not reopen the ten decisions at the end of [01-plan.md](01-plan.md). Class A is the 558 items from [02-analyze.md](02-analyze.md). The forecast is neither refit nor debiased, and the project README, still the template, is not filled here.
 
 The path through the page is: the simulation, the safety-stock search, the class A totals, and the one item a person can open in the workbook.
 
@@ -8,21 +8,21 @@ The path through the page is: the simulation, the safety-stock search, the class
 
 The demand file is the same one Analyze used: `01-demand-forecasting/data/processed/ca3_foods_holdout_predictions.csv`. The class cut is recomputed with the Analyze functions, not retyped from the class file. Class A is **558** items and **88,230** holdout units. The days are **2016-04-25 through 2016-05-22**.
 
-Signed error is still **`lgbm` minus `actual`**. On class A that bias is **-5,020.5579692516685** units, a share of units of **-0.05690307116912239**. The forecast on these items is low. That number is reproduced here so the reorder point is not built on a different error. It is not subtracted from `lgbm`. The plan's decision stands: use the forecast as-is.
+Signed error is still **`lgbm` minus `actual`**. On class A that bias is **-5,020.5579692516685** units, a share of units of **-0.05690307116912239**. The forecast on these items is low. That number is reproduced here so that the reorder point is not built on a different error; it is not, however, subtracted from `lgbm`. The plan's decision stands: use the forecast as-is.
 
 `sell_price` was not opened. There is still no unit cost, no holding-cost rate, and no order cost. The objective stays in units. Dollar savings will not be claimed.
 
 ## What the columns mean
 
-`fill_rate` in `data/processed/policy.csv` is **units short divided by units demanded**. The cap is that ratio **strictly under 0.05**. An exact 0.05 would fail. This is the unfilled share. It is how the plan defined a unit fill rate under 5%. It is not the fraction of units that were sold. The fraction sold is one minus this ratio.
+`fill_rate` in `data/processed/policy.csv` is **units short divided by units demanded**. The cap is that ratio **strictly under 0.05**. An exact 0.05 would fail. Note that this is the unfilled share — how the plan defined a unit fill rate under 5% — and not the fraction of units that were sold. The fraction sold is one minus this ratio.
 
 A day counts as stocked out when that day's units short are above zero. A **cycle** is one day on which one or more lots were ordered. The cycle runs from that day through the day before the next order, or through 2016-05-22 if it is the last order. A stockout on the order day counts, because the order placed that day arrives seven days later. `cycles_with_stockout` is how many of those cycles contain a stockout day.
 
-`avg_on_hand` is the mean of end-of-day on-hand over the 28 days, after demand and lost sales. `cycle_stock_units` is the order quantity divided by two. That is the textbook half-batch. It is not the objective.
+`avg_on_hand` is the mean of end-of-day on-hand over the 28 days, after demand and lost sales. `cycle_stock_units` is the order quantity divided by two. That is the textbook half-batch; it is not the objective.
 
 ## How a day runs
 
-Lead time is **7 days**, fixed, an assumption. The files have no lead time and no lead-time variability. An order placed on day t is available at the start of day t+7, before that morning's review and before that day's demand. It cannot serve the day it was ordered. A receipt moves units from on-order to on-hand. The inventory position does not change when a receipt lands. The position is on-hand plus on-order. Unmet demand is lost. It is not subtracted as a backorder, and it does not deepen the position.
+Lead time is **7 days**, fixed, an assumption. The files have no lead time and no lead-time variability. An order placed on day t is available at the start of day t+7, before that morning's review and before that day's demand. It cannot, therefore, serve the day it was ordered. A receipt moves units from on-order to on-hand. The inventory position does not change when a receipt lands. The position is on-hand plus on-order. Unmet demand is lost: it is not subtracted as a backorder, and it does not deepen the position.
 
 Review is continuous inside the day, in two looks, because the data are daily.
 
@@ -30,7 +30,7 @@ Review is continuous inside the day, in two looks, because the data are daily.
 2. Demand is the day's `actual`. Sales are the minimum of on-hand and actual. On-hand does not go negative.
 3. After demand, if the position is back at or under the reorder point, order more lots the same day. Those lots also arrive on day t+7. They do not refill units already lost.
 
-Across class A, **136** item-days placed more than one lot. The second look is not unused. Most order days are still one lot.
+Across class A, **136** item-days placed more than one lot. The second look, then, is not idle, although most order days are still one lot.
 
 ## Starting inventory
 
@@ -38,41 +38,41 @@ There is no on-hand history. None was invented from a month before the holdout.
 
 On the morning of **2016-04-25**, on-hand equals the reorder point and on-order is zero. The first review is that same morning. The position is already at the reorder point, so the first order is placed before any holdout demand. After that order, on-order is no longer zero. The opening sentence "on-order none" is the balance before the review, not a refusal to order on day 0. Every class A item orders on day 0. The first receipt is the morning of **2016-05-02**.
 
-The window is 28 days. That start is part of the result. The shelf begins at the reorder point, not empty, and the first week is covered only by that opening balance. A different opening balance would change both the shortfall and the average on-hand. I did not try other openings.
+The window is 28 days, and that start is part of the result — a limitation worth stating plainly. The shelf begins at the reorder point, not empty, and the first week is covered only by that opening balance. A different opening balance would change both the shortfall and the average on-hand. Other openings were not tried.
 
 ## Order quantity and expected lead-time demand
 
 For each item, `mean_daily_lgbm` is the mean of that item's 28 `lgbm` values. Expected lead-time demand is that mean times 7. The forecast changes by day, so this is the mean day times the lead time. It is not the sum of one particular week, and it is not `actual`.
 
-The order quantity is the smallest whole number of units that is at least that expected lead-time demand, and at least 1. `math.ceil` on a positive number, which is Excel `ROUNDUP(x, 0)`. An exact integer stays that integer. It is not an EOQ. The search does not change it.
+The order quantity is the smallest whole number of units that is at least that expected lead-time demand, and at least 1. `math.ceil` on a positive number, which is Excel `ROUNDUP(x, 0)`. An exact integer stays that integer. It is not an EOQ, and the search does not change it.
 
 The reorder point is expected lead-time demand plus the integer safety stock. It is not rounded. On-hand can sit on a fraction of a unit because the forecast mean is not an integer. Units short can therefore be fractional when the shelf is holding a fraction and the day's demand is larger. The cap is applied to that ratio.
 
 ## Safety stock
 
-Safety stock is an integer number of units, chosen separately for each item. Two calculations are on the page so the search is not a black box. Neither one is the policy.
+Safety stock is an integer number of units, chosen separately for each item. Two calculations are on the page so that the search is not a black box. Neither one is the policy.
 
 The scale is the item's own 28-day sample standard deviation of daily (`lgbm` − `actual`), the same `daily_error_std` as Analyze, times the square root of 7. That is the usual independent-days lead-time sigma. The plan said not to treat that product as the policy by itself, and it is not.
 
-Four non-overlapping 7-day blocks are not a per-item sigma. Each item has four block errors. A sample standard deviation of four points is not stable, and I did not pretend that it was. What I did compute is the ratio of that four-point standard deviation to the independent-days scale. The median ratio is **1.0005069444077974**. The mean ratio is **1.0620523240049689**. The 25th and 75th percentiles are **0.7162315258311641** and **1.328711418890887**. The median item's four-block width and the square-root-of-7 scale are the same size. The spread of the ratio is the noise of four points.
+Four non-overlapping 7-day blocks are not a per-item sigma. Each item has four block errors. A sample standard deviation of four points is not stable, and nothing here pretends otherwise. What I did compute is the ratio of that four-point standard deviation to the independent-days scale. The median ratio is **1.0005069444077974**. The mean ratio is **1.0620523240049689**. The 25th and 75th percentiles are **0.7162315258311641** and **1.328711418890887**. The median item's four-block width and the square-root-of-7 scale are the same size. The spread of the ratio is simply the noise of four points.
 
-The mean of the block variances divided by the mean of (daily variance times 7) is **2.2010449293279675**. That ratio is not a factor I applied. It is pulled by items whose four weeks are much wider than their daily noise. Scaling every item by 2.2 would pad the typical item because of that tail. Those wide items get whatever integer the simulation needs. The others are not scaled up to match them.
+The mean of the block variances divided by the mean of (daily variance times 7) is **2.2010449293279675**. That ratio is not a factor that was applied. It is pulled by items whose four weeks are much wider than their daily noise. Scaling every item by 2.2 would pad the typical item because of that tail. Those wide items get whatever integer the simulation needs. The others are not scaled up to match them.
 
-Lag correlations of the daily error, averaged across the 558 items, are near zero: lag 1 is **0.031181120390307154**, then **0.0030323280216445502**, **-0.021846458696928986**, **-0.004837583353715764**, **0.004856937716273669**, **-0.017346099121796823**, and **0.015922062872085828** at lag 7. The median lag-1 correlation is **0.016914040466102682**. Adjacent days are weakly dependent. That supports the square root of 7 as a description of a typical item's scale. It does not make the scale the reorder-point policy. The cap is a simulated unit shortfall, not a normal quantile.
+Lag correlations of the daily error, averaged across the 558 items, are near zero: lag 1 is **0.031181120390307154**, then **0.0030323280216445502**, **-0.021846458696928986**, **-0.004837583353715764**, **0.004856937716273669**, **-0.017346099121796823**, and **0.015922062872085828** at lag 7. The median lag-1 correlation is **0.016914040466102682**. Adjacent days are weakly dependent, which supports the square root of 7 as a description of a typical item's scale. That said, it does not make the scale the reorder-point policy. The cap is a simulated unit shortfall, not a normal quantile.
 
 The candidate that uses the scale is the normal loss, and it is rejected wherever the simulation says so. Let σ_L be the daily error standard deviation times the square root of 7. The standard normal loss is n(z) = φ(z) − z(1 − Φ(z)). The textbook backorder identity sets n(z) = 0.05 × order quantity / σ_L, and safety stock = z × σ_L. I solved z by bisection. If z is not positive, the candidate is 0. If z is positive, the candidate is that product, ceiled to an integer. The formula assumes a normal lead-time demand, an unbiased forecast, backorders, and a long run of cycles. This holdout is none of those. Class A `lgbm` is low, unmet demand is lost, and a typical item has a handful of cycles.
 
-That candidate was simulated anyway, so the miss is a count and not a suspicion. On **186** items the candidate's unit shortfall was not under 0.05. On those 186 the search used a higher safety stock. On **314** items the search used a lower safety stock than the candidate. On **58** items they are the same integer. 186 + 314 + 58 = 558. The sum of the candidate safety stocks is **3,012**. The sum of the safety stocks actually used is **4,079**. The median candidate is 4 units. The median policy is 2. The formula under-buffers the items the low forecast hurts, and it over-buffers a larger number of smaller misses. The cap is per item, so the over-buffered items do not repair the 186 misses. That is why the candidate is not the policy.
+That candidate was simulated anyway, so that the miss is a count rather than a suspicion. On **186** items the candidate's unit shortfall was not under 0.05. On those 186 the search used a higher safety stock. On **314** items the search used a lower safety stock than the candidate. On **58** items they are the same integer. 186 + 314 + 58 = 558. The sum of the candidate safety stocks is **3,012**. The sum of the safety stocks actually used is **4,079**. The median candidate is 4 units. The median policy is 2. The formula under-buffers the items the low forecast hurts, and it over-buffers a larger number of smaller misses. Given that the cap is per item, the over-buffered items do not repair the 186 misses — which is why the candidate is not the policy.
 
 For the example item the candidate z is **-0.16203597071870773**, so the candidate safety stock is 0. The order quantity is large next to σ_L, and the formula thinks no buffer is required. The simulation of that zero is a shortfall of **0.16327516455060415**. The search raises it. The forecast mean is not adjusted before that test.
 
 ## The search
 
-For each item, safety stock runs through the integers 0, 1, 2, and so on, up to a bound that cannot stock out on this finite series: opening on-hand at least the sum of the item's actual demand. The bound is only a bound. It is not a recommended buffer.
+For each item, safety stock runs through the integers 0, 1, 2, and so on, up to a bound that cannot stock out on this finite series: opening on-hand at least the sum of the item's actual demand. The bound is only a bound, not a recommended buffer.
 
 A value is feasible when units short / units demanded is strictly under 0.05. The objective is average end-of-day on-hand. The feasible value with the lowest average on-hand is kept. A tie closer than 1e-8 breaks toward the smaller safety stock, so a tie does not add a unit.
 
-On all 558 items the lowest average on-hand was the smallest feasible integer. `n_items_chosen_above_min_ss` is **0**. The search did not keep an extra unit past the cap. Where the shortfall sits well under 5%, it is because safety stock 0 already cleared the cap, or because the last unit crossed from a miss to a much smaller shortfall. It is not because a larger buffer was preferred.
+On all 558 items the lowest average on-hand was the smallest feasible integer. `n_items_chosen_above_min_ss` is **0**. The search did not keep an extra unit past the cap. Where the shortfall sits well under 5%, it is because safety stock 0 already cleared the cap, or because the last unit crossed from a miss to a much smaller shortfall. It is never because a larger buffer was preferred.
 
 ## Class A totals
 
@@ -93,9 +93,9 @@ The row is `data/processed/policy_summary.csv`. Item rows are `data/processed/po
 
 The shortfall is 2,681.5674402151976 / 88,230 = 0.030392921231046102. That is the cap metric, and it is under 0.05. One minus that shortfall is 0.9696070787689539, the share of units sold. No class A item missed the cap. The highest item shortfall is **0.049946516104229**, on `FOODS_2_266`, which is still under 0.05.
 
-The objective that was minimized, item by item, sums to **14,461.064128366881** units of average on-hand. The textbook expression, half the order quantity plus safety stock, sums to **14,620.5**. They are close on this window and they are not the same number. The search used the simulation. The textbook expression is reported so the difference is visible. Neither number is a dollar holding cost.
+The objective that was minimized, item by item, sums to **14,461.064128366881** units of average on-hand. The textbook expression, half the order quantity plus safety stock, sums to **14,620.5**. They are close on this window, yet they are not the same number. The search used the simulation; the textbook expression is reported so that the difference is visible. Neither number is a dollar holding cost.
 
-**193** items clear the cap at safety stock 0. The other **365** need a positive integer. **114** items have a shortfall of exactly 0. Six of those have a positive safety stock: the last unit removed every stockout, which is a step in a discrete search, not a padded buffer. The median safety stock is 2. The 75th percentile is 7. The maximum is **193**, on `FOODS_3_681`, not on the busiest item. The median item shortfall is **0.038070671837693734**. Among items with a positive safety stock the median shortfall is **0.04308352428601003**. The mass sits near the cap. The unweighted mean of the item shortfalls is **0.029163436585459158**, pulled down by the zeros.
+**193** items clear the cap at safety stock 0. The other **365** need a positive integer. **114** items have a shortfall of exactly 0. Six of those have a positive safety stock: the last unit removed every stockout, which is a step in a discrete search, not a padded buffer. The median safety stock is 2. The 75th percentile is 7. The maximum is **193**, on `FOODS_3_681`, not on the busiest item. The median item shortfall is **0.038070671837693734**. Among items with a positive safety stock the median shortfall is **0.04308352428601003**. The mass, in other words, sits near the cap. The unweighted mean of the item shortfalls is **0.029163436585459158**, pulled down by the zeros.
 
 The same five names Analyze listed, read from `policy.csv`, show that the buffer is not a volume ranking.
 
@@ -117,23 +117,23 @@ The left panel is the unit shortfall at the chosen safety stock. The dashed line
 
 The cap is the unit shortfall. These two are not substitutes, and one of them does not clear 5%.
 
-Day-level stockout rate: **722** item-days had a shortfall, out of 558 × 28 = 15,624. That rate is 722 / 15,624 = **0.046210957501280084**. It is under 0.05 on this window. It was not the constraint. I did not search for it.
+Day-level stockout rate: **722** item-days had a shortfall, out of 558 × 28 = 15,624. That rate is 722 / 15,624 = **0.046210957501280084**. It is under 0.05 on this window. It was not the constraint, and it was not searched for.
 
-Cycle stockout share: **601** cycles had a stockout, out of **2,819** cycles. That share is 601 / 2,819 = **0.21319616885420362**. It is not under 0.05. The textbook cycle service level, the share of cycles with no stockout, is **0.7868038311457963**. That is not 95%. A policy that meets the unit cap on this file does not meet a 5% cycle-stockout cap. The plan said not to swap them. This is the case it was warning about.
+Cycle stockout share: **601** cycles had a stockout, out of **2,819** cycles. That share is 601 / 2,819 = **0.21319616885420362**. It is not under 0.05. The textbook cycle service level, the share of cycles with no stockout, is **0.7868038311457963**. That is not 95%. A policy that meets the unit cap on this file does not meet a 5% cycle-stockout cap. The plan said not to swap them; this is precisely the case it was warning about.
 
-The window cannot show a stable cycle service. The median item has **4** cycles. The mean is **5.051971326164875**. The minimum is **1** (one item) and the maximum is **27**. **295** items have four cycles or fewer. A share built on four cycles is a count. It is still reported. The cap that was enforced is the unit shortfall.
+The window cannot show a stable cycle service. The median item has **4** cycles. The mean is **5.051971326164875**. The minimum is **1** (one item) and the maximum is **27**. **295** items have four cycles or fewer. A share built on four cycles is, in truth, a count. It is still reported. The cap that was enforced is the unit shortfall.
 
 ## FOODS_3_090
 
 This is the busiest class A item and the live sheet in the workbook. From `policy.csv`: mean daily `lgbm` **101.84075322908883**, expected lead-time demand **712.8852726036218**, order quantity **713**, safety stock **38**, reorder point **750.8852726036218**, units short **167.11472739637816**, units demanded **3,357**, shortfall **0.04978097330842364**, days stocked out **3**, cycles **5**, cycles with a stockout **2**, average on-hand **345.9080843935039**, cycle stock **356.5**.
 
-The item's `lgbm` sums to 2,851.5410904144874. Actual is 3,357. The forecast is low by 505.45890958551263 units over the 28 days. Safety stock is 38, not 505. The mean was not corrected. When the position hits the reorder point, another lot of 713 goes on order. That pipeline is what replaces units. The 38 is the extra on the reorder point that the cap required on top of that rule.
+The item's `lgbm` sums to 2,851.5410904144874. Actual is 3,357. The forecast is low by 505.45890958551263 units over the 28 days. Safety stock is 38, not 505, and the mean was not corrected. When the position hits the reorder point, another lot of 713 goes on order. That pipeline is what replaces units. The 38 is the extra on the reorder point that the cap required on top of that rule.
 
 The opening on-hand is the reorder point, 750.8852726036218. The first receipt is 2016-05-02. The first seven days of actual sum to **904**. The opening balance does not cover 904, so the item stocks out before the first receipt even with safety stock 38. Those seven `lgbm` values sum to 733.7686219100218, which is not the planning expectation. The expectation stays the mean week, 712.8852726036218.
 
-The shortfall is three days: 2016-04-30, 2016-05-01, and 2016-05-13. Orders go out on day indexes 0, 5, 12, 18, and 25, one lot each. Two of the five cycles contain a stockout. The cycle stockout share on this item is 2/5. The unit shortfall is just under 0.05. Same item, different score. That is why the cap is the unit shortfall.
+The shortfall is three days: 2016-04-30, 2016-05-01, and 2016-05-13. Orders go out on day indexes 0, 5, 12, 18, and 25, one lot each. Two of the five cycles contain a stockout. The cycle stockout share on this item is 2/5. The unit shortfall is just under 0.05. Same item, different score — which is why the cap is the unit shortfall.
 
-Safety stock 37, the integer just below the choice, has units short 168.1147273963782 and shortfall **0.05007885832480732**. That fails the strict cap. Its average on-hand is 345.7295129649324, a little lower than 345.9080843935039. The objective would have taken 37 if 37 had been feasible. It was not. Safety stock 0, which is also the normal-loss candidate, has shortfall 0.16327516455060415. The enumeration is on `Example_search` in the workbook, from 0 through 2,645. The minimum feasible safety stock on that sheet is 38, and it matches the Python choice. The minimum average on-hand among feasible rows is the average at 38.
+Safety stock 37, the integer just below the choice, has units short 168.1147273963782 and shortfall **0.05007885832480732**. That fails the strict cap. Its average on-hand is 345.7295129649324, a little lower than 345.9080843935039. The objective would have taken 37 had 37 been feasible. It was not. Safety stock 0, which is also the normal-loss candidate, has shortfall 0.16327516455060415. The enumeration is on `Example_search` in the workbook, from 0 through 2,645. The minimum feasible safety stock on that sheet is 38, and it matches the Python choice. The minimum average on-hand among feasible rows is the average at 38.
 
 ## The workbook
 
@@ -141,11 +141,11 @@ Safety stock 37, the integer just below the choice, has units short 168.11472739
 
 `Example_FOODS_3_090` is the model. Safety stock in B8 is the decision. Average end-of-day on-hand in B11 is the objective, and it is a formula of the 28-day simulation under it. The shortfall in B14 is units short / units demanded. The constraint is that cell strictly under 0.05. The order quantity is `ROUNDUP` of the mean daily `lgbm` times 7, at least 1. A Solver run must not change the order quantity, the lead time, the forecast, or actual. Named ranges are `SafetyStock`, `AvgOnHand`, `FillRate`, `OrderQty`, and `ReorderPoint`.
 
-I recalculated that sheet outside Python. The largest absolute gap between the formula on-hand and shortfall and the Python trace, at safety stock 38, was 0 at eight decimal places.
+That sheet was recalculated outside Python. The largest absolute gap between the formula on-hand and shortfall and the Python trace, at safety stock 38, was 0 at eight decimal places.
 
 `Example_search` is the integer enumeration for this item. It is values from Python, plus formulas that mark the cap and take the minimum feasible safety stock. `Class_A` is one row per item. The safety-stock column is the decision. The reorder point, the shortfall, the half-batch, and the cap flag are formulas of the recorded columns. Editing a safety stock on `Class_A` does not rerun 558 simulations. The portfolio objective on that sheet is the sum of average on-hand. The items-missing-cap formula counted 0 when the sheet was recalculated. `Notes` is the Solver setup.
 
-Excel Solver was not run. No Solver binary was available, and I did not invent a Solver answer. The integers are the Python enumeration, written into the decision cells so the sheet shows the same policy as the CSV.
+Excel Solver was not run. No Solver binary was available, and no Solver answer was invented. The integers are the Python enumeration, written into the decision cells so the sheet shows the same policy as the CSV.
 
 If someone opens Solver on the example sheet: minimize `AvgOnHand` by changing `SafetyStock`, with `SafetyStock` an integer ≥ 0, and the shortfall under the cap. The Solver dialog has `<=` and not a strict `<`. The cap is strict, so the practical constraint is the shortfall `<= 0.049999`, or throw away a result that lands on exactly 0.05. The method is **Evolutionary**. The simulation is a step function of safety stock. **GRG Nonlinear** assumes a smooth function and can stop on a flat step between integers. The simplex method does not apply, because lost sales are not a linear program. `Example_search` is the integer search Evolutionary would be approximating, already computed.
 

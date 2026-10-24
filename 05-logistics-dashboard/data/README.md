@@ -6,7 +6,7 @@
 - **Download command:** `git clone --depth 1 https://github.com/olist/work-at-olist-data.git && cp work-at-olist-data/datasets/*.csv data/raw/`
 
 ## Notes
-Kaggle login not available; pulled from the publisher's (Olist) own GitHub repository. Row counts match the Kaggle release (e.g., 99,441 orders).
+With no Kaggle login available, the files were pulled from the publisher's (Olist) own GitHub repository. Row counts match the Kaggle release (e.g., 99,441 orders).
 
 ## Files (`data/raw/`, git-ignored)
 | File | Size | Rows (excl. header) | Columns | Encoding |

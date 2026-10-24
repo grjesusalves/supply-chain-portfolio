@@ -1,53 +1,53 @@
 # Logistics Performance Dashboard — Olist Brazilian E-Commerce
 
-> Coverage is uneven, the extra days are in transit, and the 93.2% on-time rate hides the wait. Do not reprice freight from the rise in freight per item, and do not book a saving. The weekly page is an interactive HTML dashboard, not a Tableau workbook.
+> The 93.2% on-time rate hides the wait. Coverage is uneven, and the extra days accumulate in transit rather than in handling. Do not reprice freight from the rise in freight per item, and do not book a saving. Note that the weekly page is an interactive HTML dashboard, not a Tableau workbook.
 
 ## Start here
 
-Read in this order, from the big picture down to the code. Start at step 1. Stop after step 4 for a quick overview, or finish at step 10 to check every number.
+Read in this order, from the big picture down to the code. Start at step 1; stop after step 4 for a quick overview, or continue to step 10 to check every number.
 
 1. **This page:** the summary above, then [Business Question](#business-question), [Key Findings](#key-findings), and [Recommendation](#recommendation).
 2. [Executive summary](reports/executive-summary.md): the findings and the recommendation in about a page.
 3. [Live dashboard](https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/): the result at a glance. Try the date range, the band highlight, and the state picker.
-4. [Plan](reports/01-plan.md): the definitions and why each choice was made (customer, order, seller, distance, on-time).
+4. [Plan](reports/01-plan.md): the definitions and the reasoning behind each choice (customer, order, seller, distance, on-time).
 5. [Analyze](reports/02-analyze.md): the analysis and its charts in [images/](images/), including the zip-code padding and the data checks.
-6. [Construct](reports/03-construct.md): how the distance bands were frozen and how the weekly extracts and the dashboard were built.
+6. [Construct](reports/03-construct.md): how the distance bands were frozen, and how the weekly extracts and the dashboard were built.
 7. [Execute](reports/04-execute.md) and [Business report](reports/business-report.md): the full recommendation, its limits, and why there is no dollar saving.
 8. [SQL](sql/): the metric definitions behind every number.
-9. Code: [analyze_logistics.py](src/analyze_logistics.py), then [construct_logistics.py](src/construct_logistics.py), then [build_dashboard.py](src/build_dashboard.py). The `#` comments show how each number was made.
+9. Code: [analyze_logistics.py](src/analyze_logistics.py), then [construct_logistics.py](src/construct_logistics.py), then [build_dashboard.py](src/build_dashboard.py). The `#` comments show how each number was produced.
 10. **Finish:** [data/README.md](data/README.md) for the source and license, and [data/processed/](data/processed/) to check a number yourself, for example [distance_bands.csv](data/processed/distance_bands.csv) or [weekly_scorecard.csv](data/processed/weekly_scorecard.csv).
 
 ## Business Question
 Where are our customers relative to our sellers, how does distance affect delivery time and freight cost, and what does leadership need to see weekly?
 
 ## Data
-See [`data/README.md`](data/README.md) for source, license, and file inventory.
+See [`data/README.md`](data/README.md) for the source, license, and file inventory.
 
 ## Approach (PACE: Plan, Analyze, Construct, Execute)
-- **Plan:** question, grain, distance, and KPI definitions. See [`reports/01-plan.md`](reports/01-plan.md).
+- **Plan:** the question, grain, distance, and KPI definitions. See [`reports/01-plan.md`](reports/01-plan.md).
 - **Analyze:** grain, distance, delivery time, and freight. See [`reports/02-analyze.md`](reports/02-analyze.md).
-- **Construct:** weekly page, frozen distance bands, and the extracts that page reads. See [`reports/03-construct.md`](reports/03-construct.md).
-- **Execute:** the recommendation, what is not claimed, and how the page is delivered. See [`reports/04-execute.md`](reports/04-execute.md). The one-page decision is [`reports/executive-summary.md`](reports/executive-summary.md). The longer write-up is [`reports/business-report.md`](reports/business-report.md).
+- **Construct:** the weekly page, the frozen distance bands, and the extracts that page reads. See [`reports/03-construct.md`](reports/03-construct.md).
+- **Execute:** the recommendation, what is not claimed, and how the page is delivered. See [`reports/04-execute.md`](reports/04-execute.md). The one-page decision is [`reports/executive-summary.md`](reports/executive-summary.md), and the longer write-up is [`reports/business-report.md`](reports/business-report.md).
 
 ## Key Findings
-- 63.8% of delivered items cross a state line (70,328 / 110,189). São Paulo has 59.7% of sellers (1,849 / 3,095) and 41.9% of customer people (40,302 / 96,096). Rio de Janeiro has 12.9% of the people and 5.5% of the sellers.
-- Median purchase-to-door time on 96,470 delivered orders is 10.2 days. Median transit rises from 2.0 days under 50 km to 13.2 days at 1,000 km or more. Median seller handling stays between 1.7 and 1.9 days, so the extra wait is not a handling time.
-- Median freight per item rises from R$9.06 under 50 km to R$25.38 at 1,000 km or more. Median freight per kilogram is R$22.22 and is not higher in every longer band. On time, by calendar date, is 93.2% (89,936 / 96,470), including 89.6% in the longest band where the median wait is 16.4 days.
+- 63.8% of delivered items cross a state line (70,328 / 110,189). São Paulo holds 59.7% of sellers (1,849 / 3,095) yet only 41.9% of customer people (40,302 / 96,096), while Rio de Janeiro has 12.9% of the people and just 5.5% of the sellers.
+- Median purchase-to-door time on 96,470 delivered orders is 10.2 days. Median transit rises from 2.0 days under 50 km to 13.2 days at 1,000 km or more, whereas median seller handling stays between 1.7 and 1.9 days; the extra wait, in other words, does not stem from handling.
+- Median freight per item rises from R$9.06 under 50 km to R$25.38 at 1,000 km or more. Median freight per kilogram, however, is R$22.22 and is not higher in every longer band. On time, by calendar date, is 93.2% (89,936 / 96,470), including 89.6% in the longest band, where the median wait is 16.4 days.
 
 ## Recommendation
-Treat coverage, transit, and the promise as three conversations, and do not reprice from the freight slope. Sellers are concentrated in São Paulo (59.7% of sellers, 41.9% of customer people). Rio de Janeiro is 12.9% of people and 5.5% of sellers. Paraná is seller-heavy (5.1% of people, 11.3% of sellers). Alagoas, Tocantins, Amapá, and Roraima have customers and no seller. 63.8% of delivered items cross a state. The extra days are in transit (median 2.0 days under 50 km, 13.2 days at 1,000 km or more), not in handling (1.7–1.9 days). Keep median days next to the on-time rate: 93.2% on time overall, and about 89.6% in the longest band, where the median wait is 16.4 days. Median freight per item rises from R$9.06 to R$25.38, but freight per kilogram dips and then rises, so weight is in the mix. Do not turn the slope into a new price, and do not quote a saving.
+Treat coverage, transit, and the promise as three separate conversations, and do not reprice from the freight slope. Sellers are concentrated in São Paulo (59.7% of sellers, 41.9% of customer people). Rio de Janeiro is 12.9% of people and 5.5% of sellers, and Paraná is seller-heavy (5.1% of people, 11.3% of sellers), while Alagoas, Tocantins, Amapá, and Roraima have customers and no seller at all. 63.8% of delivered items cross a state. The extra days sit in transit (a median of 2.0 days under 50 km against 13.2 days at 1,000 km or more), not in handling (1.7–1.9 days). Keep median days next to the on-time rate: 93.2% on time overall, and about 89.6% in the longest band, where the median wait is 16.4 days. Median freight per item rises from R$9.06 to R$25.38, but freight per kilogram dips and then rises, so weight is in the mix. Turning that slope into a new price, or quoting a saving, would be a mistake.
 
 ## Impact
-Not a dollar impact, and not a forecast. In this extract the reported median purchase-to-door time is 11.5 days longer in the 1,000 km or more band than under 50 km (16.4 versus 4.9). Reported median transit is 11.2 days longer (13.2 versus 2.0). Handling differs by 0.2 days (1.9 versus 1.7). On time, by calendar date, is 89,936 / 96,470 = 93.2%, and about 89.6% in the longest band. Those are differences and rates in this historical extract. They are not days saved and not reais saved. Currency is BRL. No USD figure is estimated.
+Not a dollar impact, and not a forecast. In this extract, the reported median purchase-to-door time is 11.5 days longer in the 1,000 km or more band than under 50 km (16.4 versus 4.9). Reported median transit is 11.2 days longer (13.2 versus 2.0), while handling differs by only 0.2 days (1.9 versus 1.7). On time, by calendar date, is 89,936 / 96,470 = 93.2%, and about 89.6% in the longest band. Those are differences and rates in a historical extract; they are neither days saved nor reais saved. Currency is BRL, and no USD figure is estimated.
 
 ## Dashboard
-The weekly page is published at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>. The same HTML in this repo is [`dashboards/logistics_weekly.html`](dashboards/logistics_weekly.html). It is interactive: tooltips on every week, band, and state, a weekly date range (All / 2017 / 2018 or sliders), band highlighting, and a state picker with sorting. The KPI cards stay full-period, so a filter changes the view, not the locked numbers. There is no Tableau Public URL.
+The weekly page is published at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>, and the same HTML in this repo is [`dashboards/logistics_weekly.html`](dashboards/logistics_weekly.html). It is interactive: tooltips on every week, band, and state; a weekly date range (All / 2017 / 2018 or sliders); band highlighting; and a state picker with sorting. The KPI cards stay full-period, so a filter changes the view, not the locked numbers. There is no Tableau Public URL.
 
 ## Tools
-SQL (SQLite; definitions in `sql/`) and Python (pandas). The dashboard is one self-contained interactive HTML page (inline SVG and JavaScript, no external libraries), generated by `src/build_dashboard.py` from the processed extracts, which checks the locked figures before it writes the page. Tableau Public was not published.
+SQL (SQLite; definitions in `sql/`) and Python (pandas). The dashboard is one self-contained interactive HTML page (inline SVG and JavaScript, no external libraries), generated by `src/build_dashboard.py` from the processed extracts; the script checks the locked figures before it writes the page. Tableau Public was not published.
 
 ## How to Reproduce
-1. Download raw data into `data/raw/` (see `data/README.md`).
+1. Download the raw data into `data/raw/` (see `data/README.md`).
 2. From `05-logistics-dashboard/`, run `python3 src/analyze_logistics.py`, then `python3 src/construct_logistics.py` (which also rebuilds the dashboard). The KPI definitions are the SQL in `sql/`.
 3. Processed outputs go to `data/processed/`; charts to `images/`; dashboards to `dashboards/`; write-ups to `reports/`.
-4. Open the published weekly page at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>, or open [`dashboards/logistics_weekly.html`](dashboards/logistics_weekly.html) locally. That HTML is the interactive dashboard. No Tableau Public URL was created.
+4. Open the published weekly page at <https://grjesusalves.github.io/supply-chain-portfolio/05-logistics-dashboard/>, or open [`dashboards/logistics_weekly.html`](dashboards/logistics_weekly.html) locally. That HTML is the interactive dashboard; no Tableau Public URL was created.

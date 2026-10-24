@@ -1,6 +1,6 @@
 # Tableau Public extract — class A policy
 
-Planner file: [`class_a_policy.csv`](class_a_policy.csv), one row per class A item, copied from `data/processed/policy.csv` (558 rows). Nothing was refit. That said, `tableau` and `tabcmd` are not on this machine, which means this workbook was **not** published to Tableau Public.
+The planner file, [`class_a_policy.csv`](class_a_policy.csv), holds one row for each class A item and is copied directly from `data/processed/policy.csv`, all 558 rows of it. Nothing was refit along the way. That said, neither `tableau` nor `tabcmd` is installed on this machine, which means this workbook was **not** published to Tableau Public — a gap worth stating before anyone goes looking for the link.
 
 | Column | Meaning |
 |---|---|
@@ -17,6 +17,6 @@ Planner file: [`class_a_policy.csv`](class_a_policy.csv), one row per class A it
 | `cycles_with_stockout` | Cycles that contain a stockout day. |
 | `avg_on_hand` | Mean end-of-day on-hand over the 28 days, in units. |
 
-Lead time is an assumed **7 days**, given that the files contain no lead time. Moreover, there are no unit costs in this extract; a dollar field should not be added, and dollar savings should not be claimed.
+Lead time is an assumed **7 days**, given that the files contain no lead time at all. Moreover, the extract carries no unit costs; a dollar field should not be bolted on afterwards, and dollar savings should not be claimed on the strength of a file that never measured them.
 
-Manual Tableau Public steps (not done here): upload `class_a_policy.csv` to Tableau Public (public.tableau.com). Build four sheets: a KPI of unfilled share 3.0% (`SUM(units_short) / SUM(units_demanded)` from `policy_summary.csv` is 0.030392921231046102); a bar of `safety_stock` for the top items by `units_demanded`; a scatter of `safety_stock` vs `units_demanded`; a table of items with `fill_rate` > 0.04. Publishing that workbook remains a manual upload, since no one but the account owner can sign in to it.
+The remaining Tableau Public steps were not done here, and they are short. The first is to upload `class_a_policy.csv` to Tableau Public (public.tableau.com). The second is to build four sheets: a KPI showing the unfilled share of 3.0%, where `SUM(units_short) / SUM(units_demanded)` from `policy_summary.csv` comes to 0.030392921231046102; a bar chart of `safety_stock` for the top items by `units_demanded`; a scatter of `safety_stock` against `units_demanded`; and a table of the items whose `fill_rate` is > 0.04. Publishing that workbook remains a manual upload, since no one but the account owner can sign in to it — which means the extract is ready, and the last step belongs to the owner.

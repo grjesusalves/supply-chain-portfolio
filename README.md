@@ -1,7 +1,7 @@
 # Supply Chain Analytics Portfolio
 
-Business Analytics student, **UMass Amherst** — portfolio targeting **entry-level Supply Chain Analyst** roles.
-Each project follows the PACE framework (Plan, Analyze, Construct, Execute) and is written up as an executive summary.
+Business Analytics student, **UMass Amherst** — a portfolio built for **entry-level Supply Chain Analyst** roles.
+Five projects, one discipline: each follows the PACE framework (Plan, Analyze, Construct, Execute) and closes with an executive summary written for the person who has to make the decision, not for the person who wrote the code.
 
 | # | Project | Business question | Dataset | Key skills |
 |---|---|---|---|---|
@@ -12,7 +12,7 @@ Each project follows the PACE framework (Plan, Analyze, Construct, Execute) and 
 | 05 | [Logistics Dashboard](05-logistics-dashboard/) | Where customers sit relative to sellers, and how distance affects delivery time and freight | Olist Brazilian E-Commerce | SQL joins, geographic analysis, interactive HTML dashboard (GitHub Pages) |
 
 ## Repository structure
-Every project has the same layout:
+Every project shares the same layout, which means a reader who has navigated one can navigate all five:
 ```
 NN-project/
 ├── README.md          # executive summary (PACE)
@@ -24,4 +24,4 @@ NN-project/
 ```
 
 ## Reproducing
-Raw data is not committed (size). Each `data/README.md` contains the exact source URL and download command.
+Raw data is not committed; the files are simply too large. That said, nothing is left to guesswork: each `data/README.md` records the exact source URL and download command, so every result in this portfolio can be rebuilt from the original source.

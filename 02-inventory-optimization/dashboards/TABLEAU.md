@@ -1,6 +1,6 @@
 # Tableau Public extract — class A policy
 
-Planner file: [`class_a_policy.csv`](class_a_policy.csv), one row per class A item, copied from `data/processed/policy.csv` (558 rows). Nothing was refit. `tableau` and `tabcmd` are not on this machine, and this workbook was **not** published to Tableau Public.
+Planner file: [`class_a_policy.csv`](class_a_policy.csv), one row per class A item, copied from `data/processed/policy.csv` (558 rows). Nothing was refit. That said, `tableau` and `tabcmd` are not on this machine, which means this workbook was **not** published to Tableau Public.
 
 | Column | Meaning |
 |---|---|
@@ -17,6 +17,6 @@ Planner file: [`class_a_policy.csv`](class_a_policy.csv), one row per class A it
 | `cycles_with_stockout` | Cycles that contain a stockout day. |
 | `avg_on_hand` | Mean end-of-day on-hand over the 28 days, in units. |
 
-Lead time is an assumed **7 days**. The files have no lead time. There are no unit costs in this extract. Do not add a dollar field and do not claim dollar savings.
+Lead time is an assumed **7 days**, given that the files contain no lead time. Moreover, there are no unit costs in this extract; a dollar field should not be added, and dollar savings should not be claimed.
 
-Manual Tableau Public steps (not done here): upload `class_a_policy.csv` to Tableau Public (public.tableau.com). Build four sheets: a KPI of unfilled share 3.0% (`SUM(units_short) / SUM(units_demanded)` from `policy_summary.csv` is 0.030392921231046102); a bar of `safety_stock` for the top items by `units_demanded`; a scatter of `safety_stock` vs `units_demanded`; a table of items with `fill_rate` > 0.04. Publishing that workbook is a manual upload because we cannot sign in as the user.
+Manual Tableau Public steps (not done here): upload `class_a_policy.csv` to Tableau Public (public.tableau.com). Build four sheets: a KPI of unfilled share 3.0% (`SUM(units_short) / SUM(units_demanded)` from `policy_summary.csv` is 0.030392921231046102); a bar of `safety_stock` for the top items by `units_demanded`; a scatter of `safety_stock` vs `units_demanded`; a table of items with `fill_rate` > 0.04. Publishing that workbook remains a manual upload, since no one but the account owner can sign in to it.

@@ -1,27 +1,27 @@
 # Business report — forecasting food demand at Walmart store CA_3
 
-This report is the Execute deliverable for a replenishment planner and a hiring manager who wants more than the two-minute page. The two-minute page is [04-execute.md](04-execute.md). Nothing here refits a model, and nothing here should be read as a dollar saving.
+This report is the Execute deliverable, written for a replenishment planner and for a hiring manager who wants more than the two-minute page; that shorter page is [04-execute.md](04-execute.md). Nothing here refits a model, and nothing here should be read as a dollar saving.
 
 ## Situation
 
-Walmart’s M5 file is daily unit sales for 3,049 items in ten stores. Replenishment orders **units**, not dollars, at the item and the store; a category manager can look at the same forecast once it is added up.
+Walmart's M5 file records daily unit sales for 3,049 items across ten stores. Replenishment orders **units**, not dollars, and it does so at the level of the item and the store; a category manager can then read the same forecast once it has been added up.
 
-California has four stores. Across all California categories, **Sunday** is the peak weekday and Wednesday is the trough. **SNAP** days (the 1st through the 10th) lift food by about **10%** and lift household and hobbies much less. **CA_3** is the largest California store. About **66%** of California item-days are zeros, which means a percentage error that divides by actual sales makes a poor headline: it either explodes or ignores most days. The score to quote is **WAPE** (total absolute error divided by total actual units).
+California has four stores, and the patterns among them are pronounced. Across all California categories, **Sunday** is the peak weekday and Wednesday the trough. **SNAP** days, the 1st through the 10th of each month, lift food by about **10%** while lifting household and hobbies far less. **CA_3** is the largest California store. Above all, about **66%** of California item-days are zeros, which means a percentage error that divides by actual sales makes a poor headline: it either explodes or quietly ignores most days. The score to quote is therefore **WAPE**, total absolute error divided by total actual units.
 
-The finished model does not cover all of that; it covers **FOODS at CA_3** only.
+The finished model does not cover all of that ground. It covers **FOODS at CA_3** alone.
 
 ## Approach
 
-The work follows PACE.
+The work follows PACE, and each stage did one job.
 
-- **Plan** fixed the question, the 28-day horizon, the holdout dates, the lag-28 baseline, and the rule that MAPE is only for days with sales while WAPE includes zeros. It refused, from the outset, to estimate dollar impact. See [01-plan.md](01-plan.md).
-- **Analyze** measured the California slice and did not fit a model. It is why the first build is food at CA_3, and why `snap_CA` stays in the feature list. See [02-analyze.md](02-analyze.md).
-- **Construct** fit the baseline and one LightGBM model and scored the holdout. See [03-construct.md](03-construct.md). Code: `src/construct_forecast.py`.
-- **Execute** (this report, the short page, and a static dashboard) says what to do with those scores. It does not change them.
+- **Plan** fixed the question, the 28-day horizon, the holdout dates and the lag-28 baseline, together with the rule that MAPE applies only to days with sales while WAPE includes the zeros. From the outset, it declined to estimate dollar impact. See [01-plan.md](01-plan.md).
+- **Analyze** measured the California slice without fitting a model. It explains why the first build is food at CA_3, and why `snap_CA` stays in the feature list. See [02-analyze.md](02-analyze.md).
+- **Construct** fit the baseline and a single LightGBM model, then scored both on the holdout. See [03-construct.md](03-construct.md); the code is `src/construct_forecast.py`.
+- **Execute**, comprising this report, the short page and a static dashboard, says what to do with those scores. It does not change them.
 
 ## Data
 
-Source is the M5 Forecasting Accuracy files (Walmart), already described in `data/README.md`. The scored slice is:
+The source is the M5 Forecasting Accuracy files from Walmart, already described in `data/README.md`. The scored slice is as follows:
 
 | Item | Value |
 |---|---|
@@ -33,51 +33,51 @@ Source is the M5 Forecasting Accuracy files (Walmart), already described in `dat
 | Days in MAPE (actual > 0) | 25,302 |
 | Days left out of MAPE | 14,934 |
 
-Training labels stop on 2016-04-24. The holdout is one origin. Actuals inside those 28 days are not used as features. The window includes SNAP days (2016-05-01 through 2016-05-10) and several events (Pesach End, Orthodox Easter, Cinco de Mayo, Mother’s Day). That is a property of this month — not a second test.
+Training labels stop on 2016-04-24, and the holdout is a single origin; actuals inside those 28 days are never used as features. The window happens to include SNAP days (2016-05-01 through 2016-05-10) and several events — Pesach End, Orthodox Easter, Cinco de Mayo and Mother's Day. That is a property of this particular month. It is not a second test.
 
 ## Method
 
-No code on this page. Two forecasts, same holdout.
+This page carries no code. It compares two forecasts on the same holdout.
 
-**Seasonal naive (lag-28).** For each item and each holdout day, the forecast is that item’s actual sales on the same weekday four weeks earlier. Those source days are the 28 days just before the holdout, so they are known when the forecast is made. It is one observation, not a four-week average, and it is the benchmark any more complicated model has to beat.
+**Seasonal naive (lag-28).** For each item and each holdout day, the forecast is simply that item's actual sales on the same weekday four weeks earlier. Those source days are the 28 days immediately before the holdout, so they are known at the moment the forecast is made. It is a single observation rather than a four-week average, and it is the benchmark that any more elaborate model has to beat.
 
-**LightGBM.** One pooled gradient-boosted tree model for all 1,437 items, direct multi-step (not a recursive day-by-day forecast). Features are lags of 28, 35, and 42 days, two rolling means that end at the lag-28 day, weekday, month, the California SNAP flag, an event flag, and that week’s price. Lags of 1–27 days are excluded because, at a 28-day horizon, those days have not happened yet. Predictions below zero would be clipped to zero; this run did not need to clip any holdout row.
+**LightGBM.** A single pooled gradient-boosted tree model serves all 1,437 items, and it forecasts direct multi-step rather than recursively, day by day. Its features are lags of 28, 35 and 42 days, two rolling means that end at the lag-28 day, weekday, month, the California SNAP flag, an event flag and that week's price. Lags of 1–27 days are excluded for a simple reason: at a 28-day horizon, those days have not yet happened. Predictions below zero would be clipped to zero, although this run did not need to clip a single holdout row.
 
-The model is a point forecast of units; it is not a safety-stock formula.
+The model produces a point forecast of units. It is not, and should not be mistaken for, a safety-stock formula.
 
 ## Results
 
-Ratios below are the Construct file, not rounded. The percent column is the same ratio times 100, to one decimal, which is what the executive page quotes.
+The ratios below are taken from the Construct file without rounding. The percent columns show the same ratios times 100, to one decimal, which is the form the executive page quotes.
 
 | Model | MAPE | MAPE % | WAPE | WAPE % | Bias | Bias % | Sum of absolute error | Sum of (forecast − actual) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Seasonal naive (lag-28) | 0.8781250159967809 | 87.8% | 0.777000091016656 | 77.7% | 0.010694457085646673 | +1.1% | 85,369.0 | 1,175.0 |
 | LightGBM | 0.5633893484087068 | 56.3% | 0.6490765893903951 | 64.9% | 0.02570857287913414 | +2.6% | 71,314.04487632272 | 2,824.600902230468 |
 
-LightGBM wins **WAPE** and **MAPE**. Absolute error falls from 85,369 units to 71,314.04487632272 units, on 109,870 units sold. That is fewer units of miss. It is not a dollar figure.
+LightGBM wins on both **WAPE** and **MAPE**. Absolute error falls from 85,369 units to 71,314.04487632272 units, on 109,870 units sold — fewer units of miss, which is undeniable progress, though it is not a dollar figure.
 
-That said, LightGBM loses on **bias**. Both forecasts are high. The copy is high by 1,175 units. LightGBM is high by 2,824.600902230468 units. Lower absolute error with a larger positive bias is, all the same, an over-forecast.
+That said, LightGBM loses on **bias**. Both forecasts run high: the copy by 1,175 units, LightGBM by 2,824.600902230468 units. Lower absolute error paired with a larger positive bias is, all the same, an over-forecast.
 
-MAPE looks worse than WAPE because each item-day counts the same, and a one-unit miss on a one-unit day is a 100% error. WAPE should lead.
+MAPE looks worse than WAPE because every item-day counts equally, and a one-unit miss on a one-unit day registers as a 100% error. WAPE, therefore, should lead.
 
 ![Daily total actual versus both forecasts](../images/ca3_foods_forecast_vs_actual.png)
 
-The chart is the sum of all 1,437 items by day. Both forecasts keep the weekend peak. The static dashboard at [dashboards/ca3_foods_dashboard.html](../dashboards/ca3_foods_dashboard.html) shows the same daily totals and the metrics. There is no Tableau connector in this environment, and Tableau Public was never signed in. **Publishing to Tableau Public is a manual step** the student can do by importing `data/processed/ca3_foods_holdout_predictions.csv`.
+The chart sums all 1,437 items by day, and both forecasts preserve the weekend peak. The static dashboard at [dashboards/ca3_foods_dashboard.html](../dashboards/ca3_foods_dashboard.html) shows the same daily totals alongside the metrics. Given that there is no Tableau connector in this environment and Tableau Public was never signed in, **publishing to Tableau Public is a manual step**, one the student can complete by importing `data/processed/ca3_foods_holdout_predictions.csv`.
 
 ## One-item caveat
 
-The highest-volume training item at this store and category is **FOODS_3_090**: **250,502** units in training, **3,357** units in the holdout. On that item the baseline **WAPE 0.1975** beats LightGBM **0.2130**. The aggregate win, in short, is not a win on the busiest series. The workbook is `reports/ca3_foods_one_item_forecast.xlsx`. A buyer should not be told the model is better on every item.
+The highest-volume training item for this store and category is **FOODS_3_090**, with **250,502** units in training and **3,357** units in the holdout. On that item, the baseline's **WAPE 0.1975** beats LightGBM's **0.2130**. The aggregate win, in short, is not a win on the busiest series. The workbook that traces it is `reports/ca3_foods_one_item_forecast.xlsx`. A buyer, then, should not be told that the model is better on every item.
 
 ## Risks
 
-**Intermittent demand.** Many series do not sell on a typical day. A point forecast of a fraction of a unit is a rate, not a case quantity. Zeros can be “not listed yet,” “did not sell,” or a stockout the file cannot see. MAPE hides or explodes on those days; WAPE does not.
+**Intermittent demand.** Many series sell nothing on a typical day, and a point forecast of a fraction of a unit is a rate, not a case quantity. Moreover, a zero can mean "not listed yet," "did not sell" or a stockout the file cannot see. MAPE either hides or explodes on those days; WAPE does neither.
 
-**Bias.** A forecast that is high on average, if the store orders to it, builds **extra inventory**. It does not, by itself, prevent stockouts. LightGBM is the more high of the two (+2.6% versus +1.1%). Some individual days are still short — the net can be high while a Sunday is low — so bias is not a promise about every day. It is the direction of the total.
+**Bias.** A forecast that is high on average builds **extra inventory** if the store orders to it; it does not, by itself, prevent stockouts. LightGBM is the more high of the two (+2.6% versus +1.1%). Individual days can still fall short — the net can be high while a given Sunday is low — so bias is not a promise about every day. It is the direction of the total.
 
-**One window, one store, one category.** This holdout is late April and May 2016. It does not prove the same gap in November, at CA_1, or in hobbies. The tree count was chosen on a slice of training days that the final fit also sees. The holdout was not used to choose it. That is a limit on how clean the tree count is — not a leak of holdout sales.
+**One window, one store, one category.** This holdout covers late April and May 2016, and it does not prove the same gap in November, at CA_1 or in hobbies. Note, too, that the tree count was chosen on a slice of training days that the final fit also sees. The holdout played no part in choosing it, which means this is a limit on how clean the tree count is — not a leak of holdout sales.
 
 ## Next step
 
-Project **02, inventory optimization**, is where these errors become a reorder point or a safety-stock quantity, and where a holding cost could turn units into money. This project stops, deliberately, at the unit forecast and the recommendation below.
+Project **02, inventory optimization**, is where these errors become a reorder point or a safety-stock quantity, and where a holding cost could eventually turn units into money. This project stops, deliberately, at the unit forecast and at the recommendation below.
 
 **Use LightGBM for CA_3 food replenishment planning. Keep the lag-28 forecast as the benchmark. Do not claim dollar savings.**

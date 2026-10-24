@@ -117,4 +117,4 @@ The item closest to the cap is `FOODS_2_266`, shortfall **0.049946516104229**, s
 
 Set the reorder point and the safety stock for each of the 558 class A items to the values already in `data/processed/policy.csv`, order seven days of that item's mean LightGBM forecast rather than an economic order quantity, and do not manage by cycle service, debias the forecast, or claim a dollar saving.
 
-There is no dashboard yet. The Construct chart is [images/class_a_safety_stock.png](../images/class_a_safety_stock.png). Publishing a dashboard belongs to a later stage; it was not done here.
+The interactive dashboard is [dashboards/class_a_policy_dashboard.html](../dashboards/class_a_policy_dashboard.html), and the Construct chart is [images/class_a_safety_stock.png](../images/class_a_safety_stock.png).

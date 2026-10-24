@@ -1,22 +1,22 @@
 # Analyze — Late delivery risk (DataCo)
 
-PACE stage: **Analyze**. This page checks the label, states the late rate, and cuts that rate by shipping mode, region, market, category, and department. It does not fit a classifier, a baseline, or a threshold. Those belong to Construct.
+PACE stage: **Analyze**. This page checks the label, states the late rate, and cuts that rate by shipping mode, region, market, category, and department. It fits no classifier, no baseline, and no threshold; those belong to Construct.
 
-The checks below are what [the plan](01-plan.md) said Analyze would confirm. Every figure comes from `src/analyze_late_delivery.py` run on the local raw file (not re-downloaded). Aggregate tables are in `data/processed/`. The same population and the same grouped rates are defined in `sql/kpi_late_delivery.sql`. Charts are in `images/`. The raw CSV stays git-ignored. Personal-data values are not written under `data/processed/`.
+The checks below are the ones [the plan](01-plan.md) said Analyze would confirm. Every figure comes from `src/analyze_late_delivery.py`, run on the local raw file rather than a fresh download. Aggregate tables are in `data/processed/`, and the same population and grouped rates are defined in `sql/kpi_late_delivery.sql`. Charts are in `images/`. The raw CSV stays git-ignored, and no personal-data value is written under `data/processed/`.
 
 ## How I would say this in an interview
 
-The business question is which orders miss the date the customer was promised, and whether the misses sit in a shipping mode, a region, or a category. The scorecard is the first job. The model is the second, and it is not fit here.
+The business question is which orders miss the date the customer was promised, and whether those misses sit in a shipping mode, a region, or a category. The scorecard is the first job; the model is the second, and it is not fit here.
 
-On the lines that were actually a delivery attempt, **98,977 of 172,765 are late**. That is a late rate of 0.5728996035076549 and an on-time rate of 0.4271003964923451 (73,788 / 172,765). Late is the majority class. A rule that says "everything is late" is right on that share of lines and does nothing operational. Accuracy is the wrong headline, which is why the plan already refused it.
+Of the lines that were genuinely a delivery attempt, **98,977 of 172,765 are late**: a late rate of 0.5728996035076549 and an on-time rate of 0.4271003964923451 (73,788 / 172,765). Late, in other words, is the majority class. A rule that declares "everything is late" is right on that share of lines while doing nothing operational; accuracy is therefore the wrong headline, which is precisely why the plan had already refused it.
 
-The published flag and the day comparison agree on every one of those 172,765 lines: `Late_delivery_risk` is 1 exactly when `Days for shipping (real)` is greater than `Days for shipment (scheduled)`. They disagree on **4,423** lines, and every one of those is `Shipping canceled`, which the flag marks 0. A cancel is not a delivery. Those 7,754 canceled lines stay out of the denominator. The target stays the published flag. If the flag and the day comparison had disagreed inside the delivery population, this stage would have stopped and rewritten the target before any model.
+The published flag and the day comparison agree on every one of those 172,765 lines: `Late_delivery_risk` is 1 exactly when `Days for shipping (real)` is greater than `Days for shipment (scheduled)`. They disagree on **4,423** lines, and every one of those is `Shipping canceled`, which the flag marks 0. A cancel is not a delivery, so those 7,754 canceled lines stay out of the denominator, and the target remains the published flag. Had the flag and the day comparison disagreed inside the delivery population, this stage would have stopped and rewritten the target before any model was fit.
 
-What moves the rate is the promise, not the place. `Days for shipment (scheduled)` is a one-to-one relabeling of `Shipping Mode`: Same Day is 0, First Class is 1, Second Class is 2, Standard Class is 4. On non-canceled lines, First Class is late on **26,513 / 26,513**. Every one of those lines takes 2 days against a 1-day promise. There is no on-time First Class line in this file. Standard Class has the most late lines (41,023) and the lowest late rate (0.39769080879858076, 41,023 / 103,153), and its median slip is 0 days. Region median slip is 1 day in all 23 regions, and median lead time is 3 days in all 23. Inside a shipping mode, the five markets barely separate. That is a mix check, not a causal claim: the scorecard lead is the mode.
+What moves the rate is the promise, not the place. `Days for shipment (scheduled)` is a one-to-one relabeling of `Shipping Mode`: Same Day is 0, First Class is 1, Second Class is 2, and Standard Class is 4. On non-canceled lines, First Class is late on **26,513 / 26,513**; every one of those lines takes 2 days against a 1-day promise, and there is not a single on-time First Class line in this file. Standard Class, by contrast, has the most late lines (41,023) and the lowest late rate (0.39769080879858076, 41,023 / 103,153), with a median slip of 0 days. The regional median slip is 1 day in all 23 regions, and the median lead time is 3 days in all 23; inside a shipping mode, the five markets barely separate. That is a mix check, not a causal claim. The scorecard leads with the mode.
 
 ## What was checked
 
-The plan's ten checks, then the KPIs on the population those checks justify.
+The plan's ten checks come first, followed by the KPIs on the population those checks justify.
 
 1. Row and column count, and a Latin-1 read.
 2. Distinct `Order Id` versus rows, and whether the shipping outcome is constant inside an order.
@@ -42,7 +42,7 @@ No model.
 | Columns | **53** |
 | `tokenized_access_logs.csv` | Not read |
 
-The plan's expected size was 180,519 × 53. That is the file. The script refuses a different shape.
+The plan expected 180,519 × 53, and that is the file; the script refuses any other shape.
 
 ## 2. Order Id is not the row
 
@@ -58,7 +58,7 @@ The plan's expected size was 180,519 × 53. That is the file. The script refuses
 | Orders where `Delivery Status` varies | **0** |
 | Lines on an order | 1 to 5 |
 
-An order is one to five lines. The shipping outcome does not change across those lines.
+An order spans one to five lines, and the shipping outcome does not change across them.
 
 | Lines on the order | Orders | Line rows |
 |---:|---:|---:|
@@ -70,11 +70,11 @@ An order is one to five lines. The shipping outcome does not change across those
 
 The five order sizes account for 19,850 + 11,447 + 11,398 + 11,704 + 11,353 = 65,752 orders and 180,519 lines.
 
-The plan said: if lines on one order disagree on the flag, publish an order-level rate as well. They do not disagree, so the KPI stays at **line** grain. An unweighted order rate was still computed, so the choice is visible. On non-canceled orders it is 36,048 / 62,897 = 0.5731274941571141. That number is in `order_grain_sensitivity.csv` and it is **not** the KPI. A five-line order counts five times in the line rate and once in that sensitivity. The two rates are close. Closeness is not a reason to change the grain the flag is stored on.
+The plan said that if lines on one order disagreed on the flag, an order-level rate would be published as well. They do not disagree, so the KPI stays at **line** grain. An unweighted order rate was nonetheless computed, so that the choice is visible: on non-canceled orders it is 36,048 / 62,897 = 0.5731274941571141. That number lives in `order_grain_sensitivity.csv`, and it is **not** the KPI. A five-line order counts five times in the line rate and once in that sensitivity. The two rates are close; that said, closeness is no reason to change the grain on which the flag is stored.
 
 ## 3. Flag against delivery status
 
-Full counts. Rows are lines.
+Full counts follow; rows are lines.
 
 | Delivery Status | Flag 0 | Flag 1 | Lines |
 |---|---:|---:|---:|
@@ -84,11 +84,11 @@ Full counts. Rows are lines.
 | Shipping on time | 32,196 | 0 | 32,196 |
 | All lines | 81,542 | 98,977 | 180,519 |
 
-`Late_delivery_risk` = 1 is exactly `Delivery Status` = Late delivery (98,977 lines, and no others). Flag 0 is the other three statuses. Advance shipping is not a late delivery. The plan's reading of the flag holds on this file: early is not late, and a cancel is not flagged late either.
+`Late_delivery_risk` = 1 is exactly `Delivery Status` = Late delivery (98,977 lines, and no others), while flag 0 covers the other three statuses. Advance shipping is not a late delivery. The plan's reading of the flag therefore holds on this file: early is not late, and a cancel is not flagged late either.
 
 ## 4. Flag against real days minus scheduled days
 
-Slip is `Days for shipping (real)` minus `Days for shipment (scheduled)`. The day-rule for late is slip > 0. A disagreement is a line where the flag and that rule differ.
+Slip is `Days for shipping (real)` minus `Days for shipment (scheduled)`, and the day rule for late is slip > 0. A disagreement is any line on which the flag and that rule differ.
 
 | Comparison | Lines |
 |---|---:|
@@ -98,9 +98,9 @@ Slip is `Days for shipping (real)` minus `Days for shipment (scheduled)`. The da
 | Flag 1 and slip ≤ 0 (disagree) | 0 |
 | All lines | 180,519 |
 
-All 4,423 disagreements are `Shipping canceled`, and the flag is 0 on every one of them. There is no line that the flag calls late when the shipment met or beat the promise.
+All 4,423 disagreements are `Shipping canceled`, and the flag is 0 on every one of them. There is no line the flag calls late when the shipment met or beat its promise.
 
-Every disagreement pattern, not a rollup. These eight rows sum to 4,423.
+Every disagreement pattern is listed below rather than rolled up; the eight rows sum to 4,423.
 
 | Delivery Status | Shipping Mode | Flag | Real days | Scheduled days | Slip | Lines |
 |---|---|---:|---:|---:|---:|---:|
@@ -115,16 +115,16 @@ Every disagreement pattern, not a rollup. These eight rows sum to 4,423.
 
 1,301 + 203 + 306 + 219 + 280 + 286 + 880 + 948 = 4,423.
 
-Advance shipping is not a disagreement. It is flag 0 and a negative slip, and it happens only in Standard Class, whose promise is 4 days. Both patterns:
+Advance shipping is not a disagreement. It carries flag 0 and a negative slip, and it occurs only in Standard Class, whose promise is 4 days. Both patterns:
 
 | Delivery Status | Shipping Mode | Flag | Real days | Scheduled days | Slip | Lines |
 |---|---|---:|---:|---:|---:|---:|
 | Advance shipping | Standard Class | 0 | 2 | 4 | −2 | 20,873 |
 | Advance shipping | Standard Class | 0 | 3 | 4 | −1 | 20,719 |
 
-20,873 + 20,719 = 41,592. No other mode has an advance line. The only negative slips that are not Advance shipping are canceled Standard Class lines: 793 with slip −2 and 981 with slip −1, in the canceled-agreement table below. Same Day, First Class, and Second Class have no negative slip on any line, canceled or not.
+20,873 + 20,719 = 41,592. No other mode has an advance line. The only negative slips that are not Advance shipping belong to canceled Standard Class lines, 793 with slip −2 and 981 with slip −1, shown in the canceled-agreement table below. Same Day, First Class, and Second Class show no negative slip on any line, canceled or not.
 
-Shipping on time is flag 0 and slip 0. Three patterns, 32,196 lines:
+Shipping on time means flag 0 and slip 0, across three patterns and 32,196 lines:
 
 | Delivery Status | Shipping Mode | Flag | Real days | Scheduled days | Slip | Lines |
 |---|---|---:|---:|---:|---:|---:|
@@ -134,7 +134,7 @@ Shipping on time is flag 0 and slip 0. Three patterns, 32,196 lines:
 
 4,839 + 6,819 + 20,538 = 32,196.
 
-Canceled lines that agree with the flag (slip ≤ 0, flag 0). Five patterns, 3,331 lines:
+Canceled lines that agree with the flag (slip ≤ 0, flag 0) fall into five patterns, totaling 3,331 lines:
 
 | Delivery Status | Shipping Mode | Flag | Real days | Scheduled days | Slip | Lines |
 |---|---|---:|---:|---:|---:|---:|
@@ -144,11 +144,11 @@ Canceled lines that agree with the flag (slip ≤ 0, flag 0). Five patterns, 3,3
 | Shipping canceled | Standard Class | 0 | 3 | 4 | −1 | 981 |
 | Shipping canceled | Standard Class | 0 | 4 | 4 | 0 | 997 |
 
-241 + 319 + 793 + 981 + 997 = 3,331. And 3,331 + 4,423 = 7,754 canceled lines.
+241 + 319 + 793 + 981 + 997 = 3,331, and 3,331 + 4,423 = 7,754 canceled lines.
 
-The 26 patterns above are the whole file: 4,423 + 41,592 + 32,196 + 3,331 + 98,977 = 180,519. The agreeing late patterns are not repeated as their own grid here; they are the non-canceled day grid in the mode section, and they are all 98,977 lines with flag 1 and slip > 0. The machine-readable copy of all 26, agreements and disagreements, is `flag_vs_day_patterns.csv`.
+The 26 patterns above cover the whole file: 4,423 + 41,592 + 32,196 + 3,331 + 98,977 = 180,519. The agreeing late patterns are not repeated as a separate grid here; they form the non-canceled day grid in the mode section, and they account for all 98,977 lines with flag 1 and slip > 0. The machine-readable copy of all 26 patterns, agreements and disagreements alike, is `flag_vs_day_patterns.csv`.
 
-On the non-canceled lines the disagreement count is **0**. The flag and the day-rule are the same label on the population the KPI uses. The plan said to keep `Late_delivery_risk` as the target only if this check agrees. It agrees. The target is not rewritten.
+On the non-canceled lines, the disagreement count is **0**; the flag and the day rule are the same label on the population the KPI uses. The plan said to keep `Late_delivery_risk` as the target only if this check agreed. It agrees, and the target is not rewritten.
 
 ## 5. Canceled lines
 
@@ -161,28 +161,28 @@ On the non-canceled lines the disagreement count is **0**. The flag and the day-
 | Of those, slip > 0 (the disagreements above) | **4,423** |
 | Of those, slip ≤ 0 | **3,331** |
 
-`Order Status` lines up with that delivery status exactly. `CANCELED` is 3,692 lines and `SUSPECTED_FRAUD` is 4,062 lines. 3,692 + 4,062 = 7,754. Both of those order statuses have no other delivery status. Every other order status has zero canceled lines. The KPI filter is still `Delivery Status`, which is what the plan named. The order-status identity is why a filter on `CANCELED` alone would be short by the 4,062 suspected-fraud lines.
+`Order Status` lines up with that delivery status exactly: `CANCELED` covers 3,692 lines and `SUSPECTED_FRAUD` 4,062, and 3,692 + 4,062 = 7,754. Neither of those order statuses has any other delivery status, and every other order status has zero canceled lines. The KPI filter remains `Delivery Status`, as the plan named it. Note that this identity is also why a filter on `CANCELED` alone would fall short by the 4,062 suspected-fraud lines.
 
-Leaving the 7,754 lines in the denominator would count them as on time, because the flag is 0, including the 4,423 whose real days missed the promise. The exclusion stands.
+Leaving the 7,754 lines in the denominator would count them as on time, because their flag is 0, including the 4,423 whose real days missed the promise. The exclusion stands.
 
 ## 6. Class balance, which is the late rate
 
-The denominator is non-canceled lines. This is the first late rate this project states. It was computed here. It is not taken from another notebook.
+The denominator is non-canceled lines. This is the first late rate this project states; it was computed here, not borrowed from another notebook.
 
 | Population | Lines | Late lines | On-time lines | Late rate | On-time rate |
 |---|---:|---:|---:|---:|---:|
 | Non-canceled lines (the KPI) | 172,765 | 98,977 | 73,788 | 0.5728996035076549 | 0.4271003964923451 |
 | All lines, cancels counted as not late (not the KPI) | 180,519 | 98,977 | 81,542 | 0.5482913155955883 | 0.4517086844044117 |
 
-172,765 = 180,519 − 7,754. On-time on the KPI population is 73,788 = 41,592 advance + 32,196 shipping on time. Late is 98,977 / 172,765 = 0.5728996035076549. On-time delivery is 73,788 / 172,765 = 0.4271003964923451. They sum to 1.
+172,765 = 180,519 − 7,754. On-time lines on the KPI population number 73,788 = 41,592 advance + 32,196 shipping on time. Late is 98,977 / 172,765 = 0.5728996035076549, on-time delivery is 73,788 / 172,765 = 0.4271003964923451, and the two sum to 1.
 
-Late is the majority class. The majority-class baseline the plan will score in Construct — predict late for every line — is correct on 0.5728996035076549 of non-canceled lines if it is scored there. That baseline is not fit in this stage. The share is the reason the plan will not lead with accuracy.
+Late is the majority class. The majority-class baseline the plan will score in Construct, which predicts late for every line, would be correct on 0.5728996035076549 of non-canceled lines if scored there. That baseline is not fit at this stage; the share is, however, the reason the plan will not lead with accuracy.
 
-The all-lines late share, 98,977 / 180,519 = 0.5482913155955883, is what you get if canceled lines stay in and count as not late. It is written in `kpi_overall.csv` as `not_the_kpi_all_lines` so it is not reused by accident.
+The all-lines late share, 98,977 / 180,519 = 0.5482913155955883, is what results if canceled lines stay in and count as not late. It is written to `kpi_overall.csv` as `not_the_kpi_all_lines`, so that nobody reuses it by accident.
 
 ## 7. Nulls
 
-Four columns have any null. None of them is a candidate feature.
+Four columns contain any null at all, and none of them is a candidate feature.
 
 | Column | Nulls | Share of 180,519 | Candidate feature | Personal data |
 |---|---:|---:|---:|---:|
@@ -191,15 +191,15 @@ Four columns have any null. None of them is a candidate feature.
 | Customer Lname | 8 | 8 / 180,519 | No | Yes |
 | Customer Zipcode | 3 | 3 / 180,519 | No | No. Location field; not written. |
 
-`Product Description` is empty on every row. It cannot be a feature. `Order Zipcode` is null on 155,679 / 180,519 lines and was not on the plan's feature list.
+`Product Description` is empty on every row, so it cannot be a feature. `Order Zipcode` is null on 155,679 / 180,519 lines, and it was never on the plan's feature list.
 
 The plan's candidate features were checked as a set of 18 columns: shipping mode, scheduled days, order region, market, order country, category name, department name, product name, customer segment, order quantity, the price fields (`Order Item Product Price`, `Product Price`), the sales fields (`Sales`, `Sales per customer`, `Order Item Total`), the discount fields (`Order Item Discount`, `Order Item Discount Rate`), and `order date (DateOrders)`. **Nulls on that set: 0.**
 
-`Customer Segment` has 3 levels. It is a candidate feature. A late rate by segment was not one of the scorecard cuts, so it is not stated here.
+`Customer Segment` has 3 levels and is a candidate feature. Given that a late rate by segment was not one of the scorecard cuts, it is not stated here.
 
 ## 8. Scheduled days are the shipping mode
 
-Checked on all 180,519 lines, canceled included, because the promise is set whether or not the line is later canceled. Each mode has one scheduled value, and each scheduled value has one mode.
+This was checked on all 180,519 lines, canceled included, because the promise is set whether or not the line is later canceled. Each mode has exactly one scheduled value, and each scheduled value belongs to exactly one mode.
 
 | Shipping Mode | Days for shipment (scheduled) | Lines |
 |---|---:|---:|
@@ -208,13 +208,13 @@ Checked on all 180,519 lines, canceled included, because the promise is set whet
 | Second Class | 2 | 35,216 |
 | Standard Class | 4 | 107,752 |
 
-9,737 + 27,814 + 35,216 + 107,752 = 180,519. There is no second scheduled value hiding inside a mode.
+9,737 + 27,814 + 35,216 + 107,752 = 180,519; there is no second scheduled value hiding inside a mode.
 
-The two columns are the same fact. A model that takes both double-counts the promise. Construct should use one. `Shipping Mode` is the one a fulfillment lead can say out loud. Scheduled days are the numeric form of that label, not a second measurement.
+The two columns express the same fact, and a model that takes both double-counts the promise. Construct should therefore use one of them. `Shipping Mode` is the one a fulfillment lead can say out loud; scheduled days are merely the numeric form of that label, not a second measurement.
 
 ## 9. Cardinality
 
-Distinct values on the full file, before the cancel filter. This is the count a one-hot encoder would see if it were pointed at the column.
+Distinct values are counted on the full file, before the cancel filter, because that is the count a one-hot encoder would see if pointed at the column.
 
 | Column | Distinct values |
 |---|---:|
@@ -231,7 +231,7 @@ Distinct values on the full file, before the cancel filter. This is the count a 
 | Delivery Status | 4 |
 | Order Status | 9 |
 
-How rare the high-cardinality levels are, still on all lines. Where the two central levels have different line counts, both are shown. They are not averaged into a level size nobody has.
+The next table shows how rare the high-cardinality levels are, still on all lines. Where the two central levels have different line counts, both are shown, rather than averaged into a level size nobody actually has.
 
 | Column | Levels | Min lines | Median lines (low, high) | Max lines | Levels with 1 line | Levels with under 30 lines |
 |---|---:|---:|---|---:|---:|---:|
@@ -240,20 +240,20 @@ How rare the high-cardinality levels are, still on all lines. Where the two cent
 | Order City | 3,597 | 1 | 20, 20 | 2,211 | 69 | 2,270 |
 | Order State | 1,089 | 1 | 41, 41 | 6,722 | 16 | 459 |
 
-`Order City` and `Order State` are not on the plan's feature list, and a one-hot of 3,597 cities or 1,089 states would memorize rare places. `Order Country` is allowed by the plan and has 164 levels, 41 of them under 30 lines. `Product Name` has 118 levels, a floor of 10 lines, and 7 names under 30. The plan already said to drop the raw product name if it only memorizes rare items. 118 is not thousands. It is still a long one-hot next to category (50) and department (11).
+`Order City` and `Order State` are not on the plan's feature list, and a one-hot of 3,597 cities or 1,089 states would simply memorize rare places. `Order Country` is allowed by the plan and has 164 levels, 41 of them under 30 lines. `Product Name` has 118 levels, a floor of 10 lines, and 7 names under 30; the plan already said to drop the raw product name if it only memorizes rare items. Granted, 118 is not thousands. It is still a long one-hot next to category (50) and department (11).
 
-Some stored labels have a trailing space or a doubled space. Stripping and collapsing whitespace does **not** merge any levels: the distinct count is unchanged for category, department, region, and product name. The strings still have to be kept as stored, or a filter will miss them. The ones that appear in the scorecard tables below are Category Name: `Cameras `, `Books `, `CDs `, `Baby `, `As Seen on  TV!`; Department Name: `Health and Beauty `; Order Region: `West of USA `, `US Center `, `South of  USA `. Product-name spellings with the same issue are listed in `whitespace_labels.csv` and are not repeated here.
+Some stored labels carry a trailing space or a doubled space. Stripping and collapsing whitespace does **not** merge any levels: the distinct count is unchanged for category, department, region, and product name. The strings must nonetheless be kept as stored, or a filter will miss them. Those that appear in the scorecard tables below are Category Name: `Cameras `, `Books `, `CDs `, `Baby `, `As Seen on  TV!`; Department Name: `Health and Beauty `; Order Region: `West of USA `, `US Center `, `South of  USA `. Product-name spellings with the same issue are listed in `whitespace_labels.csv` and are not repeated here.
 
-Two hierarchy breaks, both on the full file (these counts are not the KPI denominator):
+There are two hierarchy breaks, both on the full file (these counts are not the KPI denominator):
 
-- `Category Name` = Electronics is two ids in two departments: Category Id 13 in Footwear (1,127 lines) and Category Id 37 in Outdoors (2,029 lines). One-hot of the name glues them together. One-hot of the id splits them. No other category name crosses a department. No product name crosses a category.
+- `Category Name` = Electronics is two ids in two departments: Category Id 13 in Footwear (1,127 lines) and Category Id 37 in Outdoors (2,029 lines). A one-hot of the name glues them together; a one-hot of the id splits them. No other category name crosses a department, and no product name crosses a category.
 - `Order Country` = Estados Unidos is the only country in more than one region: East of USA (6,915), `South of  USA ` (4,045), `US Center ` (5,887), and `West of USA ` (7,993), all in market USCA. No region sits in more than one market.
 
-`Product Status` has 1 distinct value (0). It cannot separate late from on time.
+`Product Status` has 1 distinct value (0), so it cannot separate late from on time.
 
 ## 10. Personal data
 
-These columns are names, an email, a password, or a street. They are not candidate features. Their values are not written to `data/processed/`. `null_counts.csv` records the column name, the null count, and the distinct count. It does not record a name, an address, or the placeholder stored in the email and password columns.
+These columns hold names, an email, a password, or a street. They are not candidate features, and their values are not written to `data/processed/`. `null_counts.csv` records the column name, the null count, and the distinct count; it does not record a name, an address, or the placeholder stored in the email and password columns.
 
 | Column | Nulls | Distinct non-null values | Written to `data/processed/` |
 |---|---:|---:|---|
@@ -263,17 +263,17 @@ These columns are names, an email, a password, or a street. They are not candida
 | Customer Password | 0 | 1 | No |
 | Customer Street | 0 | 7,458 | No |
 
-Customer email and customer password are each a single repeated value. They would not predict anything even before the privacy rule. They are still personal-data columns, and they are not saved.
+Customer email and customer password are each a single repeated value, so they would predict nothing even before the privacy rule applies. They remain personal-data columns, however, and they are not saved.
 
-Also not written, and not used as features here: Customer City, Customer State, Customer Country, Customer Zipcode, Latitude, Longitude, Order Zipcode. The processed files are aggregates. The largest has 92 rows (`late_rate_by_mode_and_region.csv`). Nothing row-level was saved, and the raw CSV was not copied into git.
+Also neither written nor used as features here: Customer City, Customer State, Customer Country, Customer Zipcode, Latitude, Longitude, Order Zipcode. The processed files are aggregates, the largest of which has 92 rows (`late_rate_by_mode_and_region.csv`). Nothing row-level was saved, and the raw CSV was not copied into git.
 
 ## KPIs
 
-Population: `Delivery Status` ≠ Shipping canceled. Grain: order line. Both are commented on every rate query in `sql/kpi_late_delivery.sql`. The SQL was run on a SQLite table loaded from the scorecard columns only (no personal-data columns) and matched these line counts and late counts for mode, region, market, category, department, and mode × market.
+Population: `Delivery Status` ≠ Shipping canceled. Grain: order line. Both are commented on every rate query in `sql/kpi_late_delivery.sql`. The SQL was run on a SQLite table loaded from the scorecard columns only, with no personal-data columns, and it matched these line counts and late counts for mode, region, market, category, department, and mode × market.
 
 ### Lead time and schedule slip
 
-On the 172,765 non-canceled lines.
+Computed on the 172,765 non-canceled lines.
 
 | KPI | Result |
 |---|---|
@@ -284,15 +284,15 @@ On the 172,765 non-canceled lines.
 | Median schedule slip (real − scheduled) | **1** |
 | Mean schedule slip | 97,698 / 172,765 = 0.5654964836627789 |
 
-The count of lines is odd (172,765), and both central observations are the same day, so the median is that day rather than an average of two days. The same is true of every mode, region, market, category, and department median reported below: the script stops if the two central values differ.
+The count of lines is odd (172,765), and both central observations fall on the same day, so the median is that day rather than an average of two. The same holds for every mode, region, market, category, and department median reported below; the script stops if the two central values ever differ.
 
-The median lead of 3 days is the pooled line. It is not the median of any shipping mode (below: 0, 2, 4, and 4). The median slip of 1 day is also the pool. A fulfillment lead who manages to "3 days, usually 1 day late" is managing a mixture.
+The median lead of 3 days describes the pooled line; it is not the median of any shipping mode, which are 0, 2, 4, and 4 below. The median slip of 1 day is likewise the pool. A fulfillment lead who manages to "3 days, usually 1 day late" is managing a mixture.
 
-Mean lead is 3.4985963592162763 against a median of 3, because the right tail of real days reaches 6. Mean slip is 0.5654964836627789 against a median of 1, because Standard Class, the largest mode, has a mean slip below 0 and pulls the pool down. The median is the typical line. The mean is the pull from the tail. Both are reported because the plan asked for both.
+Mean lead is 3.4985963592162763 against a median of 3, because the right tail of real days reaches 6. Mean slip is 0.5654964836627789 against a median of 1, because Standard Class, the largest mode, has a mean slip below 0 and pulls the pool down. The median is the typical line; the mean is the pull from the tail. Both are reported, as the plan asked.
 
 ### Shipping mode
 
-Sorted by late rate, descending. The line count is beside the rate on purpose. Standard Class has the most late lines and the lowest late rate.
+The table is sorted by late rate, descending, and the line count sits beside the rate on purpose: Standard Class has the most late lines and, at the same time, the lowest late rate.
 
 | Shipping Mode | Lines | Late lines | Late rate | Median slip | Mean slip | Median lead | Mean lead |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -305,15 +305,15 @@ Sorted by late rate, descending. The line count is beside the rate on purpose. S
 
 ![Late rate by shipping mode](../images/late_rate_by_shipping_mode.png)
 
-First Class is not a high-risk slice inside a varying outcome. It does not vary. Scheduled days are 1 and real days are 2 on all 26,513 non-canceled First Class lines, so slip is 1 and the flag is 1. Mean slip is 26,513 / 26,513 = 1. Mean lead is 53,026 / 26,513 = 2. A shipping-mode baseline that has seen First Class in training will label every later First Class line late and will be right on this file. That is the comparison the plan set up. It is not fit here. It is why a model that "beats" a naive accuracy score may only be reading the mode.
+First Class is not a high-risk slice inside a varying outcome; it does not vary at all. Scheduled days are 1 and real days are 2 on all 26,513 non-canceled First Class lines, so the slip is 1 and the flag is 1. Mean slip is 26,513 / 26,513 = 1, and mean lead is 53,026 / 26,513 = 2. A shipping-mode baseline that has seen First Class in training will label every later First Class line late, and it will be right on this file. That is the comparison the plan set up, and it is not fit here. It is, moreover, the reason a model that "beats" a naive accuracy score may be doing nothing more than reading the mode.
 
-Same Day promises 0 days. Real days are 0 or 1. Slip equals real days, and the late flag equals slip, so the late rate, the mean slip, and the mean lead are the same number: 4,454 / 9,293 = 0.47928548369740664. Median slip is 0 because 4,454 is under half of 9,293. The typical Same Day line meets a same-day promise. Just under half do not, and when they miss they miss by one day.
+Same Day promises 0 days, and real days are either 0 or 1. Slip equals real days, and the late flag equals slip, so the late rate, the mean slip, and the mean lead are the same number: 4,454 / 9,293 = 0.47928548369740664. The median slip is 0 because 4,454 is under half of 9,293. The typical Same Day line meets a same-day promise; just under half do not, and when they miss, they miss by one day.
 
-Second Class promises 2 days. Median lead is 4, so median slip is 2. The late rate is 26,987 / 33,806 = 0.7982902443353251. Mean slip is 67,381 / 33,806 = 1.9931668934508666. The on-time lines are the 6,819 with real days exactly 2. Everything from 3 through 6 days is late.
+Second Class promises 2 days, yet its median lead is 4, so the median slip is 2. The late rate is 26,987 / 33,806 = 0.7982902443353251, and the mean slip is 67,381 / 33,806 = 1.9931668934508666. The on-time lines are the 6,819 with real days of exactly 2; everything from 3 through 6 days is late.
 
-Standard Class promises 4 days. Median lead is 4, so median slip is 0: the typical Standard Class line meets the promise. The late rate is still 41,023 / 103,153 = 0.39769080879858076, which is the lines with real days of 5 or 6. Mean slip is −650 / 103,153 = -0.006301319399338846. The negative mean is the early lines (slip −2 and −1) outweighing the late lines in the sum of days, not in the count of lines. On-time lines are 103,153 − 41,023 = 62,130, which is more than the late lines. "Lowest late rate" and "usually on time" are both true. "Not a problem" is not. 41,023 is the largest late count in the file.
+Standard Class promises 4 days, and its median lead is 4, so the median slip is 0: the typical Standard Class line meets the promise. The late rate is nonetheless 41,023 / 103,153 = 0.39769080879858076, made up of the lines with real days of 5 or 6. Mean slip is −650 / 103,153 = -0.006301319399338846; the negative mean reflects the early lines (slip −2 and −1) outweighing the late lines in the sum of days, not in the count of lines. On-time lines number 103,153 − 41,023 = 62,130, more than the late lines. "Lowest late rate" and "usually on time" are both true; "not a problem" is not. After all, 41,023 is the largest late count in the file.
 
-The day grid that produces those rates, non-canceled lines only:
+The day grid that produces those rates, on non-canceled lines only:
 
 | Shipping Mode | Scheduled | Real days | Delivery Status | Flag | Slip | Lines |
 |---|---:|---:|---|---:|---:|---:|
@@ -333,11 +333,11 @@ The day grid that produces those rates, non-canceled lines only:
 
 ![Actual shipping days by mode](../images/real_days_by_shipping_mode.png)
 
-Inside Second Class the four late day-counts are 6,759, 6,759, 6,772, and 6,697. Inside Standard Class the five real-day counts run from 20,231 to 20,873. The rate is what you get when real days only land on a short list of integers and the promise is a single cut on that list. This stage does not call that a property of a carrier outside this file. It is the description of these lines.
+Inside Second Class, the four late day-counts are 6,759, 6,759, 6,772, and 6,697; inside Standard Class, the five real-day counts run from 20,231 to 20,873. The rate is what emerges when real days land only on a short list of integers and the promise is a single cut on that list. This stage does not call that a property of any carrier outside this file; it is a description of these lines and nothing more.
 
 ### Order region and market
 
-Every region has median slip **1** and median lead **3**. The median does not rank regions. The late rate does, and the band is narrow next to the mode gap (First Class at 1.0, Standard Class at 0.39769080879858076).
+Every region has a median slip of **1** and a median lead of **3**, so the median does not rank regions. The late rate does, and its band is narrow next to the mode gap (First Class at 1.0, Standard Class at 0.39769080879858076).
 
 | Order Region | Lines | Late lines | Late rate | Median slip | Mean slip | Median lead |
 |---|---:|---:|---:|---:|---:|---:|
@@ -365,9 +365,9 @@ Every region has median slip **1** and median lead **3**. The median does not ra
 | West Africa | 3,571 | 1,953 | 0.546905628675441 | 1 | 0.548025763091571 | 3 |
 | Canada | 907 | 468 | 0.515986769570011 | 1 | 0.37816979051819183 | 3 |
 
-The highest late rate is Central Africa: 972 / 1,616 = 0.6014851485148515. The lowest is Canada: 468 / 907 = 0.515986769570011. The largest region by lines is Central America, 15,518 / 27,174 = 0.5710605726061677, near the overall rate, not near the top of the ranking. Western Europe is second by lines (15,140 / 25,867 = 0.5853017358023737) and second by rate. A high rate on 1,616 lines is not the same fact as a high rate on 25,867 lines. Mean slip is where Canada actually separates: 0.37816979051819183 versus Central Africa 0.6280940594059405. Median slip still says 1 in both.
+The highest late rate belongs to Central Africa, at 972 / 1,616 = 0.6014851485148515, and the lowest to Canada, at 468 / 907 = 0.515986769570011. The largest region by lines, Central America, sits at 15,518 / 27,174 = 0.5710605726061677, near the overall rate rather than near the top of the ranking. Western Europe is second by lines (15,140 / 25,867 = 0.5853017358023737) and second by rate. A high rate on 1,616 lines is not the same fact as a high rate on 25,867 lines. Mean slip is where Canada genuinely separates, at 0.37816979051819183 against Central Africa's 0.6280940594059405; the median slip still reads 1 in both.
 
-Market is the rollup. The spread is smaller than the region spread, and the medians match again.
+Market is the rollup. Its spread is smaller than the regional spread, and the medians match once again.
 
 | Market | Lines | Late lines | Late rate | Median slip | Mean slip | Median lead |
 |---|---:|---:|---:|---:|---:|---:|
@@ -377,11 +377,11 @@ Market is the rollup. The spread is smaller than the region spread, and the medi
 | LATAM | 49,309 | 28,044 | 0.5687399866150196 | 1 | 0.5544018333367133 | 3 |
 | Africa | 11,154 | 6,340 | 0.5684059530213377 | 1 | 0.5619508696431773 | 3 |
 
-48,090 + 24,627 + 39,585 + 49,309 + 11,154 = 172,765. Europe is the highest market rate, 27,743 / 48,090 = 0.5768974838843834. Africa is the lowest, 6,340 / 11,154 = 0.5684059530213377. That market range is much smaller than the mode range, from First Class at 1.0 to Standard Class at 0.39769080879858076.
+48,090 + 24,627 + 39,585 + 49,309 + 11,154 = 172,765. Europe has the highest market rate, 27,743 / 48,090 = 0.5768974838843834, and Africa the lowest, 6,340 / 11,154 = 0.5684059530213377. That market range is far smaller than the mode range, which runs from First Class at 1.0 to Standard Class at 0.39769080879858076.
 
 ### Do region differences survive the mode mix?
 
-This is a cross-tab, not a cause. Late rate by shipping mode inside market, on the same non-canceled lines:
+What follows is a cross-tab, not a cause: the late rate by shipping mode inside each market, on the same non-canceled lines.
 
 | Shipping Mode | Market | Lines | Late lines | Late rate | Median slip |
 |---|---|---:|---:|---:|---:|
@@ -406,9 +406,9 @@ This is a cross-tab, not a cause. Late rate by shipping mode inside market, on t
 | Standard Class | Europe | 28,434 | 11,304 | 0.3975522262080608 | 0 |
 | Standard Class | LATAM | 29,812 | 11,790 | 0.3954783308734738 | 0 |
 
-First Class is 1.0 in all five markets. Standard Class runs from LATAM 11,790 / 29,812 = 0.3954783308734738 to Pacific Asia 9,459 / 23,630 = 0.4002962336013542. Second Class runs from LATAM 7,510 / 9,498 = 0.7906927774268268 to Pacific Asia 6,293 / 7,829 = 0.8038063609656406. Same Day is the widest market spread inside a mode, and it is the smallest mode: Pacific Asia 969 / 2,135 = 0.453864168618267 to LATAM 1,273 / 2,528 = 0.5035601265822784. None of those within-mode market gaps looks like the gap between First Class and Standard Class.
+First Class is 1.0 in all five markets. Standard Class runs from LATAM, at 11,790 / 29,812 = 0.3954783308734738, to Pacific Asia, at 9,459 / 23,630 = 0.4002962336013542. Second Class runs from LATAM, at 7,510 / 9,498 = 0.7906927774268268, to Pacific Asia, at 6,293 / 7,829 = 0.8038063609656406. Same Day shows the widest market spread inside a mode, and it is also the smallest mode: from Pacific Asia, at 969 / 2,135 = 0.453864168618267, to LATAM, at 1,273 / 2,528 = 0.5035601265822784. None of those within-mode market gaps resembles the gap between First Class and Standard Class.
 
-A second description, still not causal: for each region, compare its late rate to the rate implied by its own mode mix, using each mode's overall late rate. Implied rate = sum over modes of (region share of that mode × overall late rate of that mode). The overall mode rate includes the region, so this is not a held-out adjustment. `region_rate_vs_mode_mix.csv` has all 23. The largest absolute gap is Canada. The highest-rate region and the two largest regions are here so the ranking is not only the tails.
+A second description, still not causal, compares each region's late rate with the rate implied by its own mode mix, using each mode's overall late rate. Implied rate = sum over modes of (region share of that mode × overall late rate of that mode). Given that the overall mode rate includes the region itself, this is not a held-out adjustment. `region_rate_vs_mode_mix.csv` has all 23 regions. The largest absolute gap belongs to Canada; the highest-rate region and the two largest regions appear here as well, so that the ranking is not drawn from the tails alone.
 
 | Order Region | Lines | Late rate | Rate implied by mode mix | Actual minus implied |
 |---|---:|---:|---:|---:|
@@ -417,9 +417,9 @@ A second description, still not causal: for each region, compare its late rate t
 | Central America | 27,174 | 0.5710605726061677 | 0.571921138363001 | -0.0008605657568332 |
 | Canada | 907 | 0.515986769570011 | 0.5812091342108915 | -0.0652223646408804 |
 
-Central America's gap (actual minus implied) is -0.0008605657568332. Western Europe's gap is 0.0069044439964568. Central Africa's gap is 0.0240527739909028, on 1,616 lines. Canada's gap is -0.0652223646408804, on 907 lines. Canada is not low because it avoids First Class. Its First Class lines are still all late. The miss versus the mix shows up inside the mode.
+Central America's gap (actual minus implied) is -0.0008605657568332, Western Europe's is 0.0069044439964568, and Central Africa's is 0.0240527739909028, on 1,616 lines. Canada's gap is -0.0652223646408804, on 907 lines. Note that Canada is not low because it avoids First Class; its First Class lines are still all late. The miss against the mix shows up inside the mode.
 
-Worst region by late rate, Central Africa, by mode:
+The worst region by late rate, Central Africa, by mode:
 
 | Shipping Mode | Lines | Late lines | Late rate | Median slip |
 | --- | ---: | ---: | ---: | ---: |
@@ -428,7 +428,7 @@ Worst region by late rate, Central Africa, by mode:
 | Standard Class | 968 | 429 | 0.4431818181818182 | 0 |
 | Same Day | 79 | 24 | 0.3037974683544304 | 0 |
 
-Best region by late rate, Canada, by mode:
+The best region by late rate, Canada, by mode:
 
 | Shipping Mode | Lines | Late lines | Late rate | Median slip |
 | --- | ---: | ---: | ---: | ---: |
@@ -437,15 +437,15 @@ Best region by late rate, Canada, by mode:
 | Standard Class | 554 | 166 | 0.2996389891696751 | -1 |
 | Same Day | 29 | 7 | 0.2413793103448276 | 0 |
 
-Canada Standard Class is 166 / 554 = 0.2996389891696751, against the overall Standard Class rate of 0.39769080879858076, and it is the only region where Standard Class median slip is not 0. The median there is −1, on 554 lines. Central Africa Standard Class is 429 / 968 = 0.4431818181818182. Same Day in Central Africa is 24 / 79 = 0.3037974683544304; in Canada it is 7 / 29 = 0.2413793103448276. Those Same Day cells are small. In 8 of 23 regions the Same Day median slip is 1 rather than the global Same Day median of 0. That happens when more than half of that region's Same Day lines have real days = 1, which is the late flag for that mode. It is the median of a two-point outcome crossing one half, not a separate regional clock.
+Canada's Standard Class rate is 166 / 554 = 0.2996389891696751, against the overall Standard Class rate of 0.39769080879858076, and it is the only region where the Standard Class median slip is not 0; the median there is −1, on 554 lines. Central Africa's Standard Class rate is 429 / 968 = 0.4431818181818182. Same Day in Central Africa is 24 / 79 = 0.3037974683544304, and in Canada 7 / 29 = 0.2413793103448276; those Same Day cells are small. In 8 of 23 regions, the Same Day median slip is 1 rather than the global Same Day median of 0. That happens when more than half of a region's Same Day lines have real days = 1, which is the late flag for that mode. It is the median of a two-point outcome crossing one half, not a separate regional clock.
 
-Read this as: after holding mode fixed, market does not carry a late-rate gap that would change the scorecard, and most regions sit near the rate their mode mix already implies. Canada is the exception in the table, it is 907 lines, and the within-mode piece a person can see is 166 late Standard Class lines out of 554. That is not a basis for a regional program by itself, and it is not a claim that region has no association at all.
+The reading, then, is this: once mode is held fixed, market carries no late-rate gap that would change the scorecard, and most regions sit near the rate their mode mix already implies. Canada is the exception in the table; it is 907 lines, and the within-mode piece one can actually see is 166 late Standard Class lines out of 554. That alone is no basis for a regional program. Nor, it should be said, is it a claim that region has no association at all.
 
 ### Category and department
 
-Median slip is 1 for 49 of 50 categories. The exception is Men's Golf Clubs, 135 / 274 = 0.4927007299270073, median slip 0. Median lead is 3 for 42 categories and 4 for the other 8 (As Seen on  TV!, Strength Training, Kids' Golf Clubs, Video Games, DVDs, Children's Clothing, Soccer, Computers). The rate ranking is real and the volume is not lined up with it.
+The median slip is 1 for 49 of 50 categories. The exception is Men's Golf Clubs, at 135 / 274 = 0.4927007299270073, with a median slip of 0. The median lead is 3 for 42 categories and 4 for the other 8 (As Seen on  TV!, Strength Training, Kids' Golf Clubs, Video Games, DVDs, Children's Clothing, Soccer, Computers). The rate ranking is real, but volume does not line up with it.
 
-The highest rate is Golf Bags & Carts, 42 / 61 = 0.6885245901639344. The lowest is Men's Golf Clubs. The largest categories sit on the overall rate: Cleats 13,496 / 23,514 = 0.5739559411414477, Men's Footwear 12,121 / 21,263 = 0.5700512627569017, Women's Apparel 11,476 / 20,116 = 0.5704911513223305, Indoor/Outdoor Games 10,565 / 18,470 = 0.5720086626962642, Fishing 9,516 / 16,595 = 0.5734257306417596. A category manager who starts with Golf Bags is starting with 61 lines.
+The highest rate is Golf Bags & Carts, at 42 / 61 = 0.6885245901639344, and the lowest is Men's Golf Clubs. The largest categories sit on the overall rate: Cleats at 13,496 / 23,514 = 0.5739559411414477, Men's Footwear at 12,121 / 21,263 = 0.5700512627569017, Women's Apparel at 11,476 / 20,116 = 0.5704911513223305, Indoor/Outdoor Games at 10,565 / 18,470 = 0.5720086626962642, and Fishing at 9,516 / 16,595 = 0.5734257306417596. A category manager who starts with Golf Bags is starting with 61 lines.
 
 | Category Name | Lines | Late lines | Late rate | Median slip | Median lead |
 |---|---:|---:|---:|---:|---:|
@@ -500,7 +500,7 @@ The highest rate is Golf Bags & Carts, 42 / 61 = 0.6885245901639344. The lowest 
 | Computers | 425 | 224 | 0.5270588235294118 | 1 | 4 |
 | Men's Golf Clubs | 274 | 135 | 0.4927007299270073 | 0 | 3 |
 
-Department is the rollup. Every department has median slip 1 and median lead 3. The highest rate is Pet Shop, 290 / 472 = 0.614406779661017. That department is the category Pet Supplies: same 472 lines, same 290 late lines. Book Shop is the category `Books ` (229 / 391). `Health and Beauty ` the department is the category Health and Beauty (202 / 346). Those three department rates are not a second fact. Fan Shop is the volume: 36,623 / 64,033 = 0.5719394687114456, next to the overall rate.
+Department is the rollup, and every department has a median slip of 1 and a median lead of 3. The highest rate is Pet Shop, at 290 / 472 = 0.614406779661017; that department is simply the category Pet Supplies, with the same 472 lines and the same 290 late lines. Book Shop is the category `Books ` (229 / 391), and `Health and Beauty ` the department is the category Health and Beauty (202 / 346). Those three department rates are not a second fact. Fan Shop carries the volume, at 36,623 / 64,033 = 0.5719394687114456, next to the overall rate.
 
 | Department Name | Lines | Late lines | Late rate | Median slip | Median lead |
 |---|---:|---:|---:|---:|---:|
@@ -516,11 +516,11 @@ Department is the rollup. Every department has median slip 1 and median lead 3. 
 | Fan Shop | 64,033 | 36,623 | 0.5719394687114456 | 1 | 3 |
 | Discs Shop | 1,943 | 1,103 | 0.5676788471435924 | 1 | 3 |
 
-Category lines sum to 172,765 and late lines sum to 98,977. Department lines and late lines do the same. The department table is a rollup of the category table, with the Electronics name sitting inside the rollup as one category even though its ids cross Footwear and Outdoors (section 9). The late rate was not recomputed on those two ids separately; the hierarchy counts in section 9 are all lines, not this denominator.
+Category lines sum to 172,765 and late lines to 98,977; department lines and late lines do the same. The department table is a rollup of the category table, with the Electronics name sitting inside it as one category even though its ids cross Footwear and Outdoors (section 9). The late rate was not recomputed on those two ids separately; the hierarchy counts in section 9 cover all lines, not this denominator.
 
 ## Shipping date is an outcome field
 
-The plan allows calendar parts of the order date and forbids the shipping date if that date is when the goods moved. The check:
+The plan allows calendar parts of the order date and forbids the shipping date if that date records when the goods moved. The check:
 
 | Check | Result |
 |---|---|
@@ -533,9 +533,9 @@ The plan allows calendar parts of the order date and forbids the shipping date i
 | 24-hour truncation equals real days | **175,862 / 180,519** |
 | Rows where the 24-hour truncation is 0 and real days are 1 | **4,657** |
 
-Both timestamps parsed with `%m/%d/%Y %H:%M` on every row. The script stops if a value does not match that format. The calendar-day gap (the date part of the shipping timestamp minus the date part of the order timestamp) equals `Days for shipping (real)` on every row. A truncation to whole 24-hour periods does not: 4,657 lines have a truncated gap of 0 and real days of 1. Those are not a second definition of lateness. They are why "subtract the timestamps and take `.days`" is the wrong reconstruction of the column. The column itself matches the calendar dates.
+Both timestamps parsed with `%m/%d/%Y %H:%M` on every row, and the script stops if any value fails to match that format. The calendar-day gap (the date part of the shipping timestamp minus the date part of the order timestamp) equals `Days for shipping (real)` on every row. A truncation to whole 24-hour periods does not: 4,657 lines show a truncated gap of 0 and real days of 1. Those are not a second definition of lateness; rather, they show why "subtract the timestamps and take `.days`" is the wrong reconstruction of the column. The column itself matches the calendar dates.
 
-`shipping date (DateOrders)` is the outcome clock. It is not a feature. `order date (DateOrders)` is known at order time. Its calendar parts stay allowed. Neither date is turned into a model input in this stage.
+`shipping date (DateOrders)` is the outcome clock, and it is not a feature. `order date (DateOrders)` is known at order time, so its calendar parts remain allowed. Neither date is turned into a model input at this stage.
 
 ## Decisions this stage locks
 
@@ -554,14 +554,14 @@ Both timestamps parsed with `%m/%d/%Y %H:%M` on every row. The script stops if a
 
 One decision is not locked by the plan, and it changes the training rows.
 
-The plan fixed the **KPI** denominator as non-canceled lines. It did not write the same sentence for the training set. The recommendation from this stage is: train and score on the non-canceled lines, the same 172,765. That is the population where the flag and the day-rule are the same label. If the 7,754 canceled lines stay in training, the model is shown 4,423 lines that missed the promise and are labeled 0, plus 3,331 canceled lines that did not miss it, also labeled 0. Confirm that exclusion before Construct. If the canceled lines are supposed to stay in, say so and the target note in section 4 has to be rewritten first. This stage did not fit either version.
+The plan fixed the **KPI** denominator as non-canceled lines, but it did not write the same sentence for the training set. This stage recommends training and scoring on the non-canceled lines, the same 172,765, given that this is the population on which the flag and the day rule are the same label. If the 7,754 canceled lines stay in training, the model is shown 4,423 lines that missed the promise yet are labeled 0, plus 3,331 canceled lines that did not miss it, also labeled 0. Confirm that exclusion before Construct. If the canceled lines are meant to stay in, say so, and the target note in section 4 must be rewritten first. This stage fit neither version.
 
-The rest follows from the tables, and Construct should not reopen it quietly:
+The rest follows from the tables, and Construct should not quietly reopen it:
 
 - Do not give the model `Delivery Status`, `Days for shipping (real)`, `Late_delivery_risk`, or `shipping date (DateOrders)`.
 - Do not give it both `Shipping Mode` and scheduled days.
-- Do not one-hot `Order City` (3,597) or `Order State` (1,089). Treat `Order Country` (164) and `Product Name` (118) as a cardinality decision, not as a default one-hot. `Category Name` = Electronics is Category Id 13 and Category Id 37; encoding the name merges them.
-- Expect the shipping-mode baseline to classify every non-canceled First Class line correctly, because that class does not vary. The interesting comparison is whether anything else beats the mode on Second Class, Same Day, and Standard Class, where the flag still varies.
-- No dollar cost per late day. The file still does not state a penalty. No Tableau and no executive writeup in this stage.
+- Do not one-hot `Order City` (3,597) or `Order State` (1,089). Treat `Order Country` (164) and `Product Name` (118) as a cardinality decision, not a default one-hot. `Category Name` = Electronics is Category Id 13 and Category Id 37; encoding the name merges them.
+- Expect the shipping-mode baseline to classify every non-canceled First Class line correctly, because that class does not vary. The pivotal comparison is whether anything else beats the mode on Second Class, Same Day, and Standard Class, where the flag still varies.
+- No dollar cost per late day; the file still states no penalty. No Tableau and no executive write-up at this stage.
 
-Construct and Execute are not done in this file.
+Construct and Execute are not carried out in this file.

@@ -6,7 +6,7 @@
 - **Download command:** `See https://data.mendeley.com/public-api/datasets/8gx2fvg2k6/files?folder_id=root&version=5 for per-file `download_url`s, or use 'Download All' on the dataset page.`
 
 ## Notes
-Downloaded via Mendeley public API without login. SHA-256 of all 3 files verified against Mendeley metadata. `DataCoSupplyChainDataset.csv` is Latin-1 encoded (use `encoding='latin-1'`).
+The files were downloaded through the Mendeley public API, with no login required, and the SHA-256 of all 3 files was verified against the Mendeley metadata. Note that `DataCoSupplyChainDataset.csv` is Latin-1 encoded (use `encoding='latin-1'`).
 
 ## Files (`data/raw/`, git-ignored)
 | File | Size | Rows (excl. header) | Columns | Encoding |
